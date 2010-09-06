@@ -1,0 +1,24 @@
+Integration parameters (a, b, N): (0.0, 3.0, 300000000)
+
+cython_typed_openmp integrate() = 8.999999955
+Time spent: 0.526089906693
+
+cython_typed integrate() = 8.999999955
+Time spent: 8.34564685822
+
+cython integrate() = 8.999999955
+Time spent: 73.0280399323
+
+python integrate() = 8.999999955
+Time spent: 195.182024956
+
+Relative speedups (16-core AMD Opteron):
+
+cython_typed_openmp/python: 371.005074366
+cython_typed/python: 23.3872854042
+cython/python: 2.67269976213
+
+cython_typed_openmp/cython: 138.812851194
+cython_typed/cython: 8.75043494805
+
+cython_typed_openmp/cython_typed: 15.8635373005

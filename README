@@ -1,0 +1,15 @@
+How to compile cython module?
+
+1. cython must be installed
+2. issue: ./setup.py build_ext -i
+3. integrate_cython.so should appear next to integrate_cython.pyx
+
+How to enable openmp?
+
+1. issue ./setup.py build_ext -i   (to generate integrate_cython.c)
+2. patch integrate_cython.c with integrate_cython_apply_omp.patch
+3. reissue ./setup.py build_ext -i   (to regenerate integrate_cython.so from .c file)
+
+How to run?
+
+1. ./run.py  (edit tests list to enable/disable tests)

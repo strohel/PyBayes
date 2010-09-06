@@ -1,0 +1,17 @@
+Numerical integration from 0.000000 to 3.000000 of x^2 with 1000000000 steps:
+
+cython_typed_openmp: result = 9.000000; real time = 0.451694s; cpu time = 7.160000s
+       cython_typed: result = 9.000000; real time = 6.573066s; cpu time = 7.110000s
+             cython: result = 9.000000; real time = 202.516819s; cpu time = 202.490000s
+             python: result = 9.000000; real time = 617.069662s; cpu time = 617.020000s
+
+Relative speedups (16-core AMD Opteron):
+
+cython_typed_openmp/python: 1366.12318545
+cython_typed/python: 93.8785130795
+cython/python: 3.04700451617
+
+cython_typed_openmp/cython: 448.349576837
+cython_typed/cython: 30.8100997492
+
+cython_typed_openmp/cython_typed: 14.5520326285

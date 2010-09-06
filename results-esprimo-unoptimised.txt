@@ -1,0 +1,24 @@
+Integration parameters (a, b, N): (0.0, 3.0, 300000000)
+
+cython_typed_openmp integrate() = 8.999999955
+Time spent: 3.37605309486
+
+cython_typed integrate() = 8.999999955
+Time spent: 6.06836104393
+
+cython integrate() = 8.999999955
+Time spent: 113.26262188
+
+python integrate() = 8.999999955
+Time spent: 268.439502954
+
+Relative speedups (2-core Intel Core 2 Duo processor):
+
+cython_typed_openmp/python: 79.5128202702
+cython_typed/python: 44.2359149383
+cython/python: 2.37006258993
+
+cython_typed_openmp/cython: 33.5488271947
+cython_typed/cython: 18.6644500978
+
+cython_typed_openmp/cython_typed: 1.79747204011

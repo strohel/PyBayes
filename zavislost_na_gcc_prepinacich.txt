@@ -1,0 +1,15 @@
+-02 -march=core2:
+cython_typed_openmp: result = 8.9999999865; real time = 1.69873094559s; cpu time = 3.12s
+       cython_typed: result = 8.9999999865; real time = 2.86416888237s; cpu time = 2.99s
+
+-02:
+cython_typed_openmp: result = 8.9999999865; real time = 1.66599702835s; cpu time = 3.07s
+       cython_typed: result = 8.9999999865; real time = 2.87195682526s; cpu time = 2.99s
+
+-01:
+cython_typed_openmp: result = 8.9999999865; real time = 2.95676016808s; cpu time = 5.73s
+       cython_typed: result = 8.9999999865; real time = 5.25587296486s; cpu time = 5.4s
+
+<none>:
+cython_typed_openmp: result = 8.9999999865; real time = 11.1103010178s; cpu time = 21.34s
+       cython_typed: result = 8.9999999865; real time = 19.8046140671s; cpu time = 19.94s

@@ -1,0 +1,10 @@
+--- integrate_cython.c.old	2010-08-31 17:01:24.074979091 +0200
++++ integrate_cython.c	2010-08-31 17:01:27.901979091 +0200
+@@ -1055,6 +1055,7 @@
+  * 		s += f(a)*dx
+  */
+   __pyx_t_3 = __pyx_v_N;
++  #pragma omp parallel for private(__pyx_v_i,__pyx_v_a) reduction(+:__pyx_v_s) schedule(guided)
+   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
+     __pyx_v_i = __pyx_t_4;
+ 
