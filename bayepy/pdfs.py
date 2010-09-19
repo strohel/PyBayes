@@ -27,23 +27,23 @@ class GaussPdf(Pdf):
     .. math: f(x|\mu,b) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
     """
 
-    def __init__(self, mean, variance):
+    def __init__(self, mean=np.array([1]), variance=np.array([[1]])):
         """Initialise Gaussian pdf with mean value mu and variance R
 
         mu % mean values
         R  % variance
         """
-        if not isinstance(mean, np.ndarray) or not isinstance(variance, np.ndarray):
-            raise TypeError("both mean and variance must be numpy arrays");
+        mean = np.asarray(mean)
+        variance = np.asarray(variance)
         if mean.ndim != 1:
-            raise ValueError("mean must be one-dimensional")
+            raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " encountered)")
         if variance.ndim != 2:
             raise ValueError("variance must be 2-dimensional")
         if variance.shape[0] != variance.shape[1]:
             raise ValueError("variance must be rectangular")
         if mean.shape[0] != variance.shape[0]:
             raise ValueError("mean and variance must have equal shape")
-        if np.any(variance != variance.transpose()):
+        if np.any(variance != variance.T):
             raise ValueError("variance must be symmetric (complex variance not supported)")
         # TODO: variance must be positive definite
         self.mu = mean

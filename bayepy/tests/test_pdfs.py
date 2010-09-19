@@ -1,7 +1,8 @@
-"""This file tests bayepy.pdfs"""
+"""Tests for bayepy.pdfs"""
+
+import unittest as ut
 
 import numpy as np
-import unittest as ut
 
 import bayepy as bp
 
@@ -33,10 +34,6 @@ class TestGaussPdf(ut.TestCase):
 
     def test_invalid_initialisation(self):
         constructor = bp.pdfs.GaussPdf
-
-        # invalid parameter types
-        self.assertRaises(TypeError, constructor, [1, 2, 3], self.variance)
-        self.assertRaises(TypeError, constructor, self.mean, [[1, 2], [3, 4]])
 
         # invalid mean and variance shape
         self.assertRaises(ValueError, constructor, np.array([[1], [2]]), self.variance)
