@@ -14,7 +14,9 @@ class Kalman:
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
-        # TODO: check A, B ... for type, dimension and shape
+        if not isinstance(state_pdf, bp.pdfs.GaussPdf):
+            raise TypeException("state_pdf must be (a subclass of) bayepy.pdfs.GaussPdf")
+
         self.A = np.asarray(A)
         self.B = np.asarray(B)
         self.C = np.asarray(C)
@@ -29,8 +31,6 @@ class Kalman:
                 print key + ":"
                 print repr(dict[key])
 
-        if not isinstance(state_pdf, bp.pdfs.Pdf):
-            raise TypeException("apos_pdf must be (a subclass of) bayepy.pdfs.Pdf")
 
         self.P = state_pdf
         self.S = bp.pdfs.GaussPdf()

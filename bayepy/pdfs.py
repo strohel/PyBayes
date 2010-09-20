@@ -40,13 +40,11 @@ class GaussPdf(Pdf):
         mean = np.asarray(mean)
         variance = np.asarray(variance)
         if mean.ndim != 1:
-            raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " encountered)")
-        if variance.ndim != 2:
-            raise ValueError("variance must be 2-dimensional")
-        if variance.shape[0] != variance.shape[1]:
-            raise ValueError("variance must be rectangular")
-        if mean.shape[0] != variance.shape[0]:
-            raise ValueError("mean and variance must have equal shape")
+            raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
+        n = mean.shape[0]
+        if variance.shape != (n, n):
+            raise ValueError("variance must have shape (" + str(n) + ", " + str(n) + "), " +
+                             str(variance.shape) + " given")
         if np.any(variance != variance.T):
             raise ValueError("variance must be symmetric (complex variance not supported)")
         # TODO: variance must be positive definite
