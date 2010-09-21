@@ -4,7 +4,5 @@
 
 """TODO: documentation"""
 
-__all__ = ['pdfs', 'kalman']
-
-import pdfs
-import kalman
+from pdfs import Pdf, GaussPdf
+from kalman import Kalman

@@ -4,7 +4,9 @@
 
 """Probability density functions"""
 
-import numpy as np
+from numpy import any, array, asarray, diag, dot
+from numpy.linalg import cholesky
+from numpy.random import normal
 
 class Pdf:
     """Base class for all (TODO: unconditional?) multivariate pdfs"""
@@ -31,21 +33,21 @@ class GaussPdf(Pdf):
     .. math: f(x|\mu,b) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
     """
 
-    def __init__(self, mean=np.array([1]), variance=np.array([[1]])):
+    def __init__(self, mean=array([1]), variance=array([[1]])):
         """Initialise Gaussian pdf with mean value mu and variance R
 
         mu % mean values
         R  % variance
         """
-        mean = np.asarray(mean)
-        variance = np.asarray(variance)
+        mean = asarray(mean)
+        variance = asarray(variance)
         if mean.ndim != 1:
             raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
         n = mean.shape[0]
         if variance.shape != (n, n):
             raise ValueError("variance must have shape (" + str(n) + ", " + str(n) + "), " +
                              str(variance.shape) + " given")
-        if np.any(variance != variance.T):
+        if any(variance != variance.T):
             raise ValueError("variance must be symmetric (complex variance not supported)")
         # TODO: variance must be positive definite
         self.mu = mean
@@ -58,13 +60,13 @@ class GaussPdf(Pdf):
         return self.mu.shape[0]
 
     def variance(self):
-        return np.diag(self.R) # TODO: inconsistent naming? (vector vs. matrix)
+        return diag(self.R) # TODO: inconsistent naming? (vector vs. matrix)
 
-#    def eval_log(self, x):
+#    def eval_log(self, x):  # TODO!
 #        return -log(2*self.b)-abs(x-self.mu)/self.b
 
     def sample(self):
-        z = np.random.normal(size=self.mu.shape[0]);
+        z = normal(size=self.mu.shape[0]);
         # NumPy's chol(R) is equivalent to Matlab's chol(R).transpose()
-        s = self.mu + np.dot(np.linalg.cholesky(self.R), z);
+        s = self.mu + dot(cholesky(self.R), z);
         return s

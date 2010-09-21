@@ -4,25 +4,24 @@
 
 """Kalman filter"""
 
-import numpy as np
-from numpy import dot
+from numpy import dot, asarray
 from numpy.linalg import inv
 
-import pybayes as pb
+from pybayes.pdfs import GaussPdf
 
 class Kalman:
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
-        if not isinstance(state_pdf, pb.pdfs.GaussPdf):
+        if not isinstance(state_pdf, GaussPdf):
             raise TypeException("state_pdf must be (a subclass of) GaussPdf")
 
-        self.A = np.asarray(A)
-        self.B = np.asarray(B)
-        self.C = np.asarray(C)
-        self.D = np.asarray(D)
-        self.Q = np.asarray(Q)
-        self.R = np.asarray(R)
+        self.A = asarray(A)
+        self.B = asarray(B)
+        self.C = asarray(C)
+        self.D = asarray(D)
+        self.Q = asarray(Q)
+        self.R = asarray(R)
 
         if False:
             print
@@ -33,13 +32,13 @@ class Kalman:
 
 
         self.P = state_pdf
-        self.S = pb.pdfs.GaussPdf()
+        self.S = GaussPdf()
 
 
     def bayes(self, yt, ut):
         """Aproximate Bayes rule"""
-        yt = np.asarray(yt)
-        ut = np.asarray(ut)
+        yt = asarray(yt)
+        ut = asarray(ut)
 
         # predict
         self.P.mu = dot(self.A, self.P.mu) + dot(self.B, ut)  # a priori estimate

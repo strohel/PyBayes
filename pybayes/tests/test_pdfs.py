@@ -14,7 +14,7 @@ class TestPdf(ut.TestCase):
     """Test abstract class Pdf"""
 
     def setUp(self):
-        self.pdf = pb.pdfs.Pdf()
+        self.pdf = pb.Pdf()
 
     def test_abstract_methods(self):
         self.assertRaises(NotImplementedError, self.pdf.mean)
@@ -34,10 +34,10 @@ class TestGaussPdf(ut.TestCase):
             [0., 0., 3.]
         ])
         self.variance_diag = np.array([1., 2., 3.])
-        self.gauss = pb.pdfs.GaussPdf(self.mean, self.variance)
+        self.gauss = pb.GaussPdf(self.mean, self.variance)
 
     def test_invalid_initialisation(self):
-        constructor = pb.pdfs.GaussPdf
+        constructor = pb.GaussPdf
 
         # invalid mean and variance shape
         self.assertRaises(ValueError, constructor, np.array([[1], [2]]), self.variance)
@@ -66,7 +66,7 @@ class TestGaussPdf(ut.TestCase):
     def test_variance(self):
         self.assertTrue(np.all(self.gauss.variance() == self.variance_diag))  # TODO: vector or matrix?
 
-    #def test_eval_log(self):
+    #def test_eval_log(self):  # TODO
         #x = [
             #self.mean,
             #np.array([0., 0., 0.])
