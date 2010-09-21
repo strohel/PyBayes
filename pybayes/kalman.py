@@ -8,14 +8,14 @@ import numpy as np
 from numpy import dot
 from numpy.linalg import inv
 
-import bayepy as bp
+import pybayes as pb
 
 class Kalman:
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
-        if not isinstance(state_pdf, bp.pdfs.GaussPdf):
-            raise TypeException("state_pdf must be (a subclass of) bayepy.pdfs.GaussPdf")
+        if not isinstance(state_pdf, pb.pdfs.GaussPdf):
+            raise TypeException("state_pdf must be (a subclass of) GaussPdf")
 
         self.A = np.asarray(A)
         self.B = np.asarray(B)
@@ -33,7 +33,7 @@ class Kalman:
 
 
         self.P = state_pdf
-        self.S = bp.pdfs.GaussPdf()
+        self.S = pb.pdfs.GaussPdf()
 
 
     def bayes(self, yt, ut):

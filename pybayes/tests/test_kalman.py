@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""Tests for bayepy.kalman"""
+"""Tests for kalman filters"""
 
 import unittest as ut
 import os.path
@@ -11,7 +11,7 @@ import time
 import numpy as np
 from scipy.io import loadmat
 
-import bayepy as bp
+import pybayes as pb
 
 class TestKalman(ut.TestCase):
 
@@ -23,8 +23,8 @@ class TestKalman(ut.TestCase):
         d = loadmat(file, struct_as_record=True, mat_dtype=True)
         mu0 = np.reshape(d['mu0'], -1)  # otherwise we would get 2D array of shape (1xN)
 
-        gauss = bp.pdfs.GaussPdf(mu0, d['P0'])
-        kalman = bp.kalman.Kalman(d['A'], np.squeeze(d['B'].T), d['C'], d['D'], d['Q'], d['R'], gauss)
+        gauss = pb.pdfs.GaussPdf(mu0, d['P0'])
+        kalman = pb.kalman.Kalman(d['A'], np.squeeze(d['B'].T), d['C'], d['D'], d['Q'], d['R'], gauss)
 
         y = np.squeeze(d['y'])  # to prevent 2D array (1xN)
         u = np.squeeze(d['u'])  # ditto

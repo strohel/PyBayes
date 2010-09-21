@@ -2,19 +2,19 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""Tests for bayepy.pdfs"""
+"""Tests for pdfs"""
 
 import unittest as ut
 
 import numpy as np
 
-import bayepy as bp
+import pybayes as pb
 
 class TestPdf(ut.TestCase):
-    """Test abstract class bayepy.pdfs.Pdf"""
+    """Test abstract class Pdf"""
 
     def setUp(self):
-        self.pdf = bp.pdfs.Pdf()
+        self.pdf = pb.pdfs.Pdf()
 
     def test_abstract_methods(self):
         self.assertRaises(NotImplementedError, self.pdf.mean)
@@ -34,10 +34,10 @@ class TestGaussPdf(ut.TestCase):
             [0., 0., 3.]
         ])
         self.variance_diag = np.array([1., 2., 3.])
-        self.gauss = bp.pdfs.GaussPdf(self.mean, self.variance)
+        self.gauss = pb.pdfs.GaussPdf(self.mean, self.variance)
 
     def test_invalid_initialisation(self):
-        constructor = bp.pdfs.GaussPdf
+        constructor = pb.pdfs.GaussPdf
 
         # invalid mean and variance shape
         self.assertRaises(ValueError, constructor, np.array([[1], [2]]), self.variance)
@@ -85,7 +85,7 @@ class TestGaussPdf(ut.TestCase):
         self.assertEqual(x.shape[0], self.mean.shape[0])
 
         # single dimension
-        #normal = bp.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
+        #normal = pb.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
         #values = []
         #for i in xrange(0, 100):
             #values.extend(normal.sample())
