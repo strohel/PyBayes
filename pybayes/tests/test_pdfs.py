@@ -17,6 +17,7 @@ class TestPdf(ut.TestCase):
         self.pdf = pb.Pdf()
 
     def test_abstract_methods(self):
+        self.assertRaises(NotImplementedError, self.pdf.dimension)
         self.assertRaises(NotImplementedError, self.pdf.mean)
         self.assertRaises(NotImplementedError, self.pdf.variance)
         self.assertRaises(NotImplementedError, self.pdf.eval_log, 0.)

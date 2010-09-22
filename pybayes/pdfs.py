@@ -11,6 +11,10 @@ from numpy.random import normal
 class Pdf:
     """Base class for all (TODO: unconditional?) multivariate pdfs"""
 
+    def dimension():
+        """Return dimension of the pdf as integer"""
+        raise NotImplementedError("Derived classes must implement this function")
+
     def mean(self):
         """Return mean value (a vector) of the pdf"""
         raise NotImplementedError("Derived classes must implement this function")
