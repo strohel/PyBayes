@@ -24,7 +24,7 @@ class TestKalman(ut.TestCase):
         mu0 = np.reshape(d['mu0'], -1)  # otherwise we would get 2D array of shape (1xN)
 
         gauss = pb.pdfs.GaussPdf(mu0, d['P0'])
-        kalman = pb.kalman.Kalman(d['A'], np.squeeze(d['B'].T), d['C'], d['D'], d['Q'], d['R'], gauss)
+        kalman = pb.kalman.Kalman(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
 
         y = np.squeeze(d['y'])  # to prevent 2D array (1xN)
         u = np.squeeze(d['u'])  # ditto

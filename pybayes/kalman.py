@@ -4,7 +4,7 @@
 
 """Kalman filter"""
 
-from numpy import dot, asarray
+from numpy import asarray, dot, ndarray
 from numpy.linalg import inv
 
 from pybayes.pdfs import GaussPdf
@@ -13,8 +13,36 @@ class Kalman:
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
+        # check type of pdf
         if not isinstance(state_pdf, GaussPdf):
-            raise TypeException("state_pdf must be (a subclass of) GaussPdf")
+            raise TypeError("state_pdf must be (a subclass of) GaussPdf")
+
+        # check type of input arrays
+        matrices = {"A":A, "B":B, "C":C, "D":D, "Q":Q, "R":R}
+        for name in matrices:
+            matrix = matrices[name]
+            if type(matrix) != ndarray:
+                raise TypeError(name + " must be (exactly) numpy.ndarray, " + type(matrix) +
+                                    " given")
+            if matrix.ndim != 2:
+                raise ValueError(name + " must have 2 dimensions (thus forming a matrix), " +
+                                 str(matrix.ndim) + " given")
+
+        self.n = state_pdf.shape()[0]  # dimension of state variable vector
+        self.k = B.shape[1]  # dimension of control vector
+        self.j = D.shape[0]  # dimension of observation vector
+
+        matrices = [
+            (A, self.n, self.n),
+            (B, self.n, self.k),
+            (C, self.j, self.n),
+            (D, self.j, self.k),
+            (Q, self.n, self.n),
+            (R, self.j, self.j)
+        ]
+        self.n = 12
+        print "n=", matrices[0][1]
+
 
         self.A = asarray(A)
         self.B = asarray(B)
@@ -37,6 +65,8 @@ class Kalman:
 
     def bayes(self, yt, ut):
         """Aproximate Bayes rule"""
+
+        # TODO: test types!!!
         yt = asarray(yt)
         ut = asarray(ut)
 
