@@ -11,8 +11,8 @@ from numpy.random import normal
 class Pdf:
     """Base class for all (TODO: unconditional?) multivariate pdfs"""
 
-    def dimension():
-        """Return dimension of the pdf as integer"""
+    def shape(self):
+        """Return shape (in numpy's sense) of the random variable (and mean) as a tuple of ints"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def mean(self):
@@ -20,7 +20,7 @@ class Pdf:
         raise NotImplementedError("Derived classes must implement this function")
 
     def variance(self):
-        """Return variance (TODO: matrix? vector?) of the pdf"""
+        """Return variance (diagonal elements of covariance)"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def eval_log(self, x):
@@ -37,34 +37,34 @@ class GaussPdf(Pdf):
     .. math: f(x|\mu,b) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
     """
 
-    def __init__(self, mean=array([1]), variance=array([[1]])):
+    def __init__(self, mean=array([1]), covariance=array([[1]])):
         """Initialise Gaussian pdf with mean value mu and variance R
 
         mu % mean values
         R  % variance
         """
         mean = asarray(mean)
-        variance = asarray(variance)
+        covariance = asarray(covariance)
         if mean.ndim != 1:
             raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
         n = mean.shape[0]
-        if variance.shape != (n, n):
-            raise ValueError("variance must have shape (" + str(n) + ", " + str(n) + "), " +
-                             str(variance.shape) + " given")
-        if any(variance != variance.T):
-            raise ValueError("variance must be symmetric (complex variance not supported)")
-        # TODO: variance must be positive definite
+        if covariance.shape != (n, n):
+            raise ValueError("covariance must have shape (" + str(n) + ", " + str(n) + "), " +
+                             str(covariance.shape) + " given")
+        if any(covariance != covariance.T):
+            raise ValueError("covariance must be symmetric (complex covariance not supported)")
+        # TODO: covariance must be positive definite
         self.mu = mean
-        self.R = variance
+        self.R = covariance
+
+    def shape(self):
+        return self.mu.shape
 
     def mean(self):
         return self.mu
 
-    def dimension(self):
-        return self.mu.shape[0]
-
     def variance(self):
-        return diag(self.R) # TODO: inconsistent naming? (vector vs. matrix)
+        return diag(self.R)
 
 #    def eval_log(self, x):  # TODO!
 #        return -log(2*self.b)-abs(x-self.mu)/self.b

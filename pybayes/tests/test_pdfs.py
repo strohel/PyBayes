@@ -17,7 +17,7 @@ class TestPdf(ut.TestCase):
         self.pdf = pb.Pdf()
 
     def test_abstract_methods(self):
-        self.assertRaises(NotImplementedError, self.pdf.dimension)
+        self.assertRaises(NotImplementedError, self.pdf.shape)
         self.assertRaises(NotImplementedError, self.pdf.mean)
         self.assertRaises(NotImplementedError, self.pdf.variance)
         self.assertRaises(NotImplementedError, self.pdf.eval_log, 0.)
@@ -29,19 +29,20 @@ class TestGaussPdf(ut.TestCase):
 
     def setUp(self):
         self.mean = np.array([1., 3., 9.])
-        self.variance = np.array([
+        self.covariance = np.array([
             [1., 0., 0.],
             [0., 2., 0.],
             [0., 0., 3.]
         ])
-        self.variance_diag = np.array([1., 2., 3.])
-        self.gauss = pb.GaussPdf(self.mean, self.variance)
+        self.variance = np.array([1., 2., 3.])  # diagonal elements of covariance
+        self.shape = (3,)  # shape of random variable (and mean)
+        self.gauss = pb.GaussPdf(self.mean, self.covariance)
 
     def test_invalid_initialisation(self):
         constructor = pb.GaussPdf
 
         # invalid mean and variance shape
-        self.assertRaises(ValueError, constructor, np.array([[1], [2]]), self.variance)
+        self.assertRaises(ValueError, constructor, np.array([[1], [2]]), self.covariance)
         self.assertRaises(ValueError, constructor, self.mean, np.array([1., 2., 3.,]))
 
         # non-rectangular variance, incompatible mean and variance, non-symmetric variance
@@ -61,11 +62,14 @@ class TestGaussPdf(ut.TestCase):
 
         # TODO: non positive-definite variance
 
+    def test_shape(self):
+        self.assertEqual(self.gauss.shape(), self.shape)
+
     def test_mean(self):
         self.assertTrue(np.all(self.gauss.mean() == self.mean))
 
     def test_variance(self):
-        self.assertTrue(np.all(self.gauss.variance() == self.variance_diag))  # TODO: vector or matrix?
+        self.assertTrue(np.all(self.gauss.variance() == self.variance))
 
     #def test_eval_log(self):  # TODO
         #x = [
