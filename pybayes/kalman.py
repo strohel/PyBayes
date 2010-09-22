@@ -13,6 +13,8 @@ class Kalman:
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
+        """TODO: documentation"""
+
         # check type of pdf
         if not isinstance(state_pdf, GaussPdf):
             raise TypeError("state_pdf must be (a subclass of) GaussPdf")
@@ -22,53 +24,54 @@ class Kalman:
         for name in matrices:
             matrix = matrices[name]
             if type(matrix) != ndarray:
-                raise TypeError(name + " must be (exactly) numpy.ndarray, " + type(matrix) +
-                                    " given")
+                raise TypeError(name + " must be (exactly) numpy.ndarray, " +
+                                str(type(matrix)) + " given")
             if matrix.ndim != 2:
                 raise ValueError(name + " must have 2 dimensions (thus forming a matrix), " +
                                  str(matrix.ndim) + " given")
 
-        self.n = state_pdf.shape()[0]  # dimension of state variable vector
+        # remember vector shapes
+        self.n = state_pdf.shape()[0]  # dimension of state vector
         self.k = B.shape[1]  # dimension of control vector
         self.j = D.shape[0]  # dimension of observation vector
 
-        matrices = [
-            (A, self.n, self.n),
-            (B, self.n, self.k),
-            (C, self.j, self.n),
-            (D, self.j, self.k),
-            (Q, self.n, self.n),
-            (R, self.j, self.j)
-        ]
-        self.n = 12
-        print "n=", matrices[0][1]
+        # dict of required matrice shapes (sizes)
+        shapes = {
+            "A":(self.n, self.n),
+            "B":(self.n, self.k),
+            "C":(self.j, self.n),
+            "D":(self.j, self.k),
+            "Q":(self.n, self.n),
+            "R":(self.j, self.j)
+        }
+        for name in matrices:
+            matrix = matrices[name]
+            if matrix.shape != shapes[name]:
+                raise ValueError("Given shapes of state_pdf, B and D, matrix " + name +
+                                 " must have shape " + str(shapes[name]) + ", " +
+                                 str(matrix.shape) + " given")
 
-
-        self.A = asarray(A)
-        self.B = asarray(B)
-        self.C = asarray(C)
-        self.D = asarray(D)
-        self.Q = asarray(Q)
-        self.R = asarray(R)
-
-        if False:
-            print
-            dict = {"A":A, "B":B, "C":C, "D":D, "Q":Q, "R":R}
-            for key in dict:
-                print key + ":"
-                print repr(dict[key])
-
+        self.A, self.B, self.C, self.D, self.Q, self.R = A, B, C, D, Q, R
 
         self.P = state_pdf
-        self.S = GaussPdf()
+        self.S = GaussPdf()  # observation probability density function
+
+        self._bayes_type_check = True  # whether to check arguments in bayes() method
 
 
     def bayes(self, yt, ut):
         """Aproximate Bayes rule"""
-
-        # TODO: test types!!!
-        yt = asarray(yt)
-        ut = asarray(ut)
+        if self._bayes_type_check:
+            if type(yt) != ndarray or type(ut) != ndarray:
+                raise TypeError("Both yt and ut must be numpy.ndarray. " +
+                                str(type(yt)) + " and " + str(type(ut)) + " given")
+            if yt.shape != (self.j,):
+                raise ValueError("yt must have shape " + str((self.j,)) + ". " +
+                                str(yt.shape) + " given")
+            if ut.shape != (self.k,):
+                raise ValueError("yt must have shape " + str((self.k,)) + ". " +
+                                str(ut.shape) + " given")
+        self._bayes_type_check = False  # for performance reasons check only first time
 
         # predict
         self.P.mu = dot(self.A, self.P.mu) + dot(self.B, ut)  # a priori estimate
@@ -78,6 +81,7 @@ class Kalman:
         self.S.mu = dot(self.C, self.P.mu) + dot(self.D, ut)
         self.S.R = dot(dot(self.C, self.P.R), self.C.T) + self.R
 
+        # kalman gain
         K = dot(dot(self.P.R, self.C.T), inv(self.S.R))
 
         self.P.mu = self.P.mu + dot(K, (yt - self.S.mu))  # a posteriori estimate

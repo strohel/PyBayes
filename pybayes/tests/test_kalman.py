@@ -9,7 +9,7 @@ import os.path
 import time
 
 import numpy as np
-from scipy.io import loadmat
+from scipy.io import loadmat, savemat
 
 import pybayes as pb
 
@@ -20,23 +20,23 @@ class TestKalman(ut.TestCase):
 
     def test_bayes(self):
         file = os.path.join(os.path.dirname(__file__), "test_kalman_data.mat")
-        d = loadmat(file, struct_as_record=True, mat_dtype=True)
-        mu0 = np.reshape(d['mu0'], -1)  # otherwise we would get 2D array of shape (1xN)
+        file_res = os.path.join(os.path.dirname(__file__), "test_kalman_data_res.mat")
 
-        gauss = pb.pdfs.GaussPdf(mu0, d['P0'])
+        d = loadmat(file, struct_as_record=True, mat_dtype=True)
+        mu0 = np.reshape(d.pop('mu0'), (-1,))  # otherwise we would get 2D array of shape (1xN)
+        P0 = d.pop('P0')
+        y = d.pop('y')
+        u = d.pop('u')
+
+        gauss = pb.pdfs.GaussPdf(mu0, P0)
         kalman = pb.kalman.Kalman(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
 
-        y = np.squeeze(d['y'])  # to prevent 2D array (1xN)
-        u = np.squeeze(d['u'])  # ditto
-        N = y.shape[0]
+        N = y.shape[1]
         Mu_py = np.zeros((mu0.shape[0], N))
-
-        #print "y, u, N, mu0, Mu_py:", y, u, N, mu0, Mu_py
 
         start = np.array([time.time(), time.clock()])
         for t in xrange(1, N):  # the 1 start offset is intentional
-            temp = kalman.bayes(y[t], u[t])
-            Mu_py[:,t] = 0
+            Mu_py[:,t] = kalman.bayes(y[:,t], u[:,t])
         spent = np.array([time.time(), time.clock()]) - start
 
-        print "time spent [real, cpu]:", spent
+        savemat(file_res, {"Mu_py":Mu_py, "exec_time_pybayes":spent[0]}, oned_as='row')
