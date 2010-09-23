@@ -44,6 +44,7 @@ class Kalman:
             "Q":(self.n, self.n),
             "R":(self.j, self.j)
         }
+        # check input matrix sizes
         for name in matrices:
             matrix = matrices[name]
             if matrix.shape != shapes[name]:

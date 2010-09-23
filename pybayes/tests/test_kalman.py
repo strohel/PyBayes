@@ -20,7 +20,7 @@ class TestKalman(ut.TestCase):
 
     def test_bayes(self):
         file = os.path.join(os.path.dirname(__file__), "test_kalman_data.mat")
-        file_res = os.path.join(os.path.dirname(__file__), "test_kalman_data_res.mat")
+        file_res = os.path.join(os.path.dirname(__file__), "test_kalman_res.mat")
 
         d = loadmat(file, struct_as_record=True, mat_dtype=True)
         mu0 = np.reshape(d.pop('mu0'), (-1,))  # otherwise we would get 2D array of shape (1xN)
