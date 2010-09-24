@@ -9,6 +9,7 @@ from numpy.linalg import inv
 
 from pybayes.pdfs import GaussPdf
 
+
 class Kalman:
     """Kalman filter"""
 

@@ -8,7 +8,8 @@ from numpy import any, array, asarray, diag, dot
 from numpy.linalg import cholesky
 from numpy.random import normal
 
-class Pdf:
+
+class Pdf():
     """Base class for all (TODO: unconditional?) multivariate pdfs"""
 
     def shape(self):
@@ -30,6 +31,7 @@ class Pdf:
     def sample(self):
         """Return one random sample from this density"""
         raise NotImplementedError("Derived classes must implement this function")
+
 
 class GaussPdf(Pdf):
     """Unconditional Gaussian (normal)probability density function
@@ -72,5 +74,4 @@ class GaussPdf(Pdf):
     def sample(self):
         z = normal(size=self.mu.shape[0]);
         # NumPy's chol(R) is equivalent to Matlab's chol(R).transpose()
-        s = self.mu + dot(cholesky(self.R), z);
-        return s
+        return self.mu + dot(cholesky(self.R), z);
