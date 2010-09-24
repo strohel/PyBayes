@@ -12,29 +12,27 @@ cimport numpy as np  # any, array, asarray, diag, dot
 
 cdef class Pdf:
 
-    cpdef np.ndarray[dtype=np.float64_t, ndim=1] mean(self)
+    cpdef np.ndarray mean(self)
 
-    cpdef np.ndarray[dtype=np.float64_t, ndim=1] variance(self)
+    cpdef np.ndarray variance(self)
 
-    #cpdef eval_log(self, np.ndarray[dtype=np.float64, ndim=1] x)  # TODO: return type
+    #cpdef eval_log(self, np.ndarray x)  # TODO: return type
 
-    cpdef np.ndarray[dtype=np.float64_t, ndim=1] sample(self)
+    cpdef np.ndarray sample(self)
 
 
 cdef class GaussPdf(Pdf):
 
-    cdef readonly np.ndarray mu  # TODO: np.ndarray[dtype=np.float64, ndim=1] once permitted by cython
-    cdef readonly np.ndarray R  # TODO: np.ndarray[dtype=np.float64, ndim=2] once permitted by cython
+    cdef public np.ndarray mu  # TODO: readonly
+    cdef public np.ndarray R  # TODO: readonly
 
-    #def __init__(self, np.ndarray[dtype=np.float64, ndim=1] mean,  # init cannot be C-ed
-    #             np.ndarray[dtype=np.float64, ndim=2] covariance)
+    #def __init__(self, np.ndarray mean, np.ndarray covariance)  # init cannot be cpdef-ed
 
-    cpdef np.ndarray[dtype=np.float64_t, ndim=1] mean(self)
+    cpdef np.ndarray mean(self)
 
-    cpdef np.ndarray[dtype=np.float64_t, ndim=1] variance(self)
+    cpdef np.ndarray variance(self)
 
-    #cpdef eval_log(self, x):  # TODO!
+    #cpdef eval_log(self, x):  # TODO
 
-    #@cython.locals(z = np.ndarray[dtype=np.float64, ndim=1])  # TODO syntax?
     @cython.locals(z = np.ndarray)
-    cpdef np.ndarray[dtype=np.float64, ndim=1] sample(self)
+    cpdef np.ndarray sample(self)
