@@ -6,14 +6,25 @@
 
 import cython
 
-# TODO: cimport
+cimport numpy as np
+
+cimport pdfs
 
 
 cdef class Kalman:
 
-    cpdef np.ndarray A  # TODO: np.ndarray[dtype=np.float64, ndim=2] once permitted by cython
-    cpdef np.ndarray B  # ditto
-    cpdef np.ndarray C  # ditto
-    cpdef np.ndarray D  # ditto
-    cpdef np.ndarray Q  # ditto
-    cpdef np.ndarray R  # ditto
+    cdef public np.ndarray A, B, C, D, Q, R
+    cdef readonly int n, k, j
+    cdef readonly pdfs.GaussPdf P, S
+    cdef bint _bayes_type_check
+
+
+    #def __init__(self, A, B, C, D, Q, R, state_pdf)
+        #n, k, j
+        #self.P = state_pdf
+        #self.S = GaussPdf()  # observation probability density function
+        #self._bayes_type_check = True  # whether to check arguments in bayes() method
+
+    @cython.locals(K = np.ndarray)
+    cpdef np.ndarray bayes(self, np.ndarray yt, np.ndarray ut)
+        #K
