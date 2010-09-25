@@ -9,7 +9,7 @@ from numpy.linalg import cholesky
 from numpy.random import normal
 
 
-class Pdf:
+class Pdf(object):
     """Base class for all (TODO: unconditional?) multivariate pdfs"""
 
     def shape(self):

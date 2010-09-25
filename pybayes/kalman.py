@@ -10,7 +10,7 @@ from numpy.linalg import inv
 from pybayes.pdfs import GaussPdf
 
 
-class Kalman:
+class Kalman(object):
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
@@ -62,7 +62,7 @@ class Kalman:
 
 
     def bayes(self, yt, ut):
-        """Aproximate Bayes rule"""
+        """Approximate Bayes rule"""
         if self._bayes_type_check:
             if type(yt) != ndarray or type(ut) != ndarray:
                 raise TypeError("Both yt and ut must be numpy.ndarray. " +
@@ -73,7 +73,8 @@ class Kalman:
             if ut.shape != (self.k,):
                 raise ValueError("yt must have shape " + str((self.k,)) + ". " +
                                 str(ut.shape) + " given")
-        self._bayes_type_check = False  # for performance reasons check only first time
+        else:
+            self._bayes_type_check = False  # for performance reasons check only first time
 
         # predict
         self.P.mu = dot(self.A, self.P.mu) + dot(self.B, ut)  # a priori estimate
