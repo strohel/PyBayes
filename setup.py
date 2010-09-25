@@ -3,6 +3,8 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
+import os.path
+
 from distutils.core import setup
 
 try:
@@ -37,14 +39,24 @@ if cython:
         numpy_path = numpy.__path__
         del numpy
 
-    incl = [element + "/core/include" for element in numpy_path]
     params['cmdclass'] = {'build_ext': build_ext}
-    params['ext_package'] = 'pybayes'
-    params['ext_modules'] = [Extension('pdfs', ['pybayes/pdfs.py'], include_dirs=incl),
-                             Extension('kalman', ['pybayes/kalman.py'], include_dirs=incl),
-                             Extension('tests.test_pdfs', ['pybayes/tests/test_pdfs.py'], include_dirs=incl),
-                             Extension('tests.test_kalman', ['pybayes/tests/test_kalman.py'], include_dirs=incl),
-                            ]
+
+    extensions = ['pdfs.py', 'kalman.py', 'tests/test_pdfs.py',
+                  'tests/test_kalman.py', 'tests/stress_kalman.pyx'
+                 ]
+    # add numpy directory so that included .h files can be found
+    incl = [element + "/core/include" for element in numpy_path]
+    compile_args=["-O2"]
+    link_args=["-Wl,-O1"]
+    params['ext_modules'] = []
+    for extension in extensions:
+        module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
+        paths = ["pybayes/" + extension]
+        params['ext_modules'].append(
+            Extension(module, paths, include_dirs=incl, extra_compile_args=compile_args,
+                      extra_link_args=link_args)
+        )
+
 else:
     print("Warning: cython was not found on your system. Falling back to pure")
     print("         python mode which is significantly slower.")
