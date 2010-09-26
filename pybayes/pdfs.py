@@ -60,7 +60,7 @@ class GaussPdf(Pdf):
         self.R = covariance
 
     def shape(self):
-        return self.mu.shape
+        return (self.mu.shape[0],)  # this workarounds cython np.ndarray.shape problem
 
     def mean(self):
         return self.mu
