@@ -73,7 +73,7 @@ if use_cython is True:
                   'pdfs.py',
                   'utils.py',
 
-                  'tests/stress_kalman.pyx',
+                  'tests/stress_kalman.py',
                   'tests/test_kalman.py',
                   'tests/test_pdfs.py',
                  ]

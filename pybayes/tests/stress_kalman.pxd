@@ -12,9 +12,9 @@ cimport pybayes.utils as utils
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
-@cython.locals(y = "np.ndarray[utils.data_t, ndim=2]",
-               u = "np.ndarray[utils.data_t, ndim=2]",
-               Mu_py = "np.ndarray[utils.data_t, ndim=2]",
-               kalman = kf.Kalman,
+@cython.locals(kalman = kf.Kalman,
+               #y = np.ndarray[utils.data_t, ndim=2],
+               #u = np.ndarray[utils.data_t, ndim=2],
+               #Mu_py = np.ndarray[utils.data_t, ndim=2],
                t = int)
 cpdef run_kalman_on_mat_data(input_file, output_file)
