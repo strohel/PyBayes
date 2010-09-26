@@ -9,14 +9,20 @@ import pstats, cProfile
 
 import pybayes.tests.stress_kalman
 
+
+profile = False
+
 stresses = [pybayes.tests.stress_kalman]
 
 for stress in stresses:
     name = stress.__name__
-    filename = "profile_" + name + ".prof"
-
     print(name + ":")
-    cProfile.runctx(name + ".main()", globals(), locals(), filename)
+    if profile:
+        filename = "profile_" + name + ".prof"
 
-    s = pstats.Stats(filename)
-    s.sort_stats("cumulative").print_stats()
+        cProfile.runctx(name + ".main()", globals(), locals(), filename)
+
+        s = pstats.Stats(filename)
+        s.sort_stats("cumulative").print_stats()
+    else:
+        stress.main()

@@ -34,7 +34,7 @@ class Kalman(object):
         # remember vector shapes
         self.n = state_pdf.shape()[0]  # dimension of state vector
         self.k = B.shape[1]  # dimension of control vector
-        self.j = D.shape[0]  # dimension of observation vector
+        self.j = C.shape[0]  # dimension of observation vector
 
         # dict of required matrice shapes (sizes)
         shapes = {
@@ -49,7 +49,7 @@ class Kalman(object):
         for name in matrices:
             matrix = matrices[name]
             if matrix.shape != shapes[name]:
-                raise ValueError("Given shapes of state_pdf, B and D, matrix " + name +
+                raise ValueError("Given shapes of state_pdf, B and C, matrix " + name +
                                  " must have shape " + str(shapes[name]) + ", " +
                                  str(matrix.shape) + " given")
 

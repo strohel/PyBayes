@@ -16,6 +16,9 @@ class TestPdf(ut.TestCase):
     def setUp(self):
         self.pdf = pb.Pdf()
 
+    def test_init(self):
+        self.assertEqual(type(self.pdf), pb.Pdf)
+
     def test_abstract_methods(self):
         self.assertRaises(NotImplementedError, self.pdf.shape)
         self.assertRaises(NotImplementedError, self.pdf.mean)
@@ -38,7 +41,10 @@ class TestGaussPdf(ut.TestCase):
         self.shape = (3,)  # shape of random variable (and mean)
         self.gauss = pb.GaussPdf(self.mean, self.covariance)
 
-    def test_invalid_initialisation(self):
+    def test_init(self):
+        self.assertEqual(type(self.gauss), pb.GaussPdf)
+
+    def test_invalid_init(self):
         constructor = pb.GaussPdf
 
         # invalid mean and variance shape

@@ -12,10 +12,10 @@ import numpy as np
 cimport numpy as np
 from scipy.io import loadmat, savemat
 
-import pybayes.kalman as kf
 cimport pybayes.kalman as kf
-import pybayes.pdfs as pdfs
+import pybayes.kalman as kf
 cimport pybayes.pdfs as pdfs
+import pybayes.pdfs as pdfs
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -48,7 +48,7 @@ cdef run_kalman_on_mat_data(input_file, output_file):
     savemat(output_file, {"Mu_py":Mu_py, "exec_time_pybayes":spent[0]}, oned_as='row')
 
 cpdef main():
-    input_file = os.path.join(os.path.dirname(__file__), "stress_kalman_data.mat")
-    output_file = os.path.join(os.path.dirname(__file__), "stress_kalman_res.mat")
+    input_file = "stress_kalman_data.mat"
+    output_file = "stress_kalman_res.mat"
 
     run_kalman_on_mat_data(input_file, output_file)

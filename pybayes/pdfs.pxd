@@ -5,10 +5,12 @@
 """Cython augmentation file for pdfs.py"""
 
 import cython
-
 cimport numpy as np  # any, array, asarray, diag, dot
 #cimport numpy.linalg  # cholesky # numpy.linalg does not (yet) have pxd
 #cimport numpy.random  # normal # numpy.random does not (yet) have pxd
+
+from utils cimport data_t
+
 
 cdef class Pdf:
 
@@ -16,7 +18,7 @@ cdef class Pdf:
 
     cpdef np.ndarray variance(self)
 
-    #cpdef eval_log(self, np.ndarray x)  # TODO: return type
+    cpdef data_t eval_log(self, np.ndarray x) except *
 
     cpdef np.ndarray sample(self)
 
