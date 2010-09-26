@@ -7,23 +7,13 @@
 import os.path
 import time
 
-cimport cython
 import numpy as np
-cimport numpy as np
 from scipy.io import loadmat, savemat
 
-cimport pybayes.kalman as kf
 import pybayes.kalman as kf
-cimport pybayes.pdfs as pdfs
 import pybayes.pdfs as pdfs
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cdef run_kalman_on_mat_data(input_file, output_file):
-    cdef np.ndarray[np.float64_t, ndim=2] y, u, Mu_py
-    cdef kf.Kalman kalman
-    cdef int t
-
+def run_kalman_on_mat_data(input_file, output_file):
     d = loadmat(input_file, struct_as_record=True, mat_dtype=True)
 
     mu0 = np.reshape(d.pop('mu0'), (-1,))  # otherwise we would get 2D array of shape (1xN)
@@ -47,7 +37,7 @@ cdef run_kalman_on_mat_data(input_file, output_file):
     print("time spent: " + str(spent[0]) + "s real time; " + str(spent[1]) + "s CPU time")
     savemat(output_file, {"Mu_py":Mu_py, "exec_time_pybayes":spent[0]}, oned_as='row')
 
-cpdef main():
+def main():
     input_file = "stress_kalman_data.mat"
     output_file = "stress_kalman_res.mat"
 
