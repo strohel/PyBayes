@@ -1,1 +1,49 @@
-TODO: info, install, documentation about PyBayes
+PyBayes
+=======
+
+PyBayes is Python library in early stage of development. It's aim is to
+create universal framework for Bayesian filtering and decision-making in
+Python.
+
+Licensing
+---------
+
+PyBayes is currently distributed under GNU GPL v2+ license. The authors of
+PyBayes are however open to other licensing suggestions. (Do you want to use
+PyBayes in BSD-licenses project? Ask!)
+
+Obtaining PyBayes
+=================
+
+Development of PyBayes happens on http://github.com/strohel/PyBayes
+The most fresh development source is available from there.
+
+Installing PyBayes
+==================
+
+PyBayes uses standard Python distutils for building and installation. Follow
+these steps in order to install PyBayes:
+
+# download PyBayes, let's assume PyBayes-0.1.tar.gz filename
+
+# unpack it:
+tar -xvf PyBayes-0.1.tar.gz
+
+# change directory into PyBayes source
+cd Pybayes-1.0
+
+# build and install
+./setup.py install
+
+And you're done! Other installation and build options exist (TODO)
+
+Testing PyBayes
+===============
+
+Once PyBayes is installed, you may want to run it's tests in order to ensure
+proper functionality. The examples directory contains run_tests.py and
+run_stresses.py scripts that execute all PyBayes tests and stress tests
+respectively.
+
+Note: running tests from within source directory is discouraged and
+unsupported.
