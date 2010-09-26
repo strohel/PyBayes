@@ -23,7 +23,7 @@ for i in range(1, len(argv)):
         del sys.argv[i]  # do not confuse distutils parsing
 if use_cython not in (True, False, None):
     use_cython = None  # autodetect
-    print("Notice: Assuming --use-cython=auto. To override, pas --use-cython={yes,no,auto}.")
+    print("Notice: Assuming --use-cython=auto. To override, pass --use-cython={yes,no,auto}.")
 
 # configure build
 if use_cython is not False:
@@ -35,9 +35,10 @@ if use_cython is not False:
         if use_cython is True:
             print("Error: cython was not found and --use-cython=yes was passed.")
             print("       please install cython in order to build faster PyBayes.")
+            exit(1)
         else:  # use_cython is None (autodetect)
             print("Warning: cython was not found on your system. Falling back to pure")
-            print("         python mode which is significantly slower.")
+            print("         python mode which may be significantly slower.")
         use_cython = False
     else:
         use_cython = True
@@ -60,10 +61,9 @@ if use_cython is True:
         print("Error: Cannot import numpy. It is needed at build-time in order to determine")
         print("       include path for it. NumPy is needed runtime for every PyBayes build")
         print("       and buid-time for cython build.")
-        numpy_path = None
         exit()
     else:
-        numpy_path = numpy.__path__
+        incl = [numpy.get_include()]
         del numpy
 
     params['cmdclass'] = {'build_ext': build_ext}
@@ -78,7 +78,6 @@ if use_cython is True:
                   'tests/test_pdfs.py',
                  ]
     # add numpy directory so that included .h files can be found
-    incl = [element + "/core/include" for element in numpy_path]
     compile_args=["-O2"]
     link_args=["-Wl,-O1"]
     params['ext_modules'] = []
