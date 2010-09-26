@@ -5,19 +5,27 @@
 
 """Run PyBayes' stress-suite"""
 
-import pstats, cProfile
+import cProfile
+import pstats
+from optparse import OptionParser
 
 import pybayes.tests.stress_kalman
 
 
-profile = False
+# parse cmdline arguments
+parser = OptionParser()
+parser.add_option("-p", "--profile", action="store_true", dest="profile",
+                  help="run stresses under profiler (default: no)", default=False)
+(options, args) = parser.parse_args()
 
+# define stress tests
 stresses = [pybayes.tests.stress_kalman]
 
+# run stress tests
 for stress in stresses:
     name = stress.__name__
     print(name + ":")
-    if profile:
+    if options.profile:
         filename = "profile_" + name + ".prof"
 
         cProfile.runctx(name + ".main()", globals(), locals(), filename)
