@@ -37,8 +37,8 @@ def run_kalman_on_mat_data(input_file, output_file):
     print("time spent: " + str(spent[0]) + "s real time; " + str(spent[1]) + "s CPU time")
     savemat(output_file, {"Mu_py":Mu_py, "exec_time_pybayes":spent[0]}, oned_as='row')
 
-def main():
-    input_file = "stress_kalman_data.mat"
+def main(options):
+    input_file = options.datadir + "/stress_kalman_data.mat"
     output_file = "stress_kalman_res.mat"
 
     run_kalman_on_mat_data(input_file, output_file)
