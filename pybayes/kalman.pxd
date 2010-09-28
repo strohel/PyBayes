@@ -4,18 +4,17 @@
 
 """Cython augmentation file for kalman.py"""
 
-import cython
+cimport cython
+from numpy cimport ndarray
 
-cimport numpy as np
-
-cimport pdfs
+from pdfs cimport GaussPdf
 
 
 cdef class Kalman:
 
-    cdef public np.ndarray A, B, C, D, Q, R
+    cdef public ndarray A, B, C, D, Q, R
     cdef readonly int n, k, j
-    cdef readonly pdfs.GaussPdf P, S
+    cdef readonly GaussPdf P, S
     cdef bint _bayes_type_check
 
 
@@ -25,6 +24,5 @@ cdef class Kalman:
         #self.S = GaussPdf()  # observation probability density function
         #self._bayes_type_check = True  # whether to check arguments in bayes() method
 
-    @cython.locals(K = np.ndarray)
-    cpdef np.ndarray bayes(self, np.ndarray yt, np.ndarray ut)
-        #K
+    @cython.locals(K = ndarray)
+    cpdef ndarray bayes(self, ndarray yt, ndarray ut)
