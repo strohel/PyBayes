@@ -4,9 +4,7 @@
 
 """Probability density functions"""
 
-from numpy import any, array, asarray, diag, dot
-from numpy.linalg import cholesky
-from numpy.random import normal
+from numpywrap import any, array, asarray, cholesky, diag, dot, normal
 
 
 class Pdf(object):

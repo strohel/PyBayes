@@ -2,13 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""Various utility definitions and functions used throught PyBayes"""
+"""Wrapper around numpy - python version"""
 
-import numpy as np
+# just import and flatten numpy types and functions
 
-
-def dot(a, b):
-    if a is None:
-        raise TypeError("a must be numpy.ndarray")
-    if b is None:
-        raise TypeError("b must be numpy.ndarray")
+from numpy import any, array, asarray, diag, dot, ndarray
+from numpy.linalg import cholesky, inv
+from numpy.random import normal

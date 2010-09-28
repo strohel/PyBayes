@@ -4,8 +4,7 @@
 
 """Kalman filter"""
 
-from numpy import asarray, dot, ndarray
-from numpy.linalg import inv
+from numpywrap import asarray, dot, inv, ndarray
 
 from pybayes.pdfs import GaussPdf
 
