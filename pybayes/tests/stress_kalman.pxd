@@ -2,12 +2,11 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-import cython  # for decorators
+cimport cython
 cimport numpy as np
 
 cimport pybayes.kalman as kf
 cimport pybayes.pdfs as pdfs
-cimport pybayes.utils as utils
 
 
 #@cython.boundscheck(False)
