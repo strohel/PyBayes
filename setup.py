@@ -127,7 +127,7 @@ if options.use_cython is True:
 
     extensions = ['kalman.py',
                   'pdfs.py',
-                  'numpywrap.py',
+                  'numpywrap.pyx',
 
                   'tests/stress_kalman.py',
                   'tests/test_kalman.py',

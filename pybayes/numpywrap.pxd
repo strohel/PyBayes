@@ -5,3 +5,5 @@
 """Definitions for wrapper around numpy - cython version"""
 
 from numpy cimport ndarray
+
+cdef ndarray dot(ndarray a, ndarray b)
