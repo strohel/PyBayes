@@ -4,7 +4,7 @@
 
 """Probability density functions"""
 
-from numpywrap import any, array, asarray, cholesky, diag, dot, normal
+from numpywrap import *
 
 
 class Pdf(object):
@@ -51,7 +51,7 @@ class GaussPdf(Pdf):
         if covariance.shape != (n, n):
             raise ValueError("covariance must have shape (" + str(n) + ", " + str(n) + "), " +
                              str(covariance.shape) + " given")
-        if any(covariance != covariance.T):
+        if np_any(covariance != covariance.T):
             raise ValueError("covariance must be symmetric (complex covariance not supported)")
         # TODO: covariance must be positive definite
         self.mu = mean

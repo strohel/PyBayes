@@ -4,3 +4,4 @@
 
 """Definitions for wrapper around numpy - cython version"""
 
+from numpy cimport ndarray

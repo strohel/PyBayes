@@ -6,6 +6,6 @@
 
 # just import and flatten numpy types and functions
 
-from numpy import any, array, asarray, diag, dot, ndarray
+from numpy import any as np_any, array, asarray, diag, dot, ndarray
 from numpy.linalg import cholesky, inv
 from numpy.random import normal

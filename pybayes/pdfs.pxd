@@ -5,7 +5,7 @@
 """Cython augmentation file for pdfs.py"""
 
 cimport cython
-from numpy cimport ndarray
+from numpywrap cimport ndarray
 
 
 cdef class Pdf:
