@@ -5,7 +5,7 @@
 """Cython augmentation file for kalman.py"""
 
 cimport cython
-from numpywrap cimport ndarray
+from numpywrap cimport *
 
 from pdfs cimport GaussPdf
 
