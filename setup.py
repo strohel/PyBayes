@@ -49,7 +49,7 @@ def parse_cmdline_options():
                 exit(1)
             del sys.argv[i]
         else:
-            ++i
+            i += 1
 
     if options.use_cython not in (True, False, None):
         options.use_cython = None
@@ -132,17 +132,16 @@ if options.use_cython is True:
                   'tests/test_kalman.py',
                   'tests/test_pdfs.py',
                  ]
-    # add numpy directory so that included .h files can be found
-    incl = [options.numpy_include_dir]
-    compile_args=["-O2"]
-    link_args=["-Wl,-O1"]
+    ext_options = {}  # options common to all extensions
+    ext_options['include_dirs'] = [options.numpy_include_dir]
+    ext_options['extra_compile_args'] = ["-O2"]
+    ext_options['extra_link_args'] = ["-Wl,-O1"]
+    ext_options['pyrex_c_in_temp'] = True
+    ext_options['pyrex_directives'] = {'profile':options.profile}
     for extension in extensions:
         module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
         paths = ["pybayes/" + extension]
-        params['ext_modules'].append(
-            options.Extension(module, paths, include_dirs=incl, extra_compile_args=compile_args,
-                      extra_link_args=link_args)
-        )
+        params['ext_modules'].append(options.Extension(module, paths, **ext_options))
 
 else:  # use_cython is False
     params['packages'] = ['pybayes', 'pybayes.tests']

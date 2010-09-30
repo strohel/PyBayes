@@ -21,6 +21,8 @@ install_pybayes() {
 	fi
 
 	pushd "${PYBAYES_SRC_DIR}" >/dev/null
+	echo "Running \`./setup.py ${SETUP_ARGS} $@ clean\` in ${PYBAYES_SRC_DIR}"
+	./setup.py ${SETUP_ARGS} $@ clean
 	echo "Running \`./setup.py ${SETUP_ARGS} $@ install\` in ${PYBAYES_SRC_DIR}"
 	./setup.py ${SETUP_ARGS} $@ install
 	return=$?
