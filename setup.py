@@ -9,40 +9,107 @@ import sys
 from distutils.core import setup
 
 
-# naive option parsing (cannot conveniently use optparse or getopt)
-use_cython = "untouched"
-argv = sys.argv[:]  # make copy to be safe
-for i in range(1, len(argv)):
-    if argv[i].startswith("--use-cython="):
-        if argv[i][13:] == "yes": use_cython = True
-        elif argv[i][13:] == "no": use_cython = False
-        elif argv[i][13:] == "auto": use_cython = None  # autodetect
+class Options(object):
+    def __init__(self):
+        self.use_cython = None
+        self.profile = None
+        self.numpy_include_dir = None
+        self.build_ext = None
+        self.Extension = None
+
+def parse_cmdline_options():
+    """
+    Parse additional (extra) options passed to setup.py
+
+    Returns
+    -------
+    options : object with use_cython (tristate), profile (bool) attributes.
+              tristate options have values True, False and None which means
+              autodetect.
+    """
+    options = Options()
+    options.use_cython = "untouched"
+    options.profile = "untouched"
+
+    i = 1
+    while i < len(sys.argv):
+        if sys.argv[i].startswith("--use-cython="):
+            if sys.argv[i][13:] == "yes": options.use_cython = True
+            elif sys.argv[i][13:] == "no": options.use_cython = False
+            elif sys.argv[i][13:] == "auto": options.use_cython = None
+            else:
+                print("Error: Argument to --use-cython muse be one of yes, no or auto")
+                exit(1)
+            del sys.argv[i]  # do not confuse distutils parsing
+        elif sys.argv[i].startswith("--profile="):
+            if sys.argv[i][10:] == "yes": options.profile = True
+            elif sys.argv[i][10:] == "no": options.profile = False
+            else:
+                print("Error: Argument to --profile must be yes or no")
+                exit(1)
+            del sys.argv[i]
         else:
-            print("Error: Argument to --use-cython muse be one of yes, no or auto.")
-            exit(1)
-        del sys.argv[i]  # do not confuse distutils parsing
-if use_cython not in (True, False, None):
-    use_cython = None  # autodetect
-    print("Notice: Assuming --use-cython=auto. To override, pass --use-cython={yes,no,auto}.")
+            ++i
 
-# configure build
-if use_cython is not False:
-    # autodetect (or check for) cython
-    try:
-        from Cython.Distutils import build_ext
-        from Cython.Distutils.extension import Extension
-    except ImportError:
-        if use_cython is True:
-            print("Error: cython was not found and --use-cython=yes was passed.")
-            print("       please install cython in order to build faster PyBayes.")
-            exit(1)
-        else:  # use_cython is None (autodetect)
-            print("Warning: cython was not found on your system. Falling back to pure")
-            print("         python mode which may be significantly slower.")
-        use_cython = False
-    else:
-        use_cython = True
+    if options.use_cython not in (True, False, None):
+        options.use_cython = None
+        print("Notice: Assuming --use-cython=auto. To override, pass --use-cython={yes,no,auto}.")
+    if options.use_cython is False:
+        options.profile = False  # profiling has no sense in python build
+    if options.profile not in (True, False):
+        options.profile = False
+        print("Notice: embedding profiling information into cython-compiled code is disabled.")
+        print("        use --profile={yes,no} to enable/silence this notice.")
+    return options
 
+def configure_build(options):
+    """Configure build according to options previously returned by parse_cmdline_options()"""
+    if options.use_cython is not False:
+        # autodetect (or check for) cython
+        try:
+            from Cython.Distutils import build_ext
+            from Cython.Distutils.extension import Extension
+        except ImportError:
+            if use_cython is True:
+                print("Error: Cython was not found and --use-cython=yes was passed.")
+                print("       please install cython in order to build faster PyBayes.")
+                exit(1)
+            else:  # use_cython is None (autodetect)
+                print("Warning: Cython was not found on your system. Falling back to pure")
+                print("         python mode which may be significantly slower.")
+        else:
+            if options.use_cython is not True:
+                print("Notice: Cython found. Great!")
+            options.build_ext = build_ext
+            options.Extension = Extension
+
+    if options.use_cython is not False:
+        # determine path to NumPy C header files
+        try:
+            import numpy
+        except ImportError:
+            if use_cython is True:
+                print("Error: Cannot import NumPy. It is needed at build-time in order to determine")
+                print("       include path for it. NumPy is needed runtime for every PyBayes build")
+                print("       and buid-time for cython build.")
+                exit(1)
+            else:
+                print("Warning: Cython was found on your system, but NumPy was not. Numpy is needed")
+                print("         build-time for cython builds and runtime for all builds. Falling back")
+                print("         to pure python build.")
+        else:
+            if options.use_cython is not True:
+                print("Notice: NumPy found. Good!")
+            options.use_cython = True
+            options.numpy_include_dir = numpy.get_include()
+            del numpy
+
+
+# main code starts here
+options = parse_cmdline_options()
+configure_build(options)
+
+# generic options
 params = {'name':'PyBayes',
           'version':'0.1-pre',
           'description':'Library for convenient and fast Bayesian decision making',
@@ -53,21 +120,10 @@ params = {'name':'PyBayes',
           # breaks cython build, as params['packages'] is empty then
          }
 
-if use_cython is True:
-    # determine path to NumPy C header files
-    try:
-        import numpy
-    except ImportError:
-        print("Error: Cannot import numpy. It is needed at build-time in order to determine")
-        print("       include path for it. NumPy is needed runtime for every PyBayes build")
-        print("       and buid-time for cython build.")
-        exit()
-    else:
-        incl = [numpy.get_include()]
-        del numpy
-
-    params['cmdclass'] = {'build_ext': build_ext}
+if options.use_cython is True:
+    params['cmdclass'] = {'build_ext': options.build_ext}
     params['py_modules'] = ['pybayes.__init__', 'pybayes.tests.__init__']
+    params['ext_modules'] = []
 
     extensions = ['kalman.py',
                   'pdfs.py',
@@ -78,14 +134,14 @@ if use_cython is True:
                   'tests/test_pdfs.py',
                  ]
     # add numpy directory so that included .h files can be found
+    incl = [options.numpy_include_dir]
     compile_args=["-O2"]
     link_args=["-Wl,-O1"]
-    params['ext_modules'] = []
     for extension in extensions:
         module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
         paths = ["pybayes/" + extension]
         params['ext_modules'].append(
-            Extension(module, paths, include_dirs=incl, extra_compile_args=compile_args,
+            options.Extension(module, paths, include_dirs=incl, extra_compile_args=compile_args,
                       extra_link_args=link_args)
         )
 
