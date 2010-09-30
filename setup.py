@@ -127,7 +127,6 @@ if options.use_cython is True:
 
     extensions = ['kalman.py',
                   'pdfs.py',
-                  'utils.py',
 
                   'tests/stress_kalman.py',
                   'tests/test_kalman.py',
