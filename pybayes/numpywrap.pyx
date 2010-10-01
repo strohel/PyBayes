@@ -8,10 +8,36 @@
 # this file is special - it is used only in cython build, this can contain code
 # not callable from python etc.
 
-from numpy import any as np_any, array, asarray, diag, dot as dot_, ndarray
-from numpy.linalg import cholesky, inv
+from numpy cimport int
+from numpy import any as np_any, array, asarray, diag, ndarray, empty
+from numpy.linalg import cholesky
 from numpy.random import normal
 
+cimport tokyo as t
+
+
+# matrix * vector
+cdef inline ndarray dotmv(ndarray A, ndarray x):
+    return t.dgemv(A, x)
+
+# matrix * matrix
+cdef inline ndarray dotmm(ndarray A, ndarray B):
+    return t.dgemm(A, B)
+
 cdef ndarray dot(ndarray a, ndarray b):
-    print("special dot!")
-    return dot_(a, b)
+    if a.ndim == 2:
+        if b.ndim == 1:
+            return dotmv(a, b)
+        if b.ndim == 2:
+            return dotmm(a, b)
+    raise ValueError("I can only handle matrix*vector and matrix*matrix!")
+
+cdef ndarray inv(ndarray A):
+    p = empty((A.shape[0],), dtype=int)  # TODO: faster alt
+    R = A.copy()  # TODO: faster cython version
+
+    if t.dgetrf(R, p) != 0:
+        raise ValueError("A is singular or invalid argument passed (dgetrf)")
+    if t.dgetri(R, p) != 0:
+        raise ValueError("A is singular or invalid argument passed (dgetri)")
+    return R

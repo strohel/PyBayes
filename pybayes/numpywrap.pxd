@@ -6,4 +6,7 @@
 
 from numpy cimport ndarray
 
+
 cdef ndarray dot(ndarray a, ndarray b)
+
+cdef ndarray inv(ndarray A)
