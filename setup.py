@@ -125,6 +125,12 @@ if options.use_cython is True:
     params['py_modules'] = ['pybayes.__init__', 'pybayes.tests.__init__']
     params['ext_modules'] = []
 
+    pxd_deps = ['kalman.pxd',
+                'pdfs.pxd',
+                'numpywrap.pxd',
+                ]
+    deps = ["pybayes/" + pxd_file for pxd_file in pxd_deps]
+    # TODO: add cython's numpy.pxd as a dependency
     extensions = ['kalman.py',
                   'pdfs.py',
                   'numpywrap.pyx',
@@ -142,6 +148,7 @@ if options.use_cython is True:
     for extension in extensions:
         module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
         paths = ["pybayes/" + extension]
+        paths += deps  # simple "every module depends on all pxd files" logic
         params['ext_modules'].append(options.Extension(module, paths, **ext_options))
 
 else:  # use_cython is False
