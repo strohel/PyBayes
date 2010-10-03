@@ -70,7 +70,7 @@ def configure_build(options):
             from Cython.Distutils import build_ext
             from Cython.Distutils.extension import Extension
         except ImportError:
-            if use_cython is True:
+            if options.use_cython is True:
                 print("Error: Cython was not found and --use-cython=yes was passed.")
                 print("       please install cython in order to build faster PyBayes.")
                 exit(1)
@@ -88,7 +88,7 @@ def configure_build(options):
         try:
             import numpy
         except ImportError:
-            if use_cython is True:
+            if options.use_cython is True:
                 print("Error: Cannot import NumPy. It is needed at build-time in order to determine")
                 print("       include path for it. NumPy is needed runtime for every PyBayes build")
                 print("       and buid-time for cython build.")
