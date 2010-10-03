@@ -1,7 +1,11 @@
+=======
 PyBayes
 =======
 
-PyBayes is Python library in early stage of development. It's aim is to
+About
+=====
+
+PyBayes is a Python library in early stage of development. It's aim is to
 create universal framework for Bayesian filtering and decision-making in
 Python.
 
@@ -24,26 +28,79 @@ Installing PyBayes
 PyBayes uses standard Python distutils for building and installation. Follow
 these steps in order to install PyBayes:
 
-# download PyBayes, let's assume PyBayes-0.1.tar.gz filename
+* download PyBayes, let's assume PyBayes-0.1.tar.gz filename
+* unpack it:
 
-# unpack it:
-tar -xvf PyBayes-0.1.tar.gz
+  ``tar -xvf PyBayes-0.1.tar.gz``
+* change directory into PyBayes source:
 
-# change directory into PyBayes source
-cd Pybayes-1.0
+  ``cd Pybayes-0.1``
+* build and install (either run as root or install to a user-writeable
+  directory [#alternate_install]_):
 
-# build and install
-./setup.py install
+  ``./setup.py install``
 
-And you're done! Other installation and build options exist (TODO)
+.. [#alternate_install] http://docs.python.org/install/#alternate-installation
+
+**And you're done!** However, if you want PyBayes to be *orders-of-magnitude*
+faster, please read following section.
+
+Advanced installation options
+-----------------------------
+
+PyBayes can use Cython to build itself into binary Python
+module. Such binary modules are transparent to Python in a way that Python
+treats then as any other modules (you can ``import`` them as usual).
+Interpreter overhead is avoided and many other optimisation options arise this
+way.
+
+In order to build optimised PyBayes, you'll additionally need:
+
+* Cython_ Python to C compiler
+* working C compiler (GCC on Unix-like systems, MinGW or Microsoft Visual C on
+  Windows [#install_cython]_)
+* Tokyo_ cython wrapper for BLAS and LAPACK (TODO: bundled?)
+* NumPy_ numerical library for Python
+
+.. _Cython: http://www.cython.org
+.. [#install_cython] http://docs.cython.org/src/quickstart/install.html
+.. _Tokyo: http://www.vetta.org/2009/09/tokyo-a-cython-blas-wrapper-for-fast-matrix-math/
+.. _NumPy: http://numpy.scipy.org/
+
+Proceed with following steps:
+
+1. Install all required dependencies. They should be already available in your
+   package manager if you use a modern Linux Distribution.
+
+#. Unpack and install PyBayes as described above, you should see following
+   messages during build:
+
+      ``Notice: Cython found.``
+
+      ``Notice: NumPy found.``
+
+   * in order to be 100% sure that optimised build is used, you can add
+     ``--use=cython=yes`` option to the ``./setup.py`` call. You can force pure
+     Python mode even when Cython is installed, pass ``--use=cython=no``. By
+     default, PyBayes auto-detects Cython and NumPy presence on system.
+   * if you plan to profile code that uses optimised PyBayes, you may want to
+     embed profiling information into PyBayes. This can be accomplished by
+     passing ``--profile=yes`` to ``./setup.py``. The default is to omit
+     profiling information in order to avoid performance penalties.
+
 
 Testing PyBayes
 ===============
 
 Once PyBayes is installed, you may want to run it's tests in order to ensure
-proper functionality. The examples directory contains run_tests.py and
-run_stresses.py scripts that execute all PyBayes tests and stress tests
+proper functionality. The ``examples`` directory contains ``run_tests.py`` and
+``run_stresses.py`` scripts that execute all PyBayes tests and stress tests
 respectively.
 
-Note: running tests from within source directory is discouraged and
-unsupported.
+   *Note: running tests from within source directory is discouraged and
+   unsupported.*
+
+For even greater convenience, ``examples/test_pybayes_completely.sh`` shell
+script can clear, build, install, test, stress both python and cython build in
+one go. It is especially suitable for PyBayes hackers, but please *read it
+before executing* it, as it contains some potentially risky commands.
