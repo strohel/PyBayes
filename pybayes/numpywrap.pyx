@@ -16,20 +16,12 @@ from numpy.random import normal
 cimport tokyo as t
 
 
-# matrix * vector
-cdef inline ndarray dotmv(ndarray A, ndarray x):
-    return t.dgemv(A, x)
-
-# matrix * matrix
-cdef inline ndarray dotmm(ndarray A, ndarray B):
-    return t.dgemm(A, B)
-
 cdef ndarray dot(ndarray a, ndarray b):
     if a.ndim == 2:
         if b.ndim == 1:
-            return dotmv(a, b)
+            return t.dgemv(a, b)
         if b.ndim == 2:
-            return dotmm(a, b)
+            return t.dgemm(a, b)
     raise ValueError("I can only handle matrix*vector and matrix*matrix!")
 
 cdef ndarray inv(ndarray A):
