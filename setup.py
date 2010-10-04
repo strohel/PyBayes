@@ -138,6 +138,7 @@ if options.use_cython is True:
                   'tests/stress_kalman.py',
                   'tests/support.py',
                   'tests/test_kalman.py',
+                  'tests/test_numpywrap.py',
                   'tests/test_pdfs.py',
                  ]
     ext_options = {}  # options common to all extensions

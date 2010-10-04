@@ -74,5 +74,5 @@ class TestKalman(ut.TestCase):
         ])
         for i in xrange(4):
             x = k.bayes(y[i], u[i])
-            self.assertTrue(approx_eq(x, exp_x[i]), "Arrays {0} and {1} are not fuzzy equal."
+            self.assertTrue(approx_eq(x, exp_x[i]), "Arrays {0} and {1} are not fuzzy equal"
                 .format(x, exp_x[i]))
