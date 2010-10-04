@@ -86,7 +86,7 @@ class Kalman(object):
         # kalman gain
         K = dot(dot(self.P.R, self.C.T), inv(self.S.R))
 
-        self.P.mu = self.P.mu + dot(K, (yt - self.S.mu))  # a posteriori estimate
-        self.P.R = self.P.R - dot(dot(K, self.C), self.P.R)  # a posteriori variance
+        self.P.mu += dot(K, (yt - self.S.mu))  # a posteriori estimate
+        self.P.R -= dot(dot(K, self.C), self.P.R)  # a posteriori variance
 
         return self.P.mu
