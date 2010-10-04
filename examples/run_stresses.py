@@ -39,6 +39,6 @@ for stress in stresses:
         cProfile.runctx(name + ".main(options)", globals(), locals(), filename)
 
         s = pstats.Stats(filename)
-        s.sort_stats("cumulative").print_stats()
+        s.sort_stats("time").print_stats()
     else:
         stress.main(options)
