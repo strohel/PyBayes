@@ -10,6 +10,7 @@ import numpy as np
 
 import pybayes as pb
 
+
 class TestPdf(ut.TestCase):
     """Test abstract class Pdf"""
 
