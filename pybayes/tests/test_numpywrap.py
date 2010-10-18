@@ -47,7 +47,9 @@ class TestNumpywrap(ut.TestCase):
         # source data
         A = array([[1., -2.], [3., 4.]])
         B = array([[0.5, 1.], [-1., 2.]])
+        C = array([[-2.]])
         x = array([-7., -6.])
+        y = array([-.5])
 
         # precomputed results
         Atx = array([-25., -10.])
@@ -55,10 +57,11 @@ class TestNumpywrap(ut.TestCase):
         AtB = array([[-2.5, 7.], [-5., 6.]])
         ABt = array([[-1.5, -5.], [5.5, 5.]])
         AtBt = array([[3.5, 5.], [3., 10.]])
+        Cty = array([1.])
 
         # do the test!
         for (left, right, exp) in [(A.T, x, Atx), (A.T, x.T, Atxt), (A.T, B, AtB),
-                                   (A, B.T, ABt), (A.T, B.T, AtBt)]:
+                                   (A, B.T, ABt), (A.T, B.T, AtBt), (C.T, y, Cty)]:
             res = nw.dot(left, right)
             self.assertTrue(approx_eq(res, exp), "Arrays {0} and {1} are not fuzzy equal"
                 .format(res, exp))
