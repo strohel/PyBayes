@@ -59,12 +59,10 @@ In order to build optimised PyBayes, you'll additionally need:
 * Cython_ Python to C compiler
 * working C compiler (GCC on Unix-like systems, MinGW or Microsoft Visual C on
   Windows [#install_cython]_)
-* Tokyo_ cython wrapper for BLAS and LAPACK (TODO: bundled?)
 * NumPy_ numerical library for Python
 
 .. _Cython: http://www.cython.org
 .. [#install_cython] http://docs.cython.org/src/quickstart/install.html
-.. _Tokyo: http://www.vetta.org/2009/09/tokyo-a-cython-blas-wrapper-for-fast-matrix-math/
 .. _NumPy: http://numpy.scipy.org/
 
 Proceed with following steps:

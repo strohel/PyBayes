@@ -53,13 +53,10 @@ def parse_cmdline_options():
 
     if options.use_cython not in (True, False, None):
         options.use_cython = None
-        print("Notice: Assuming --use-cython=auto. To override, pass --use-cython={yes,no,auto}.")
     if options.use_cython is False:
         options.profile = False  # profiling has no sense in python build
     if options.profile not in (True, False):
         options.profile = False
-        print("Notice: embedding profiling information into cython-compiled code is disabled.")
-        print("        use --profile={yes,no} to enable/silence this notice.")
     return options
 
 def configure_build(options):
@@ -109,7 +106,7 @@ def configure_build(options):
 options = parse_cmdline_options()
 configure_build(options)
 
-# generic options
+# generic distutils parameters
 params = {'name':'PyBayes',
           'version':'0.1-pre',
           'description':'Library for convenient and fast Bayesian decision making',
@@ -129,7 +126,8 @@ if options.use_cython is True:
                 'pdfs.pxd',
                 'numpywrap.pxd',
                 ]
-    deps = ["pybayes/" + pxd_file for pxd_file in pxd_deps]
+    deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
+    deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
     # TODO: add cython's numpy.pxd as a dependency
     extensions = ['kalman.py',
                   'pdfs.py',
@@ -145,15 +143,24 @@ if options.use_cython is True:
     ext_options['include_dirs'] = [options.numpy_include_dir]
     ext_options['extra_compile_args'] = ["-O2"]
     ext_options['extra_link_args'] = ["-Wl,-O1"]
-    ext_options['pyrex_c_in_temp'] = True
+    ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
     ext_options['pyrex_directives'] = {'profile':options.profile}
+    ext_options['pyrex_include_dirs'] = ["tokyo"]  # find tokyo.pxd from bundled tokyo
     for extension in extensions:
         module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
         paths = ["pybayes/" + extension]
         paths += deps  # simple "every module depends on all pxd files" logic
         params['ext_modules'].append(options.Extension(module, paths, **ext_options))
 
-else:  # use_cython is False
+    # build and install bundled tokyo
+    params['ext_modules'].append(options.Extension(
+        'tokyo',  # module name
+        ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
+        libraries=['cblas', 'lapack'],
+        **ext_options
+    ))
+
+else:  # options.use_cython is False
     params['packages'] = ['pybayes', 'pybayes.tests']
 
 setup(**params)
