@@ -42,8 +42,8 @@ these steps in order to install PyBayes:
 
 .. [#alternate_install] http://docs.python.org/install/#alternate-installation
 
-**And you're done!** However, if you want PyBayes to be *orders-of-magnitude*
-faster, please read following section.
+**And you're done!** However, if you want PyBayes to be *considerably
+faster*, please read following section.
 
 Advanced installation options
 -----------------------------
@@ -90,15 +90,15 @@ Proceed with following steps:
 Testing PyBayes
 ===============
 
-Once PyBayes is installed, you may want to run it's tests in order to ensure
+Once PyBayes is installed, you may want to run its tests in order to ensure
 proper functionality. The ``examples`` directory contains ``run_tests.py`` and
 ``run_stresses.py`` scripts that execute all PyBayes tests and stress tests
-respectively.
+respectively. Run these scripts with ``-h`` option to see usage.
 
    *Note: running tests from within source directory is discouraged and
    unsupported.*
 
-For even greater convenience, ``examples/test_pybayes_completely.sh`` shell
+For even greater convenience, ``examples/install_test_stress.py`` python
 script can clear, build, install, test, stress both python and cython build in
-one go. It is especially suitable for PyBayes hackers, but please *read it
-before executing* it, as it contains some potentially risky commands.
+one go. It is especially suitable for PyBayes hackers. Run
+``install_test_stress.py -h`` to get usage information.
