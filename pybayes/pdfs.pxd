@@ -16,15 +16,15 @@ cdef class Pdf:
 
     cpdef ndarray variance(self)
 
-    cpdef object eval_log(self, ndarray x)  # TODO: dtype of all arrays
+    cpdef double eval_log(self, ndarray x) except? 0
 
     cpdef ndarray sample(self)
 
 
 cdef class GaussPdf(Pdf):
 
-    cdef public ndarray mu  # TODO: readonly
-    cdef public ndarray R  # TODO: readonly
+    cdef public ndarray mu
+    cdef public ndarray R
 
     cpdef tuple shape(self)
 

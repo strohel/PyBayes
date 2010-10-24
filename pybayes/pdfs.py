@@ -8,7 +8,7 @@ from numpywrap import *
 
 
 class Pdf(object):
-    """Base class for all (TODO: unconditional?) multivariate pdfs"""
+    """Base class for all unconditional (static) multivariate Probability Density Functions"""
 
     def shape(self):
         """Return shape (in numpy's sense) of the random variable (and mean) as a tuple of ints"""
@@ -27,21 +27,26 @@ class Pdf(object):
         raise NotImplementedError("Derived classes must implement this function")
 
     def sample(self):
-        """Return one random sample from this density"""
+        """Return one random sample. Density of samples should adhere to this density"""
         raise NotImplementedError("Derived classes must implement this function")
 
 
 class GaussPdf(Pdf):
-    """Unconditional Gaussian (normal)probability density function
+    """Unconditional Gaussian (normal) probability density function
 
     .. math: f(x|\mu,b) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
     """
 
-    def __init__(self, mean=array([1]), covariance=array([[1]])):
-        """Initialise Gaussian pdf with mean value mu and variance R
+    def __init__(self, mean=array([0]), covariance=array([[1]])):
+        """Initialise Gaussian pdf with mean value mean and covariance matrix covariance
 
-        mu % mean values
-        R  % variance
+        mean should be 1D array and covariance must be a matrix (2D array). To make
+        1D GaussPdf, pass [[number]] as covariance.
+
+        mean is stored in mu attribute
+        covariance is stored in R attribute
+        you can modify object parameters only if you are absolutely sure that you
+        pass correct values, because parameters are only checked once in constructor
         """
         mean = asarray(mean)
         covariance = asarray(covariance)
@@ -71,5 +76,5 @@ class GaussPdf(Pdf):
 
     def sample(self):
         z = normal(size=self.mu.shape[0]);
-        # NumPy's chol(R) is equivalent to Matlab's chol(R).transpose()
+        # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
         return self.mu + dot(cholesky(self.R), z);
