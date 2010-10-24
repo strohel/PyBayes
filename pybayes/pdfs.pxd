@@ -32,7 +32,8 @@ cdef class GaussPdf(Pdf):
 
     cpdef ndarray variance(self)
 
-    #cpdef eval_log(self, x):  # TODO
+    @cython.locals(log_norm = double, log_val = double)
+    cpdef double eval_log(self, ndarray x) except? 0
 
     @cython.locals(z = ndarray)
     cpdef ndarray sample(self)

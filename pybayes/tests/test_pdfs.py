@@ -4,11 +4,13 @@
 
 """Tests for pdfs"""
 
+from math import exp
 import unittest as ut
 
 import numpy as np
 
 import pybayes as pb
+from support import approx_eq
 
 
 class TestPdf(ut.TestCase):
@@ -80,17 +82,27 @@ class TestGaussPdf(ut.TestCase):
     def test_variance(self):
         self.assertTrue(np.all(self.gauss.variance() == self.variance))
 
-    #def test_eval_log(self):  # TODO
-        #x = [
-            #self.mean,
-            #np.array([0., 0., 0.])
-        #]
-        #exp = [
-            #np.array([1, 2, 3]),  # TODO
-            #np.array([1, 2, 3])  # TODO
-        #]
-        #for i in xrange(len(x)):
-            #print "GaussPdf.eval_log(" + str(x[i]) + ") =", self.gauss.eval_log(x[i]), "(expected", str(exp[i]) + ")"
+    def test_eval_log(self):
+        x = np.array([0.])
+        norm = pb.GaussPdf(np.array([0.]), np.array([[1.]]))
+        expected = np.array([
+            1.48671951473e-06,
+            0.000133830225765,
+            0.00443184841194,
+            0.0539909665132,
+            0.241970724519,
+            0.398942280401,
+            0.241970724519,
+            0.0539909665132,
+            0.00443184841194,
+            0.000133830225765,
+            1.48671951473e-06,
+        ])
+        for i in xrange(0, 11):
+            x[0] = i - 5
+            res = exp(norm.eval_log(x))
+            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
+                .format(res, expected[i]))
 
     def test_sample(self):
         # we cannost test values, just test right dimension and shape
@@ -98,9 +110,7 @@ class TestGaussPdf(ut.TestCase):
         self.assertEqual(x.ndim, 1)
         self.assertEqual(x.shape[0], self.mean.shape[0])
 
-        # single dimension
-        #normal = pb.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
-        #values = []
-        #for i in xrange(0, 100):
-            #values.extend(normal.sample())
-        #print values
+        # following test is interactive. Tester must create and check histogram:
+        #norm = pb.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
+        #for i in xrange(0, 1000):
+        #    print norm.sample()[0]

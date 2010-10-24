@@ -10,7 +10,7 @@
 
 from numpy cimport import_array, int, npy_intp, NPY_DOUBLE, PyArray_EMPTY, PyArray_ISCARRAY_RO, PyArray_ISFARRAY_RO
 from numpy import any as np_any, array, asarray, diag, empty
-from numpy.linalg import cholesky
+from numpy.linalg import cholesky, slogdet
 from numpy.random import normal
 
 cimport tokyo as t

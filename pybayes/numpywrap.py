@@ -7,5 +7,5 @@
 # just import and flatten numpy types and functions
 
 from numpy import any as np_any, array, asarray, diag, dot, dot as dotvv, ndarray
-from numpy.linalg import cholesky, inv
+from numpy.linalg import cholesky, inv, slogdet
 from numpy.random import normal

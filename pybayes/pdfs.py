@@ -71,8 +71,18 @@ class GaussPdf(Pdf):
     def variance(self):
         return diag(self.R)
 
-#    def eval_log(self, x):  # TODO!
-#        return -log(2*self.b)-abs(x-self.mu)/self.b
+    def eval_log(self, x):
+        if x is None:  # cython-specific, but wont hurt in python
+            raise ValueError("x must be numpy.ndarray")
+
+        # compute logarithm of normalization constant (can be cached in future)
+        # log(2*Pi) = 1.83787706640935
+        # we ignore sign (first part of slogdet return value) as it must be positive
+        log_norm = -1/2. * (self.mu.shape[0]*1.83787706640935 + slogdet(self.R)[1])
+
+        # part that actually depends on x
+        log_val = -1/2. * dotvv(x, dot(inv(self.R), x))
+        return log_norm + log_val  # = log(norm*val)
 
     def sample(self):
         z = normal(size=self.mu.shape[0]);
