@@ -6,13 +6,14 @@
 """Install PyBayes and run tests and stresses"""
 
 from optparse import OptionParser
-from os.path import abspath, dirname, exists, join
+from os import chdir, getcwd
+from os.path import abspath, dirname, exists, join, realpath
 from string import join as str_join
 from subprocess import call, check_call
 
 
 def parse_options():
-    def_pybayes_dir = abspath(dirname(dirname(__file__)))
+    def_pybayes_dir = abspath(dirname(dirname(realpath(__file__))))
     def_data_dir = join(def_pybayes_dir, 'examples', 'stress_data')
 
     parser = OptionParser(description='Install, test and stress possible multiple ' +
@@ -37,7 +38,7 @@ def parse_options():
                       default=def_data_dir, help='directory constaining data for stresses; current: %default')
     (options, args) = parser.parse_args()
     if not options.modes:
-        options.modes = ['auto']
+        options.modes = ['p', 'a']  # test python & cython, but do not fail when cython is unavailable
     if args:
         print "Error: unparsed arguments left on command line"
         parser.print_help()
@@ -52,11 +53,10 @@ def install(mode, options):
                 False:['--profile=no'],
                 None:[]}
 
-    setup_py = join(options.pybayes_dir, 'setup.py')
-    if not exists(setup_py):
+    if not exists(options.pybayes_dir):
         raise RuntimeError('{0} does not exist!'.format(setup_py))
 
-    args = [setup_py]
+    args = ['./setup.py']
     args.extend(modes[mode])
     args.extend(profiles[options.profile])
 
@@ -65,11 +65,14 @@ def install(mode, options):
         commands.append('clean')
     commands.append('install')
 
+    orig_dir = getcwd()
+    chdir(options.pybayes_dir)
     for command in commands:
         cmdargs = args[:]
         cmdargs.append(command)
         print(str_join(cmdargs, ' '))
         check_call(cmdargs)
+    chdir(orig_dir)
 
 def run_tests(options):
     run_tests = join(options.pybayes_dir, 'examples', 'run_tests.py')
