@@ -28,9 +28,10 @@ cdef ndarray dot(ndarray a, ndarray b):
         raise TypeError("a must be numpy.ndarray")
     if b is None:
         raise TypeError("b must be numpy.ndarray")
-    if a.shape[1] != b.shape[0]: raise ValueError("a columns != b rows")
-    if a.descr.type_num != NPY_DOUBLE: raise ValueError("a is not of type double")
-    if b.descr.type_num != NPY_DOUBLE: raise ValueError("b is not of type double")
+    if a.descr.type_num != NPY_DOUBLE:
+        raise ValueError("a is not of type double")
+    if b.descr.type_num != NPY_DOUBLE:
+        raise ValueError("b is not of type double")
 
     if PyArray_ISCARRAY_RO(a):
         order_a = t.CblasRowMajor
@@ -42,6 +43,8 @@ cdef ndarray dot(ndarray a, ndarray b):
         raise ValueError("a must be C contiguos or F contiguos (ro)")
 
     if a.ndim == 2:
+        if a.shape[1] != b.shape[0]:
+            raise ValueError("a columns != b rows")
         if b.ndim == 1:  # matrix * vector
             if not PyArray_ISCARRAY_RO(b):
                 raise ValueError("b must be C Contiguos (ro) array")
@@ -70,6 +73,29 @@ cdef ndarray dot(ndarray a, ndarray b):
                      0.0, <double*> ret.data, ret.shape[1])
             return ret
     raise ValueError("I can only handle matrix*vector and matrix*matrix!")
+
+# this is defined separately because of different return type
+cdef double dotvv(ndarray a, ndarray b) except? 0:
+    if a is None:
+        raise TypeError("a must be numpy.ndarray")
+    if b is None:
+        raise TypeError("b must be numpy.ndarray")
+    if a.descr.type_num != NPY_DOUBLE:
+        raise ValueError("a is not of type double")
+    if b.descr.type_num != NPY_DOUBLE:
+        raise ValueError("b is not of type double")
+    if a.ndim != 1:
+        raise ValueError("a is not a vector")
+    if b.ndim != 1:
+        raise ValueError("b is not a vector")
+    if a.shape[0] != b.shape[0]:
+        raise ValueError("a columns != b columns")
+    if not PyArray_ISCARRAY_RO(a):
+        raise ValueError("a is not C contiguos (ro)")
+    if not PyArray_ISCARRAY_RO(b):
+        raise ValueError("b is not C contiguos (ro)")
+
+    return t.ddot_(a.shape[0], <double*> a.data, 1, <double*> b.data, 1)
 
 cdef ndarray inv(ndarray A):
     p = empty((A.shape[0],), dtype=int)

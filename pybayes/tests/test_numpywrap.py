@@ -66,6 +66,23 @@ class TestNumpywrap(ut.TestCase):
             self.assertTrue(approx_eq(res, exp), "Arrays {0} and {1} are not fuzzy equal"
                 .format(res, exp))
 
+    def test_dotvv(self):
+        # source data
+        a1 = array([-2.])
+        b1 = array([0.5])
+        a2 = array([2., 3.])
+        b2 = array([-1., 5.])
+
+        # precomputed results
+        a1b1 = -1.
+        a2b2 = 13.
+
+        # the test
+        for (left, right, exp) in [(a1, b1, a1b1), (a2, b2, a2b2)]:
+            res = nw.dotvv(left, right)
+            self.assertTrue(approx_eq(res, exp), "Arrays {0} and {1} are not fuzzy equal"
+                .format(res, exp))
+
     def test_inv(self):
         # source data
         arrays = [
