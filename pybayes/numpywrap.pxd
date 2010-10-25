@@ -9,6 +9,6 @@ from numpy cimport ndarray
 
 cdef ndarray dot(ndarray a, ndarray b)
 
-cdef double dotvv(ndarray a, ndarray b) except? 0
+cdef double dotvv(ndarray a, ndarray b) except? -1
 
 cdef ndarray inv(ndarray A)

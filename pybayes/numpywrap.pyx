@@ -75,7 +75,7 @@ cdef ndarray dot(ndarray a, ndarray b):
     raise ValueError("I can only handle matrix*vector and matrix*matrix!")
 
 # this is defined separately because of different return type
-cdef double dotvv(ndarray a, ndarray b) except? 0:
+cdef double dotvv(ndarray a, ndarray b) except? -1:
     if a is None:
         raise TypeError("a must be numpy.ndarray")
     if b is None:
