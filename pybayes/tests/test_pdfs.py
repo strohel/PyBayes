@@ -4,7 +4,7 @@
 
 """Tests for pdfs"""
 
-from math import exp
+from math import exp, log
 import unittest as ut
 
 import numpy as np
@@ -30,6 +30,36 @@ class TestPdf(ut.TestCase):
         self.assertRaises(NotImplementedError, self.pdf.variance)
         self.assertRaises(NotImplementedError, self.pdf.eval_log, 0.)
         self.assertRaises(NotImplementedError, self.pdf.sample)
+
+
+class TestUniPdf(ut.TestCase):
+    """Test uniform pdf"""
+
+    def setUp(self):
+        self.uni = pb.UniPdf(-10., 20.)
+
+    def test_init(self):
+        self.assertEqual(type(self.uni), pb.UniPdf)
+
+    def test_invalid_init(self):
+        self.assertRaises(ValueError, pb.UniPdf, 1.0, 0.5)
+
+    def test_shape(self):
+        self.assertEqual(self.uni.shape(), (1,))
+
+    def test_mean(self):
+        self.assertTrue(np.all(self.uni.mean() == np.array([5.])))
+
+    def test_variance(self):
+        self.assertTrue(np.all(self.uni.variance() == np.array(75.)))
+
+    def test_eval_log(self):
+        self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
+        self.assertEqual(self.uni.eval_log(np.array([12.547])), log(1./30.))
+        self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
+
+    def test_sample(self):
+        pass
 
 
 class TestGaussPdf(ut.TestCase):

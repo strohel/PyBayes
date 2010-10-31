@@ -4,6 +4,8 @@
 
 """Probability density functions"""
 
+from math import log
+
 from numpywrap import *
 
 
@@ -31,10 +33,47 @@ class Pdf(object):
         raise NotImplementedError("Derived classes must implement this function")
 
 
+class UniPdf(Pdf):
+    """Simple uniform single-dimensional probability density function
+
+    .. math: f(x|a, b) = \THETA {x-a} \THETA {b-x} {1} \over {b-a}  TODO
+    """
+
+    def __init__(self, a, b):
+        """Initialise uniform distribution with left point a and right point b
+
+        a must be greater that b
+        """
+        if b <= a:
+            raise ValueError("b must be grater than a")
+        self.a = float(a)
+        self.b = float(b)
+
+    def shape(self):
+        return (1,)
+
+    def mean(self):
+        return array([(self.a+self.b)/2.])
+
+    def variance(self):
+        return array([((self.b-self.a)**2)/12.])
+
+    def eval_log(self, x):
+        if x is None:  # cython-specific, but wont hurt in python
+            raise ValueError("x must be numpy.ndarray")
+        x0 = x[0]
+        if x0 <= self.a or x0 >= self.b:
+            return float('-inf')
+        return -log(self.b-self.a)
+
+    def sample(self):
+        return uniform(self.a, self.b, self.shape())
+
+
 class GaussPdf(Pdf):
     """Unconditional Gaussian (normal) probability density function
 
-    .. math: f(x|\mu,b) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
+    .. math: f(x|\mu, R) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
     """
 
     def __init__(self, mean=array([0]), covariance=array([[1]])):

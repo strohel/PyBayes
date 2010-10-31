@@ -4,5 +4,5 @@
 
 """TODO: documentation"""
 
-from pdfs import Pdf, GaussPdf
+from pdfs import Pdf, UniPdf, GaussPdf
 from kalman import Kalman

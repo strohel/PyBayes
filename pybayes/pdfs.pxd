@@ -21,6 +21,11 @@ cdef class Pdf:
     cpdef ndarray sample(self)
 
 
+cdef class UniPdf(Pdf):
+
+    cdef public double a, b
+
+
 cdef class GaussPdf(Pdf):
 
     cdef public ndarray mu
