@@ -31,6 +31,8 @@ class TestPdf(ut.TestCase):
         self.assertRaises(NotImplementedError, self.pdf.eval_log, np.array([0.]))
         self.assertRaises(NotImplementedError, self.pdf.sample)
 
+    def test_cond_shape(self):
+        self.assertEqual(self.pdf.cond_shape(), 0)
 
 class TestUniPdf(ut.TestCase):
     """Test uniform pdf"""
@@ -45,7 +47,7 @@ class TestUniPdf(ut.TestCase):
         self.assertRaises(ValueError, pb.UniPdf, 1.0, 0.5)
 
     def test_shape(self):
-        self.assertEqual(self.uni.shape(), (1,))
+        self.assertEqual(self.uni.shape(), 1)
 
     def test_mean(self):
         self.assertTrue(np.all(self.uni.mean() == np.array([5.])))
@@ -73,7 +75,7 @@ class TestGaussPdf(ut.TestCase):
             [0., 0., 3.]
         ])
         self.variance = np.array([1., 2., 3.])  # diagonal elements of covariance
-        self.shape = (3,)  # shape of random variable (and mean)
+        self.shape = 3  # shape of random variable (and mean)
         self.gauss = pb.GaussPdf(self.mean, self.covariance)
 
     def test_init(self):

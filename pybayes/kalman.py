@@ -31,7 +31,7 @@ class Kalman(object):
                                  str(matrix.ndim) + " given")
 
         # remember vector shapes
-        self.n = state_pdf.shape()[0]  # dimension of state vector
+        self.n = state_pdf.shape()  # dimension of state vector
         self.k = B.shape[1]  # dimension of control vector
         self.j = C.shape[0]  # dimension of observation vector
 

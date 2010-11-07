@@ -13,8 +13,12 @@ class Pdf(object):
     """Base class for all unconditional (static) multivariate Probability Density Functions"""
 
     def shape(self):
-        """Return shape (in numpy's sense) of the random variable (and mean) as a tuple of ints"""
+        """Return shape of the random variable (and mean) as int"""
         raise NotImplementedError("Derived classes must implement this function")
+
+    def cond_shape(self):
+        """Return shape of the condition, which is zero for unconditional Pdfs"""
+        return 0
 
     def mean(self):
         """Return mean value (a vector) of the pdf"""
@@ -25,7 +29,7 @@ class Pdf(object):
         raise NotImplementedError("Derived classes must implement this function")
 
     def eval_log(self, x):
-        """Returning logarithm of likelihood function in point x"""
+        """Return logarithm of likelihood function in point x"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def sample(self):
@@ -50,7 +54,7 @@ class UniPdf(Pdf):
         self.b = float(b)
 
     def shape(self):
-        return (1,)
+        return 1
 
     def mean(self):
         return array([(self.a+self.b)/2.])
@@ -102,7 +106,7 @@ class GaussPdf(Pdf):
         self.R = covariance
 
     def shape(self):
-        return (self.mu.shape[0],)  # this workarounds cython np.ndarray.shape problem
+        return self.mu.shape[0]
 
     def mean(self):
         return self.mu

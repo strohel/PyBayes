@@ -10,26 +10,21 @@ from numpywrap cimport *
 
 cdef class Pdf:
 
-    cpdef tuple shape(self)
 
+    cpdef int shape(self) except -1
+    cpdef int cond_shape(self) except -1
     cpdef ndarray mean(self)
-
     cpdef ndarray variance(self)
-
     cpdef double eval_log(self, ndarray x) except? -1
-
     cpdef ndarray sample(self)
 
 
 cdef class UniPdf(Pdf):
-
     cdef public double a, b
 
 
 cdef class GaussPdf(Pdf):
-
-    cdef public ndarray mu
-    cdef public ndarray R
+    cdef public ndarray mu, R
 
     @cython.locals(log_norm = double, log_val = double)
     cpdef double eval_log(self, ndarray x) except? -1
