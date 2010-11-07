@@ -13,8 +13,28 @@ import pybayes as pb
 from support import approx_eq
 
 
+class TestCpdf(ut.TestCase):
+    """Test abstract class CPdf"""
+
+    def setUp(self):
+        self.cpdf = pb.CPdf()
+
+    def test_init(self):
+        self.assertEqual(type(self.cpdf), pb.CPdf)
+
+    def test_abstract_methods(self):
+        # this test may fail due to bug in cython [1]
+        # [1] http://trac.cython.org/cython_trac/ticket/583
+        self.assertRaises(NotImplementedError, self.cpdf.shape)
+        self.assertRaises(NotImplementedError, self.cpdf.cond_shape)
+        self.assertRaises(NotImplementedError, self.cpdf.cmean, np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.cvariance, np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.ceval_log, np.array([0.]), np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.csample, np.array([0.]))
+
+
 class TestPdf(ut.TestCase):
-    """Test abstract class Pdf"""
+    """Test partially abstract class Pdf"""
 
     def setUp(self):
         self.pdf = pb.Pdf()
@@ -51,17 +71,26 @@ class TestUniPdf(ut.TestCase):
 
     def test_mean(self):
         self.assertTrue(np.all(self.uni.mean() == np.array([5.])))
+        self.assertTrue(np.all(self.uni.cmean(None) == np.array([5.])))  # test also cond. variant
 
     def test_variance(self):
         self.assertTrue(np.all(self.uni.variance() == np.array(75.)))
+        self.assertTrue(np.all(self.uni.cvariance(None) == np.array(75.)))  # cond variant
 
     def test_eval_log(self):
         self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
+        self.assertEqual(self.uni.ceval_log(np.array([-10.1]), None), float('-inf'))
         self.assertEqual(self.uni.eval_log(np.array([12.547])), log(1./30.))
+        self.assertEqual(self.uni.ceval_log(np.array([12.547]), None), log(1./30.))
         self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
+        self.assertEqual(self.uni.ceval_log(np.array([-10.1]), None), float('-inf'))
 
     def test_sample(self):
-        pass
+        for i in range(0, 100):
+            sample = self.uni.sample()
+            csample = self.uni.csample(None)
+            self.assertTrue(-10. <= sample[0] <= 20.)  # test sample is within bounds
+            self.assertTrue(-10. <= csample[0] <= 20.)  # also for conditional variant
 
 
 class TestGaussPdf(ut.TestCase):

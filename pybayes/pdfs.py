@@ -9,28 +9,68 @@ from math import log
 from numpywrap import *
 
 
-class Pdf(object):
-    """Base class for all unconditional (static) multivariate Probability Density Functions"""
+class CPdf(object):
+    """Base class for all Conditional Probability Density Functions
+
+    when you evaluate a CPdf the result also depends on condition (vector), in
+    PyBayes named cond.
+    """
 
     def shape(self):
         """Return shape of the random variable (and mean) as int"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def cond_shape(self):
+        """Return shape of the condition as int"""
+        raise NotImplementedError("Derived classes must implement this function")
+
+    def cmean(self, cond):
+        """Return conditional mean value (a vector) of the pdf"""
+        raise NotImplementedError("Derived classes must implement this function")
+
+    def cvariance(self, cond):
+        """Return conditional variance (diagonal elements of covariance)"""
+        raise NotImplementedError("Derived classes must implement this function")
+
+    def ceval_log(self, x, cond):
+        """Return logarithm of conditional likelihood function in point x"""
+        raise NotImplementedError("Derived classes must implement this function")
+
+    def csample(self, cond):
+        """Return one random conditional sample. Density of samples should adhere to this density"""
+        raise NotImplementedError("Derived classes must implement this function")
+
+
+class Pdf(CPdf):
+    """Base class for all unconditional (static) multivariate Probability Density Functions"""
+
+    def cond_shape(self):
         """Return shape of the condition, which is zero for unconditional Pdfs"""
         return 0
+
+    def cmean(self, cond):
+        return self.mean()
 
     def mean(self):
         """Return mean value (a vector) of the pdf"""
         raise NotImplementedError("Derived classes must implement this function")
 
+    def cvariance(self, cond):
+        return self.variance()
+
     def variance(self):
         """Return variance (diagonal elements of covariance)"""
         raise NotImplementedError("Derived classes must implement this function")
 
+    def ceval_log(self, x, cond):
+        return self.eval_log(x)
+
     def eval_log(self, x):
         """Return logarithm of likelihood function in point x"""
         raise NotImplementedError("Derived classes must implement this function")
+
+    def csample(self, cond):
+        return self.sample()
 
     def sample(self):
         """Return one random sample. Density of samples should adhere to this density"""
