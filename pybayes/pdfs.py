@@ -164,7 +164,7 @@ class GaussPdf(Pdf):
         log_norm = -1/2. * (self.mu.shape[0]*1.83787706640935 + slogdet(self.R)[1])
 
         # part that actually depends on x
-        log_val = -1/2. * dotvv(x, dot(inv(self.R), x))
+        log_val = -1/2. * dotvv(x - self.mu, dot(inv(self.R), x - self.mu))
         return log_norm + log_val  # = log(norm*val)
 
     def sample(self):

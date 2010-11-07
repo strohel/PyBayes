@@ -167,6 +167,27 @@ class TestGaussPdf(ut.TestCase):
             self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
                 .format(res, expected[i]))
 
+        # non-zero mean:
+        norm = pb.GaussPdf(np.array([17.9]), np.array([[1.]]))
+        expected = np.array([
+            1.48671951473e-06,
+            0.000133830225765,
+            0.00443184841194,
+            0.0539909665132,
+            0.241970724519,
+            0.398942280401,
+            0.241970724519,
+            0.0539909665132,
+            0.00443184841194,
+            0.000133830225765,
+            1.48671951473e-06,
+        ])
+        for i in xrange(0, 11):
+            x[0] = i - 5. + 17.9
+            res = exp(norm.eval_log(x))
+            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
+                .format(res, expected[i]))
+
     def test_sample(self):
         # we cannost test values, just test right dimension and shape
         x = self.gauss.sample()
