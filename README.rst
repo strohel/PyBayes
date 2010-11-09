@@ -99,6 +99,7 @@ respectively. Run these scripts with ``-h`` option to see usage.
    unsupported.*
 
 For even greater convenience, ``examples/install_test_stress.py`` python
-script can clear, build, install, test, stress both python and cython build in
+script can clear, build, install, test, stress both Python and Cython build in
 one go. It is especially suitable for PyBayes hackers. Run
-``install_test_stress.py -h`` to get usage information.
+``install_test_stress.py -h`` to get usage information. Please be sure to add
+``--clean`` or ``-c`` flag when you mix Python and Cython builds.

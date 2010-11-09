@@ -141,7 +141,7 @@ if options.use_cython is True:
                  ]
     ext_options = {}  # options common to all extensions
     ext_options['include_dirs'] = [options.numpy_include_dir]
-    ext_options['extra_compile_args'] = ["-O1"]  # TODO: -O2 causes failing tests?!? (combined bug in cython pure p mode & in gcc?)
+    ext_options['extra_compile_args'] = ["-O2"]
     ext_options['extra_link_args'] = ["-Wl,-O1"]
     ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
     ext_options['pyrex_directives'] = {'profile':options.profile}

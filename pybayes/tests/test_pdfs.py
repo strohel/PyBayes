@@ -23,7 +23,7 @@ class TestCpdf(ut.TestCase):
         self.assertEqual(type(self.cpdf), pb.CPdf)
 
     def test_abstract_methods(self):
-        # this test may fail due to bug in cython [1]
+        # this test may fail due to bug in cython [1] that was fixed in 0.13.1
         # [1] http://trac.cython.org/cython_trac/ticket/583
         self.assertRaises(NotImplementedError, self.cpdf.shape)
         self.assertRaises(NotImplementedError, self.cpdf.cond_shape)
@@ -141,7 +141,7 @@ class TestGaussPdf(ut.TestCase):
         self.assertTrue(np.all(self.gauss.mean() == self.mean))
 
     def test_variance(self):
-        # this test may fail due to bug in cython [1]
+        # this test may fail due to bug in cython [1] that was fixed in 0.13.1
         # [1] http://trac.cython.org/cython_trac/ticket/583
         self.assertTrue(np.all(self.gauss.variance() == self.variance))
 
