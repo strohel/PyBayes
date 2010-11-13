@@ -58,24 +58,30 @@ class TestUniPdf(ut.TestCase):
     """Test uniform pdf"""
 
     def setUp(self):
-        self.uni = pb.UniPdf(-10., 20.)
+        self.uni = pb.UniPdf(np.array([-10.]), np.array([20.]))
+        (self.a, self.b) = (np.array([0., -1., 2.]), np.array([1., 1., 4.]))
+        self.multiuni = pb.UniPdf(self.a, self.b)
 
     def test_init(self):
         self.assertEqual(type(self.uni), pb.UniPdf)
+        self.assertEqual(type(self.multiuni), pb.UniPdf)
 
     def test_invalid_init(self):
-        self.assertRaises(ValueError, pb.UniPdf, 1.0, 0.5)
+        self.assertRaises(ValueError, pb.UniPdf, np.zeros(5), np.array([1., 2., 3., -0.01, 3.]))  # b must be > a element-wise
 
     def test_shape(self):
         self.assertEqual(self.uni.shape(), 1)
+        self.assertEqual(self.multiuni.shape(), 3)
 
     def test_mean(self):
         self.assertTrue(np.all(self.uni.mean() == np.array([5.])))
         self.assertTrue(np.all(self.uni.cmean(None) == np.array([5.])))  # test also cond. variant
+        self.assertTrue(np.all(self.multiuni.mean() == np.array([0.5, 0., 3.])))
 
     def test_variance(self):
-        self.assertTrue(np.all(self.uni.variance() == np.array(75.)))
-        self.assertTrue(np.all(self.uni.cvariance(None) == np.array(75.)))  # cond variant
+        self.assertTrue(np.all(self.uni.variance() == np.array([75.])))
+        self.assertTrue(np.all(self.uni.cvariance(None) == np.array([75.])))  # cond variant
+        self.assertTrue(np.all(self.multiuni.variance() == np.array([1./12., 1./3., 1./3.])))
 
     def test_eval_log(self):
         self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
@@ -85,12 +91,29 @@ class TestUniPdf(ut.TestCase):
         self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
         self.assertEqual(self.uni.ceval_log(np.array([-10.1]), None), float('-inf'))
 
+        (x, y, z) = (0.2, 0.8, 3.141592)  # this point belongs to multiuni's interval
+        one_under = np.array([[-0.1, y, z],  # one of the values is lower
+                             [x, -1.04, z],
+                             [x, y, -3.975]])
+        one_over = np.array([[1465.67, y, z],  # one of the values is greater
+                             [x, 1.000456, z],
+                             [x, y, 4.67]])
+        self.assertEqual(self.multiuni.eval_log(np.array([x, y, z])), log(1./(1.*2*2)))
+        for i in range(3):
+            self.assertEqual(self.multiuni.eval_log(one_under[i]), float('-inf'))
+            self.assertEqual(self.multiuni.eval_log(one_over[i]), float('-inf'))
+
     def test_sample(self):
         for i in range(0, 100):
             sample = self.uni.sample()
             csample = self.uni.csample(None)
             self.assertTrue(-10. <= sample[0] <= 20.)  # test sample is within bounds
             self.assertTrue(-10. <= csample[0] <= 20.)  # also for conditional variant
+
+        for i in range(0, 500):
+            sample = self.multiuni.sample()
+            self.assertTrue(np.all(self.a <= sample))
+            self.assertTrue(np.all(sample <= self.b))
 
 
 class TestGaussPdf(ut.TestCase):

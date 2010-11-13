@@ -25,7 +25,7 @@ cdef class Pdf(CPdf):
 
 
 cdef class UniPdf(Pdf):
-    cdef public double a, b
+    cdef public ndarray a, b
 
 
 cdef class GaussPdf(Pdf):

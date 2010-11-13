@@ -78,7 +78,7 @@ class Pdf(CPdf):
 
 
 class UniPdf(Pdf):
-    """Simple uniform single-dimensional probability density function
+    """Simple uniform multivariate probability density function
 
     .. math: f(x|a, b) = \THETA {x-a} \THETA {b-x} {1} \over {b-a}  TODO
     """
@@ -86,32 +86,35 @@ class UniPdf(Pdf):
     def __init__(self, a, b):
         """Initialise uniform distribution with left point a and right point b
 
-        a must be greater that b
+        a must be greater (in each dimension) than b
         """
-        if b <= a:
-            raise ValueError("b must be grater than a")
-        self.a = float(a)
-        self.b = float(b)
+        self.a = asarray(a)
+        self.b = asarray(b)
+        if a.ndim != 1 or b.ndim != 1:
+            raise ValueError("both a and b must be 1D numpy arrays (vectors)")
+        if a.shape[0] != b.shape[0]:
+            raise ValueError("a must have same shape as b")
+        if np_any(self.b <= self.a):
+            raise ValueError("b must be greater than a in each dimension")
 
     def shape(self):
-        return 1
+        return self.a.shape[0]
 
     def mean(self):
-        return array([(self.a+self.b)/2.])
+        return (self.a+self.b)/2.  # element-wise division
 
     def variance(self):
-        return array([((self.b-self.a)**2)/12.])
+        return ((self.b-self.a)**2)/12.  # element-wise power and division
 
     def eval_log(self, x):
         if x is None:  # cython-specific, but wont hurt in python
             raise ValueError("x must be numpy.ndarray")
-        x0 = x[0]
-        if x0 <= self.a or x0 >= self.b:
+        if np_any(x <= self.a) or np_any(x >= self.b):
             return float('-inf')
-        return -log(self.b-self.a)
+        return -log(prod(self.b-self.a))
 
     def sample(self):
-        return uniform(self.a, self.b, self.shape())
+        return uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
 
 
 class GaussPdf(Pdf):
