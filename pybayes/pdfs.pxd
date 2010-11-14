@@ -8,13 +8,15 @@ cimport cython
 from numpywrap cimport *
 
 
-cdef class CPdf:
+cdef class CPdf(object):
     cpdef int shape(self) except -1
     cpdef int cond_shape(self) except -1
     cpdef ndarray cmean(self, ndarray cond)
     cpdef ndarray cvariance(self, ndarray cond)
     cpdef double ceval_log(self, ndarray x, ndarray cond) except? -1
     cpdef ndarray csample(self, ndarray cond)
+
+    cpdef bint check_cond(self, ndarray cond) except False  # is internal to PyBayes, thus can be cdef TODO: cython bug
 
 
 cdef class Pdf(CPdf):

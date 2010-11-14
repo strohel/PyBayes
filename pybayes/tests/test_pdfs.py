@@ -73,6 +73,11 @@ class TestUniPdf(ut.TestCase):
         self.assertEqual(self.uni.shape(), 1)
         self.assertEqual(self.multiuni.shape(), 3)
 
+    def test_cond_shape(self):
+        # these tests are redundant, as cond_shape() is implemented in Pdf, but wont hurt
+        self.assertEqual(self.uni.cond_shape(), 0)
+        self.assertEqual(self.multiuni.cond_shape(), 0)
+
     def test_mean(self):
         self.assertTrue(np.all(self.uni.mean() == np.array([5.])))
         self.assertTrue(np.all(self.uni.cmean(None) == np.array([5.])))  # test also cond. variant
@@ -120,14 +125,18 @@ class TestGaussPdf(ut.TestCase):
     """Test Gaussian pdf"""
 
     def setUp(self):
+        # constructor parameters:
         self.mean = np.array([1., 3., 9.])
         self.covariance = np.array([
             [1., 0., 0.],
             [0., 2., 0.],
             [0., 0., 3.]
         ])
+
+        # expected values:
         self.variance = np.array([1., 2., 3.])  # diagonal elements of covariance
         self.shape = 3  # shape of random variable (and mean)
+
         self.gauss = pb.GaussPdf(self.mean, self.covariance)
 
     def test_init(self):

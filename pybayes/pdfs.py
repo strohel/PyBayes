@@ -40,6 +40,16 @@ class CPdf(object):
         """Return one random conditional sample. Density of samples should adhere to this density"""
         raise NotImplementedError("Derived classes must implement this function")
 
+    def check_cond(self, cond):
+        """Return True id cond has correct type and shape, raise Error otherwise"""
+        if cond is None:  # cython-specific
+            raise TypeError("cond must be numpy.ndarray")
+        if cond.ndim != 1:
+            raise ValueError("cond must be 1D numpy array (a vector)")
+        if cond.shape[0] != self.cond_shape():
+            raise ValueError("cond must be of shape ({0},) array of shape ({1},) given".format(cond_shape(), cond.shape[0]))
+        return True
+
 
 class Pdf(CPdf):
     """Base class for all unconditional (static) multivariate Probability Density Functions"""
@@ -108,7 +118,7 @@ class UniPdf(Pdf):
 
     def eval_log(self, x):
         if x is None:  # cython-specific, but wont hurt in python
-            raise ValueError("x must be numpy.ndarray")
+            raise TypeError("x must be numpy.ndarray")
         if np_any(x <= self.a) or np_any(x >= self.b):
             return float('-inf')
         return -log(prod(self.b-self.a))
@@ -159,7 +169,7 @@ class GaussPdf(Pdf):
 
     def eval_log(self, x):
         if x is None:  # cython-specific, but wont hurt in python
-            raise ValueError("x must be numpy.ndarray")
+            raise TypeError("x must be numpy.ndarray")
 
         # compute logarithm of normalization constant (can be cached in future)
         # log(2*Pi) = 1.83787706640935
