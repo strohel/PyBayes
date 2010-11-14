@@ -184,3 +184,52 @@ class GaussPdf(Pdf):
         z = normal(size=self.mu.shape[0]);
         # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
         return self.mu + dot(cholesky(self.R), z);
+
+
+class MLinGaussCPdf(CPdf):
+    """Conditional Gaussian pdf with mean that is a linear function of condition
+
+    .. math: TODO
+    """
+
+    def __init__(self, covariance, A, b):
+        """Initialise Mean-Linear Gaussian conditional pdf.
+
+        covariance - covariance of underlying Gaussian pdf
+        A, b: given condition cond, mean = A*cond + b
+        """
+        self.gauss = GaussPdf(zeros(covariance.shape[0]), covariance)
+        self.A = asarray(A)
+        self.b = asarray(b)
+        if self.A.ndim != 2:
+            raise ValueError("A must be 2D numpy.ndarray (matrix)")
+        if self.b.ndim != 1:
+            raise ValueError("b must be 1D numpy.ndarray (vector)")
+        if self.b.shape[0] != self.gauss.shape():
+            raise ValueError("b must have same number of cols as covariance")
+        if self.A.shape[0] != self.b.shape[0]:
+            raise ValueError("A must have same number of rows as covariance")
+
+    def shape(self):
+        return self.b.shape[0]
+
+    def cond_shape(self):
+        return self.A.shape[1]
+
+    def cmean(self, cond):
+        self.check_cond(cond)
+        return dot(self.A, cond) + self.b
+
+    def cvariance(self, cond):
+        # cond is unused here, so no need to check it
+        return self.gauss.variance()
+
+    def ceval_log(self, x, cond):
+        # cond is checked in cmean()
+        self.gauss.mu = self.cmean(cond)
+        return self.gauss.eval_log(x)
+
+    def csample(self, cond):
+        # cond is checked in cmean()
+        self.gauss.mu = self.cmean(cond)
+        return self.gauss.sample()

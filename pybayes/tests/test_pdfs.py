@@ -201,19 +201,6 @@ class TestGaussPdf(ut.TestCase):
 
         # non-zero mean:
         norm = pb.GaussPdf(np.array([17.9]), np.array([[1.]]))
-        expected = np.array([
-            1.48671951473e-06,
-            0.000133830225765,
-            0.00443184841194,
-            0.0539909665132,
-            0.241970724519,
-            0.398942280401,
-            0.241970724519,
-            0.0539909665132,
-            0.00443184841194,
-            0.000133830225765,
-            1.48671951473e-06,
-        ])
         for i in xrange(0, 11):
             x[0] = i - 5. + 17.9
             res = exp(norm.eval_log(x))
@@ -230,3 +217,107 @@ class TestGaussPdf(ut.TestCase):
         #norm = pb.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
         #for i in xrange(0, 1000):
         #    print norm.sample()[0]
+
+
+class TestMLinGaussCPdf(ut.TestCase):
+    """Test conditional Gaussian pdf with mean as a linear function of cond"""
+
+    def setUp(self):
+        # constructor parameters:
+        self.A = np.array([
+            [1., 0.],
+            [0., 2.],
+            [-1., -1.]
+        ])
+        self.b = np.array([-0.5, -1., -1.5])
+        self.covariance = np.array([
+            [1., 0., 0.],
+            [0., 2., 0.],
+            [0., 0., 3.]
+        ])
+
+        # expected values:
+        self.variance = np.array([1., 2., 3.])  # diagonal elements of covariance
+        self.shape = 3  # shape of random variable (and mean)
+        self.cond_shape = 2
+
+        self.test_conds = np.array([  # array of test conditions (shared by various tests)
+            [0., 0.],
+            [1., 0.],
+            [0., -1.],
+        ])
+        self.cond_means = np.array([  # array of mean values that match (first n entries of) test_conds
+            self.b,
+            np.array([1., 0., -1.]) + self.b,  # computed from self.A
+            np.array([0., -2., 1.]) + self.b,  # computed from self.A
+        ])
+
+        self.gauss = pb.MLinGaussCPdf(self.covariance, self.A, self.b)
+
+    def test_init(self):
+        self.assertEqual(type(self.gauss), pb.MLinGaussCPdf)
+
+    def test_invalid_init(self):
+        constructor = pb.MLinGaussCPdf
+
+        # covariance not compatible with A, b:
+        self.assertRaises(ValueError, constructor, np.array([[1.,0.],[0.,1.]]), self.A, self.b)
+        # A not compatible with covariance:
+        self.assertRaises(ValueError, constructor, self.covariance, np.array([[1.,0.],[0.,1.]]), self.b)
+        # b not compatible with covariance:
+        self.assertRaises(ValueError, constructor, self.covariance, self.A, np.array([1., 2.]))
+
+    def test_shape(self):
+        self.assertEqual(self.gauss.shape(), self.shape)
+
+    def test_cond_shape(self):
+        self.assertEqual(self.gauss.cond_shape(), self.cond_shape)
+
+    def test_cmean(self):
+        for i in range(self.cond_means.shape[0]):
+            cmean = self.gauss.cmean(self.test_conds[i])
+            self.assertTrue(np.all(cmean == self.cond_means[i]))
+
+    def test_cvariance(self):
+        for i in range(self.test_conds.shape[0]):
+            # test all test conditions, the result must not depend on it
+            self.assertTrue(np.all(self.gauss.cvariance(self.test_conds[i]) == self.variance))
+
+    def test_ceval_log(self):
+        x = np.array([0.])
+        cond = np.array([0.])
+        norm = pb.MLinGaussCPdf(np.array([[1.]]), np.array([[1.]]), np.array([-1.]))
+        expected = np.array([
+            1.48671951473e-06,
+            0.000133830225765,
+            0.00443184841194,
+            0.0539909665132,
+            0.241970724519,
+            0.398942280401,
+            0.241970724519,
+            0.0539909665132,
+            0.00443184841194,
+            0.000133830225765,
+            1.48671951473e-06,
+        ])
+        for i in xrange(0, 11):
+            # cond is set to [1.], which should produce mean = [0.]
+            x[0] = i - 5.
+            cond[0] = 1.
+            res = exp(norm.ceval_log(x, cond))
+            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
+                .format(res, expected[i]))
+
+            # cond is set to [456.78], which should produce mean = [455.78]
+            x[0] = i - 5. + 455.78
+            cond[0] = 456.78
+            res = exp(norm.ceval_log(x, cond))
+            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
+                .format(res, expected[i]))
+
+    def test_csample(self):
+        # we cannost test values, just test right dimension and shape
+        for i in range(self.test_conds.shape[0]):
+            x = self.gauss.csample(self.test_conds[i])
+            self.assertEqual(x.ndim, 1)
+            self.assertEqual(x.shape[0], self.covariance.shape[0])

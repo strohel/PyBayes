@@ -38,3 +38,8 @@ cdef class GaussPdf(Pdf):
 
     @cython.locals(z = ndarray)
     cpdef ndarray sample(self)
+
+
+cdef class MLinGaussPdf(CPdf):
+    cdef public ndarray A, b
+    cdef public GaussPdf gauss
