@@ -186,6 +186,66 @@ class GaussPdf(Pdf):
         return self.mu + dot(cholesky(self.R), z);
 
 
+class ProdPdf(Pdf):
+    """Unconditional product of multiple unconditional pdfs.
+
+    You can for example create a pdf that has uniform distribution with regards
+    to x-axis and normal distribution along y-axis. The caller (you) must ensure
+    that individial random variables are independent, otherwise their product may
+    have no mathematical sense.
+    """
+
+    def __init__(self, factors):
+        """Construct product of unconditional pdfs.
+
+        .. factors: nunpy.ndarray whose elements are Pdf objects
+        >>> prod = ProdPdf(numpy.array([UniPdf(...), GaussPdf(...)]))
+        """
+        self.factors = asarray(factors)
+        if self.factors.ndim != 1:
+            raise ValueError("factors must be 1D numpy.ndarray")
+        self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
+        for i in range(self.factors.shape[0]):
+            if not isinstance(self.factors[i], Pdf):
+                raise TypeError("all records in factors muse be (subclasses of) Pdf")
+            self.shapes[i] = self.factors[i].shape()
+
+    def shape(self):
+        return sum(self.shapes)
+
+    def mean(self):
+        curr = 0
+        ret = zeros(self.shape())
+        for i in range(self.factors.shape[0]):
+            ret[curr:curr + self.shapes[i]] = self.factors[i].mean()
+            curr += self.shapes[i]
+        return ret;
+
+    def variance(self):
+        curr = 0
+        ret = zeros(self.shape())
+        for i in range(self.factors.shape[0]):
+            ret[curr:curr + self.shapes[i]] = self.factors[i].variance()
+            curr += self.shapes[i]
+        return ret;
+
+    def eval_log(self, x):
+        curr = 0
+        ret = 0.  # 1 is neutral element in multiplication; log(1) = 0
+        for i in range(self.factors.shape[0]):
+            ret += self.factors[i].eval_log(x[curr:curr + self.shapes[i]])  # log(x*y) = log(x) + log(y)
+            curr += self.shapes[i]
+        return ret;
+
+    def sample(self):
+        curr = 0
+        ret = zeros(self.shape())
+        for i in range(self.factors.shape[0]):
+            ret[curr:curr + self.shapes[i]] = self.factors[i].sample()
+            curr += self.shapes[i]
+        return ret;
+
+
 class MLinGaussCPdf(CPdf):
     """Conditional Gaussian pdf with mean that is a linear function of condition
 

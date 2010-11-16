@@ -27,11 +27,28 @@ cdef class Pdf(CPdf):
 
 
 cdef class UniPdf(Pdf):
-    cdef public ndarray a, b
+    cdef public ndarray a, b  # dtype=double
+
+
+cdef class ProdPdf(Pdf):
+    cdef readonly ndarray factors  # dtype=Pdf
+    cdef readonly ndarray shapes  # dtype=int
+
+    @cython.locals(curr = int, i = int, ret = ndarray)
+    cpdef ndarray mean(self)
+
+    @cython.locals(curr = int, i = int, ret = ndarray)
+    cpdef ndarray variance(self)
+
+    @cython.locals(curr = int, i = int, ret = double)
+    cpdef double eval_log(self, ndarray x)
+
+    @cython.locals(curr = int, i = int, ret = ndarray)
+    cpdef ndarray sample(self)
 
 
 cdef class GaussPdf(Pdf):
-    cdef public ndarray mu, R
+    cdef public ndarray mu, R  # dtype=double
 
     @cython.locals(log_norm = double, log_val = double)
     cpdef double eval_log(self, ndarray x) except? -1
@@ -41,5 +58,5 @@ cdef class GaussPdf(Pdf):
 
 
 cdef class MLinGaussPdf(CPdf):
-    cdef public ndarray A, b
-    cdef public GaussPdf gauss
+    cdef public ndarray A, b  # dtype=double
+    cdef readonly GaussPdf gauss

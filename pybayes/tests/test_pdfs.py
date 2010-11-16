@@ -109,13 +109,13 @@ class TestUniPdf(ut.TestCase):
             self.assertEqual(self.multiuni.eval_log(one_over[i]), float('-inf'))
 
     def test_sample(self):
-        for i in range(0, 100):
+        for i in range(100):
             sample = self.uni.sample()
             csample = self.uni.csample(None)
             self.assertTrue(-10. <= sample[0] <= 20.)  # test sample is within bounds
             self.assertTrue(-10. <= csample[0] <= 20.)  # also for conditional variant
 
-        for i in range(0, 500):
+        for i in range(100):
             sample = self.multiuni.sample()
             self.assertTrue(np.all(self.a <= sample))
             self.assertTrue(np.all(sample <= self.b))
@@ -217,6 +217,59 @@ class TestGaussPdf(ut.TestCase):
         #norm = pb.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
         #for i in xrange(0, 1000):
         #    print norm.sample()[0]
+
+
+class TestProdPdf(ut.TestCase):
+    """Test unconditional product of unconditional pdfs"""
+
+    def setUp(self):
+        self.uni = pb.UniPdf(np.array([0., 0.]), np.array([1., 2.]))
+        self.gauss = pb.GaussPdf(np.array([0.]), np.array([[1.]]))
+        self.prod = pb.ProdPdf(np.array([self.uni, self.gauss]))
+
+    def test_shape(self):
+        self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())
+
+    def test_mean(self):
+        mean = self.prod.mean()
+        self.assertTrue(np.all(mean[0:2] == self.uni.mean()))
+        self.assertTrue(np.all(mean[2:3] == self.gauss.mean()))
+
+    def test_variance(self):
+        variance = self.prod.variance()
+        self.assertTrue(np.all(variance[0:2] == self.uni.variance()))
+        self.assertTrue(np.all(variance[2:3] == self.gauss.variance()))
+
+    def test_eval_log(self):
+        test_points = np.array([  # point we evaluate product in
+            [-1., -1., 0.],
+            [0.4, -1., 0.],
+            [0.4, 1.7, 0.],
+            [0.4, 2.1, 0.],
+            [1.2, 2.1, 0.]
+        ])
+        p = exp(self.gauss.eval_log(np.array([0.]))) # = 1/sqrt(2*PI)
+        exp_values = np.array([  # expected values. (not the logarithm of them)
+            0.*p,  # 0*0*p
+            0.*p,  # 1*0*p
+            0.5*p,  # 1*0.5*p
+            0.*p,  # 1*0*p
+            0.*p,  # 0*0*p
+        ])
+        for i in range(test_points.shape[0]):
+            val = exp(self.prod.eval_log(test_points[i]))
+            self.assertEqual(val, exp_values[i])
+
+    def test_sample(self):
+        # we can only somehow test unifrom pdf, so we create a product of them
+        uni_list = []
+        for i in range(10):
+            uni_list.append(pb.UniPdf(np.array([i+0.]), np.array([i+1.])))
+        uni_prod = pb.ProdPdf(np.array(uni_list))  # a product of 10 UniPdfs
+        for i in range(100):
+            sample = uni_prod.sample()
+            for j in range(10): # test each component..
+                self.assertTrue(j <= sample[j] <= j + 1)  # ..is within bounds
 
 
 class TestMLinGaussCPdf(ut.TestCase):

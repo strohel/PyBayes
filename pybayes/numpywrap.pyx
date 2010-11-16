@@ -9,7 +9,7 @@
 # not callable from python etc.
 
 from numpy cimport import_array, int, npy_intp, NPY_DOUBLE, PyArray_EMPTY, PyArray_ISCARRAY_RO, PyArray_ISFARRAY_RO
-from numpy import any as np_any, array, asarray, diag, empty, prod, zeros
+from numpy import any as np_any, array, asarray, diag, empty, prod, sum, zeros
 from numpy.linalg import cholesky, slogdet
 from numpy.random import normal, uniform
 
@@ -98,7 +98,7 @@ cdef double dotvv(ndarray a, ndarray b) except? -1:
     return t.ddot_(a.shape[0], <double*> a.data, 1, <double*> b.data, 1)
 
 cdef ndarray inv(ndarray A):
-    p = empty((A.shape[0],), dtype=int)
+    p = empty(A.shape[0], dtype=int)
     R = A.copy()
 
     if t.dgetrf(R, p) != 0:
