@@ -2,7 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""TODO: documentation"""
+"""
+PyBayes is meant as a Python/Cython suite for performing common operations in
+Bayesian statistics... TODO
+"""
 
 from pdfs import CPdf, Pdf, UniPdf, GaussPdf, ProdPdf, MLinGaussCPdf
 from kalman import Kalman

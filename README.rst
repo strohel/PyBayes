@@ -43,7 +43,7 @@ these steps in order to install PyBayes:
 .. [#alternate_install] http://docs.python.org/install/#alternate-installation
 
 **And you're done!** However, if you want PyBayes to be *considerably
-faster*, please read following section.
+faster*, please read the following section.
 
 Advanced installation options
 -----------------------------
@@ -86,6 +86,22 @@ Proceed with following steps:
      passing ``--profile=yes`` to ``./setup.py``. The default is to omit
      profiling information in order to avoid performance penalties.
 
+Building Documentation
+----------------------
+
+PyBayes uses Sphinx_ to prepare documentation. The documentation is built separately.
+In order to build it, change directory to `doc/` under PyBayes source directory
+(``cd [path_to_pybayes]/doc``) and issue ``make`` command. This will present you
+with a list of available documentation formats. To generate html documentation,
+for example, run ``make html`` and then point your browser to
+`[path_to_pybayes]/doc/_build/html/index.html`.
+
+   PyBayes docs contain many mathematical expressions; Sphinx_ can use LaTeX_ to
+   embed them as images into resulting HTML pages. Be sure to have LaTeX-enabled
+   Sphinx if you want to see such nice things.
+
+.. _Sphinx: http://sphinx.pocoo.org/
+.. _LaTeX: http://www.latex-project.org/
 
 Testing PyBayes
 ===============

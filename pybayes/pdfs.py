@@ -2,7 +2,14 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""Probability density functions"""
+"""
+This module contains models of common probability density functions, abbreviated
+as pdfs.
+
+All classes from this module are currently imported to top-level pybayes module,
+so instead of ``from pybayes.pdfs import Pdf`` you can type ``from pybayes import
+Pdf``.
+"""
 
 from math import log
 
@@ -12,7 +19,7 @@ from numpywrap import *
 class CPdf(object):
     """Base class for all Conditional Probability Density Functions
 
-    when you evaluate a CPdf the result also depends on condition (vector), in
+    When you evaluate a CPdf the result also depends on condition (vector), in
     PyBayes named cond.
     """
 
@@ -41,7 +48,7 @@ class CPdf(object):
         raise NotImplementedError("Derived classes must implement this function")
 
     def check_cond(self, cond):
-        """Return True id cond has correct type and shape, raise Error otherwise"""
+        """Return True if cond has correct type and shape, raise Error otherwise"""
         if cond is None:  # cython-specific
             raise TypeError("cond must be numpy.ndarray")
         if cond.ndim != 1:
@@ -88,9 +95,9 @@ class Pdf(CPdf):
 
 
 class UniPdf(Pdf):
-    """Simple uniform multivariate probability density function
+    r"""Simple uniform multivariate probability density function
 
-    .. math: f(x|a, b) = \THETA {x-a} \THETA {b-x} {1} \over {b-a}  TODO
+    .. math:: f(x) = \Theta(x - a) \Theta(b - x) \prod_{i=1}^n \frac{1}{b_i-a_i}
     """
 
     def __init__(self, a, b):
@@ -128,9 +135,9 @@ class UniPdf(Pdf):
 
 
 class GaussPdf(Pdf):
-    """Unconditional Gaussian (normal) probability density function
+    r"""Unconditional Gaussian (normal) probability density function
 
-    .. math: f(x|\mu, R) \propto \exp(-(x-\mu)'R^{-1}(x-\mu))
+    .. math:: f(x) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
     """
 
     def __init__(self, mean=array([0]), covariance=array([[1]])):
@@ -187,12 +194,14 @@ class GaussPdf(Pdf):
 
 
 class ProdPdf(Pdf):
-    """Unconditional product of multiple unconditional pdfs.
+    r"""Unconditional product of multiple unconditional pdfs.
 
     You can for example create a pdf that has uniform distribution with regards
     to x-axis and normal distribution along y-axis. The caller (you) must ensure
     that individial random variables are independent, otherwise their product may
     have no mathematical sense.
+
+    .. math:: f(x_1 x_2 x_3) = f_1(x_1) f_2(x_2) f_3(x_3)
     """
 
     def __init__(self, factors):
@@ -207,7 +216,7 @@ class ProdPdf(Pdf):
         self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
         for i in range(self.factors.shape[0]):
             if not isinstance(self.factors[i], Pdf):
-                raise TypeError("all records in factors muse be (subclasses of) Pdf")
+                raise TypeError("all records in factors must be (subclasses of) Pdf")
             self.shapes[i] = self.factors[i].shape()
 
     def shape(self):
@@ -247,9 +256,12 @@ class ProdPdf(Pdf):
 
 
 class MLinGaussCPdf(CPdf):
-    """Conditional Gaussian pdf with mean that is a linear function of condition
+    r"""Conditional Gaussian pdf whose mean is a linear function of condition
 
-    .. math: TODO
+    .. math::
+
+       f(x|c) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
+       \quad \quad \text{where} ~ \mu := A c + b
     """
 
     def __init__(self, covariance, A, b):
