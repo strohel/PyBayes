@@ -5,15 +5,14 @@
 """Tests for pdfs"""
 
 from math import exp, log
-import unittest as ut
 
 import numpy as np
 
 import pybayes as pb
-from support import approx_eq
+from support import PbTestCase
 
 
-class TestCpdf(ut.TestCase):
+class TestCpdf(PbTestCase):
     """Test abstract class CPdf"""
 
     def setUp(self):
@@ -33,7 +32,7 @@ class TestCpdf(ut.TestCase):
         self.assertRaises(NotImplementedError, self.cpdf.csample, np.array([0.]))
 
 
-class TestPdf(ut.TestCase):
+class TestPdf(PbTestCase):
     """Test partially abstract class Pdf"""
 
     def setUp(self):
@@ -54,7 +53,7 @@ class TestPdf(ut.TestCase):
     def test_cond_shape(self):
         self.assertEqual(self.pdf.cond_shape(), 0)
 
-class TestUniPdf(ut.TestCase):
+class TestUniPdf(PbTestCase):
     """Test uniform pdf"""
 
     def setUp(self):
@@ -121,7 +120,7 @@ class TestUniPdf(ut.TestCase):
             self.assertTrue(np.all(sample <= self.b))
 
 
-class TestGaussPdf(ut.TestCase):
+class TestGaussPdf(PbTestCase):
     """Test Gaussian pdf"""
 
     def setUp(self):
@@ -196,16 +195,14 @@ class TestGaussPdf(ut.TestCase):
         for i in xrange(0, 11):
             x[0] = i - 5
             res = exp(norm.eval_log(x))
-            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
-                .format(res, expected[i]))
+            self.assertApproxEqual(res, expected[i])
 
         # non-zero mean:
         norm = pb.GaussPdf(np.array([17.9]), np.array([[1.]]))
         for i in xrange(0, 11):
             x[0] = i - 5. + 17.9
             res = exp(norm.eval_log(x))
-            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
-                .format(res, expected[i]))
+            self.assertApproxEqual(res, expected[i])
 
     def test_sample(self):
         # we cannost test values, just test right dimension and shape
@@ -219,7 +216,7 @@ class TestGaussPdf(ut.TestCase):
         #    print norm.sample()[0]
 
 
-class TestProdPdf(ut.TestCase):
+class TestProdPdf(PbTestCase):
     """Test unconditional product of unconditional pdfs"""
 
     def setUp(self):
@@ -272,7 +269,7 @@ class TestProdPdf(ut.TestCase):
                 self.assertTrue(j <= sample[j] <= j + 1)  # ..is within bounds
 
 
-class TestMLinGaussCPdf(ut.TestCase):
+class TestMLinGaussCPdf(PbTestCase):
     """Test conditional Gaussian pdf with mean as a linear function of cond"""
 
     def setUp(self):
@@ -358,15 +355,13 @@ class TestMLinGaussCPdf(ut.TestCase):
             x[0] = i - 5.
             cond[0] = 1.
             res = exp(norm.ceval_log(x, cond))
-            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
-                .format(res, expected[i]))
+            self.assertApproxEqual(res, expected[i])
 
             # cond is set to [456.78], which should produce mean = [455.78]
             x[0] = i - 5. + 455.78
             cond[0] = 456.78
             res = exp(norm.ceval_log(x, cond))
-            self.assertTrue(approx_eq(res, expected[i]), "Values {0} and {1} are not fuzzy equal"
-                .format(res, expected[i]))
+            self.assertApproxEqual(res, expected[i])
 
     def test_csample(self):
         # we cannost test values, just test right dimension and shape

@@ -4,15 +4,13 @@
 
 """Tests for kalman"""
 
-import unittest as ut
-
 from numpy import array, mat
 
 import pybayes as pb
-from support import approx_eq
+from support import PbTestCase
 
 
-class TestKalman(ut.TestCase):
+class TestKalman(PbTestCase):
     """Tests for kalman filter"""
 
     def setUp(self):
@@ -74,5 +72,4 @@ class TestKalman(ut.TestCase):
         ])
         for i in xrange(4):
             x = k.bayes(y[i], u[i])
-            self.assertTrue(approx_eq(x, exp_x[i]), "Arrays {0} and {1} are not fuzzy equal"
-                .format(x, exp_x[i]))
+            self.assertApproxEqual(x, exp_x[i])

@@ -219,8 +219,11 @@ class ProdPdf(Pdf):
                 raise TypeError("all records in factors must be (subclasses of) Pdf")
             self.shapes[i] = self.factors[i].shape()
 
+        # pre-calclate shape
+        self._shape = sum(self.shapes)
+
     def shape(self):
-        return sum(self.shapes)
+        return self._shape
 
     def mean(self):
         curr = 0
@@ -239,6 +242,8 @@ class ProdPdf(Pdf):
         return ret;
 
     def eval_log(self, x):
+        if x is None:  # cython-specific, but wont hurt in python
+            raise TypeError("x must be numpy.ndarray")
         curr = 0
         ret = 0.  # 1 is neutral element in multiplication; log(1) = 0
         for i in range(self.factors.shape[0]):

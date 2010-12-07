@@ -4,15 +4,13 @@
 
 """Tests for numpywrap"""
 
-import unittest as ut
-
 from numpy import array, eye
 
 import pybayes.numpywrap as nw
-from support import approx_eq
+from support import PbTestCase
 
 
-class TestNumpywrap(ut.TestCase):
+class TestNumpywrap(PbTestCase):
 
     def test_dot(self):
         # test data
@@ -29,8 +27,7 @@ class TestNumpywrap(ut.TestCase):
         # do the check!
         for (left, right, exp) in [(A, B, AB), (B, A, BA), (A, x, Ax), (B, x, Bx)]:
             res = nw.dot(left, right)
-            self.assertTrue(approx_eq(res, exp), "Arrays {0} and {1} are not fuzzy equal"
-                .format(res, exp))
+            self.assertApproxEqual(res, exp)
 
     def test_dot_as_in_kalman(self):
         # a specific test that occurt in Kalman.bayes()
@@ -38,8 +35,7 @@ class TestNumpywrap(ut.TestCase):
         R = array([[200., 0.], [0., 200.]])
         R = nw.dot(nw.dot(A, R), A.T)
         R_exp = array([[250., 200.], [200., 200.]])
-        self.assertTrue(approx_eq(R, R_exp), "{0} is not fuzzy equal {1}"
-            .format(R, R_exp))
+        self.assertApproxEqual(R, R_exp)
 
     def test_dot_transposed(self):
         # transposed optimised dot made problems in the past. Test it!
@@ -63,8 +59,7 @@ class TestNumpywrap(ut.TestCase):
         for (left, right, exp) in [(A.T, x, Atx), (A.T, x.T, Atxt), (A.T, B, AtB),
                                    (A, B.T, ABt), (A.T, B.T, AtBt), (C.T, y, Cty)]:
             res = nw.dot(left, right)
-            self.assertTrue(approx_eq(res, exp), "Arrays {0} and {1} are not fuzzy equal"
-                .format(res, exp))
+            self.assertApproxEqual(res, exp)
 
     def test_dotvv(self):
         # source data
@@ -80,8 +75,7 @@ class TestNumpywrap(ut.TestCase):
         # the test
         for (left, right, exp) in [(a1, b1, a1b1), (a2, b2, a2b2)]:
             res = nw.dotvv(left, right)
-            self.assertTrue(approx_eq(res, exp), "Arrays {0} and {1} are not fuzzy equal"
-                .format(res, exp))
+            self.assertApproxEqual(res, exp)
 
     def test_inv(self):
         # source data
@@ -99,9 +93,5 @@ class TestNumpywrap(ut.TestCase):
             E = eye(A.shape[0])
             E1 = nw.dot(A, iA)
             E2 = nw.dot(iA, A)
-            self.assertTrue(approx_eq(E1, E), "A = {0}\n".format(A) +
-                "(A * inv(A)) = {0}\n".format(E1) +
-                "which is not (fuzzy) identity!")
-            self.assertTrue(approx_eq(E2, E), "A = {0}\n".format(A) +
-                "(inv(A) * A) = {0}\n".format(E2) +
-                "which is not (fuzzy) identity!")
+            self.assertApproxEqual(E1, E)
+            self.assertApproxEqual(E2, E)

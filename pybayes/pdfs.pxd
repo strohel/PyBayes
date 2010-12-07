@@ -33,6 +33,7 @@ cdef class UniPdf(Pdf):
 cdef class ProdPdf(Pdf):
     cdef readonly ndarray factors  # dtype=Pdf
     cdef readonly ndarray shapes  # dtype=int
+    cdef int _shape
 
     @cython.locals(curr = int, i = int, ret = ndarray)
     cpdef ndarray mean(self)
