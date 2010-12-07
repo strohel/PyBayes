@@ -369,3 +369,51 @@ class TestMLinGaussCPdf(PbTestCase):
             x = self.gauss.csample(self.test_conds[i])
             self.assertEqual(x.ndim, 1)
             self.assertEqual(x.shape[0], self.covariance.shape[0])
+
+
+class TestProdCPdf(PbTestCase):
+    """Test conditional product of pdfs"""
+
+    def setUp(self):
+        identity = np.array([[1.]])
+        self.gauss = pb.MLinGaussCPdf(identity, identity, np.array([0.]))
+        self.uni = pb.UniPdf(np.array([0.]), np.array([2.]))
+        self.prod = pb.ProdCPdf(np.array([self.gauss, self.uni]))
+
+    def test_shape(self):
+        self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())
+
+    def test_cond_shape(self):
+        self.assertEqual(self.prod.cond_shape(), 0)
+
+    #def test_mean(self):
+        #mean = self.prod.mean()
+        #self.assertTrue(np.all(mean[0:2] == self.uni.mean()))
+        #self.assertTrue(np.all(mean[2:3] == self.gauss.mean()))
+
+    #def test_variance(self):
+        #variance = self.prod.variance()
+        #self.assertTrue(np.all(variance[0:2] == self.uni.variance()))
+        #self.assertTrue(np.all(variance[2:3] == self.gauss.variance()))
+
+    def test_ceval_log(self):
+        test_points = np.array([  # point we evaluate product in
+            [-0.5, -0.5],
+            [-0.5,  0.5],
+            [-0.5,  1.5],
+            [ 0.5, -0.5],
+            [ 0.5,  0.5],
+            [ 0.5,  1.5],
+            [ 1.5, -0.5],
+            [ 1.5,  0.5],
+            [ 1.5,  1.5],
+        ])
+
+        for i in range(test_points.shape[0]):
+            val = exp(self.prod.ceval_log(test_points[i], np.array([])))
+            expected = exp(self.gauss.ceval_log(test_points[i][:1], test_points[i][1:])) * exp(self.uni.eval_log(test_points[i][1:]))
+            self.assertApproxEqual(val, expected)
+
+    def test_csample(self):
+        for i in range(10):
+            print self.prod.csample(np.array([]))

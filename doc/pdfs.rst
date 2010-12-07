@@ -24,3 +24,5 @@ In this section, variable :math:`c` in math exressions denotes condition.
 .. autoclass:: CPdf
 
 .. autoclass:: MLinGaussCPdf
+
+.. autoclass:: ProdCPdf

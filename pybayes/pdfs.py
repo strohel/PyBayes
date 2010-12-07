@@ -310,3 +310,89 @@ class MLinGaussCPdf(CPdf):
         # cond is checked in cmean()
         self.gauss.mu = self.cmean(cond)
         return self.gauss.sample()
+
+
+class ProdCPdf(CPdf):
+    r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
+
+    .. math:: f(x_1 x_2 x_3 | c) = f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c)
+    """
+
+    def __init__(self, factors):
+        """Construct chain rule of multiple cpdfs.
+
+        .. factors - 1D numpy.ndarray of objects of type CPdf (or subclasses)
+        """
+        self.factors = asarray(factors)
+        if self.factors.ndim != 1:
+            raise ValueError("factors must be 1D numpy.ndarray")
+
+        self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
+
+        accumulate_cond_shape = 0
+        for i in range(self.factors.shape[0] -1, -1, -1):
+            if not isinstance(self.factors[i], CPdf):
+                raise TypeError("all records in factors must be (subclasses of) CPdf")
+            self.shapes[i] = self.factors[i].shape()
+            if self.shapes[i] == 0:
+                raise ValueError("ProdCPdf cannot contain zero-shaped factors (factor {0})".format(i))
+            if accumulate_cond_shape == 0:  # the last factor
+                self._cond_shape = self.factors[i].cond_shape()
+                accumulate_cond_shape += self._cond_shape
+            else:  # other factors
+                if self.factors[i].cond_shape() != accumulate_cond_shape:
+                    raise ValueError("Expected cond_shape() of factor {0} will be {1}, ".format(i, accumulate_cond_shape)
+                              + "got {0}. (because factor on the right has ".format(self.factors[i].cond_shape())
+                              + "shape() {0} and cond_shape() {1}".format(self.shapes[i+1], self.factors[i+1].cond_shape()))
+
+            # prepare for next iteration:
+            accumulate_cond_shape += self.shapes[i]
+
+        # pre-calculate shape
+        self._shape = sum(self.shapes)
+
+    def shape(self):
+        return self._shape
+
+    def cond_shape(self):
+        return self._cond_shape
+
+    def cmean(self, cond):
+        raise NotImplementedError("Not yet implemented")
+
+    def cvariance(self, cond):
+        raise NotImplementedError("Not yet implemented")
+
+    def ceval_log(self, x, cond):
+        if x is None:  # cython-specific, but wont hurt in python
+            raise TypeError("x must be numpy.ndarray")
+        self.check_cond(cond)
+
+        start = 0
+        cond_start = 0
+
+        ret = 0.
+        comb_input = zeros(self.shape() + self.cond_shape())  # combined x and cond
+        comb_input[:self.shape()] = x  # TODO: check that x has right shape
+        comb_input[self.shape():] = cond
+
+        for i in range(self.factors.shape[0]):
+            cond_start += self.shapes[i]
+            ret += self.factors[i].ceval_log(comb_input[start:cond_start], comb_input[cond_start:])
+            start += self.shapes[i]
+        return ret
+
+    def csample(self, cond):
+        self.check_cond(cond)
+
+        # combination of return value and condition
+        comb = zeros(self.shape() + self.cond_shape())
+        start = self.shape()
+        comb[start:] = cond
+
+        for i in range(self.factors.shape[0] -1, -1, -1):
+            stop = start
+            start -= self.shapes[i]
+            comb[start:stop] = self.factors[i].csample(comb[stop:])
+
+        return comb[:self.shape()]
