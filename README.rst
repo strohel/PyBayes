@@ -19,8 +19,26 @@ PyBayes in e.g. BSD-licensed project? Ask!)
 Obtaining PyBayes
 =================
 
-Development of PyBayes happens on http://github.com/strohel/PyBayes
-The most fresh development source is available from there.
+Development of PyBayes happens on http://github.com/strohel/PyBayes using git VCS
+and the most fresh development sources can be obtained using git. It should be noted that
+PyBayes uses git submodule to bundle Tokyo library, so the proper way to clone
+PyBayes repository would be::
+
+   # cd path/to/projects
+   # git clone git://github.com/strohel/PyBayes.git
+   Cloning into PyBayes...
+   (...)
+   # cd PyBayes
+   # git submodule update --init
+   Submodule 'tokyo' (git://github.com/strohel/Tokyo.git) registered for path 'tokyo'
+   Cloning into tokyo...
+   (...)
+   Submodule path 'tokyo': checked out '896d046b62cf50faf7faa7e58a8705fb2f22f19a'
+
+When updating your repository (using ``git pull``), git should inform you that
+some submodules have became outdated. In that case you should issue
+``git submodule update``.
+
 
 Installing PyBayes
 ==================
