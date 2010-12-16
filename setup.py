@@ -74,6 +74,7 @@ def configure_build(options):
             else:  # use_cython is None (autodetect)
                 print("Warning: Cython was not found on your system. Falling back to pure")
                 print("         python mode which may be significantly slower.")
+            options.use_cython = False
         else:
             if options.use_cython is not True:
                 print("Notice: Cython found. Great!")
