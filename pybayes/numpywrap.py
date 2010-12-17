@@ -7,5 +7,21 @@
 # just import and flatten numpy types and functions
 
 from numpy import any as np_any, array, asarray, diag, dot, dot as dotvv, ndarray, prod, sum, zeros
-from numpy.linalg import cholesky, inv, slogdet
+from numpy.linalg import cholesky, inv
 from numpy.random import normal, uniform
+
+# support NumPy before 1.5.0 by emulating its slogdet
+try:
+    from numpy.linalg import slogdet
+except ImportError:
+    from numpy.linalg import det
+    from math import log
+
+    def slogdet(a):
+        d = det(a)
+        if d == 0:
+            return (0, float('-inf'))
+        if d > 0:
+            return (1, log(d))
+        else:
+            return (-1, log(-d))

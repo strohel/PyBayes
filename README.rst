@@ -77,7 +77,8 @@ In order to build optimised PyBayes, you'll additionally need:
 * Cython_ Python to C compiler
 * working C compiler (GCC on Unix-like systems, MinGW or Microsoft Visual C on
   Windows [#install_cython]_)
-* NumPy_ numerical library for Python
+* NumPy_ numerical library for Python, version 1.5 or greater (NumPy is needed
+  also in Python build, but older version suffice in that case)
 * On some Debian-based Linux distributions (Ubuntu) you'll need python-dev
   package that contains ``Python.h`` file that is needed by PyBayes
 
