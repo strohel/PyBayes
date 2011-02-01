@@ -416,4 +416,5 @@ class TestProdCPdf(PbTestCase):
 
     def test_csample(self):
         for i in range(10):
-            print self.prod.csample(np.array([]))
+            # this test is really dumb, but nothing better invented yet
+            self.assertEqual(self.prod.csample(np.array([])).shape, (2,))
