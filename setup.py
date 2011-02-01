@@ -123,20 +123,20 @@ if options.use_cython is True:
     params['py_modules'] = ['pybayes.__init__', 'pybayes.tests.__init__']
     params['ext_modules'] = []
 
-    pxd_deps = ['kalman.pxd',
+    pxd_deps = ['filters.pxd',
                 'pdfs.pxd',
                 'numpywrap.pxd',
                 ]
     deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
     deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
     # TODO: add cython's numpy.pxd as a dependency
-    extensions = ['kalman.py',
+    extensions = ['filters.py',
                   'pdfs.py',
                   'numpywrap.pyx',
 
-                  'tests/stress_kalman.py',
+                  'tests/stress_filters.py',
                   'tests/support.py',
-                  'tests/test_kalman.py',
+                  'tests/test_filters.py',
                   'tests/test_numpywrap.py',
                   'tests/test_pdfs.py',
                  ]

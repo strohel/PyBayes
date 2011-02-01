@@ -5,13 +5,13 @@
 cimport cython
 cimport numpy as np
 
-cimport pybayes.kalman as kf
+cimport pybayes.filters as filters
 cimport pybayes.pdfs as pdfs
 
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
-@cython.locals(kalman = kf.Kalman,
+@cython.locals(kalman = filters.Kalman,
                y = np.ndarray,
                u = np.ndarray,
                Mu_py = np.ndarray,

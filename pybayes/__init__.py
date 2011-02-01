@@ -8,4 +8,4 @@ Bayesian statistics... TODO
 """
 
 from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, GaussPdf, ProdPdf, MLinGaussCPdf, ProdCPdf
-from kalman import Kalman
+from filters import Kalman

@@ -10,7 +10,7 @@ import time
 import numpy as np
 from scipy.io import loadmat, savemat
 
-import pybayes.kalman as kf
+import pybayes.filters as filters
 import pybayes.pdfs as pdfs
 
 def run_kalman_on_mat_data(input_file, output_file):
@@ -22,7 +22,7 @@ def run_kalman_on_mat_data(input_file, output_file):
     u = d.pop('u').T
 
     gauss = pdfs.GaussPdf(mu0, P0)
-    kalman = kf.Kalman(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
+    kalman = filters.Kalman(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
 
     N = y.shape[0]
     n = mu0.shape[0]
