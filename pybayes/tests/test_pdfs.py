@@ -12,6 +12,36 @@ import pybayes as pb
 from support import PbTestCase
 
 
+class TestRVComp(PbTestCase):
+    """Test random variable component"""
+
+    def test_init(self):
+        rvcomp = pb.RVComp("pretty name", 123)
+        self.assertEquals(rvcomp.name, "pretty name")
+        self.assertEquals(rvcomp.dimension, 123)
+
+    def test_invalid_init(self):
+        self.assertRaises(TypeError, pb.RVComp, "def", 0.45)
+        self.assertRaises(TypeError, pb.RVComp, "def", "not a number")
+        self.assertRaises(ValueError, pb.RVComp, "abc", -1)
+
+
+class TestRV(PbTestCase):
+    """Test random variable representation"""
+
+    def test_init(self):
+        comp_a = pb.RVComp("a", 1)
+        comp_b = pb.RVComp("b", 2)
+        rv_1 = pb.RV(comp_a, comp_b)
+        self.assertEquals(rv_1.name, "[a, b]")
+        self.assertEquals(rv_1.dimension, 3)
+        self.assertTrue(rv_1.contains(comp_a))
+        self.assertTrue(rv_1.contains(comp_b))
+        rv_2 = pb.RV(rv_1)
+        self.assertEquals(rv_2.name, "[a, b]")
+        self.assertEquals(rv_2.dimension, 3)
+
+
 class TestCpdf(PbTestCase):
     """Test abstract class CPdf"""
 

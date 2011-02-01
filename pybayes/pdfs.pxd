@@ -8,6 +8,19 @@ cimport cython
 from numpywrap cimport *
 
 
+cdef class RVComp(object):
+    cdef readonly int dimension
+    cdef readonly str name
+
+
+cdef class RV(object):
+    cdef readonly int dimension
+    cdef readonly str name
+    cdef readonly list components
+
+    cpdef bint contains(self, RVComp component)
+
+
 cdef class CPdf(object):
     cpdef int shape(self) except -1
     cpdef int cond_shape(self) except -1

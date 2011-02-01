@@ -5,6 +5,13 @@ Probability Density Functions
 .. automodule:: pybayes.pdfs
    :no-members:
 
+Random Variables and their Components
+=====================================
+
+.. autoclass:: RV
+
+.. autoclass:: RVComp
+
 Probability Density Function prototype
 ======================================
 

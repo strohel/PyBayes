@@ -16,6 +16,57 @@ from math import log
 from numpywrap import *
 
 
+class RVComp(object):
+    """Atomic component of a random value"""
+
+    def __init__(self, name, dimension):
+        """Initialise new component of a random variable. It will be named
+        `name` with dimension `dimension`"""
+
+        self.name = str(name)
+        if not isinstance(dimension, int):
+            raise TypeError("dimension must be integer (int)")
+        if dimension < 1:
+            raise ValueError("dimension must be non-zero positive")
+        self.dimension = dimension
+
+
+class RV(object):
+    """Representation of a random variable made of one or more components
+    (see RVComp)"""
+
+    def __init__(self, *components):
+        """Initialise new random variable made of one or more components. You may
+        also pass one or more existing RVs, whose components will be reused"""
+        self.dimension = 0
+        self.name = '['
+        self.components = []
+        for component in components:
+            if isinstance(component, RVComp):
+                self._add_component(component)
+            elif isinstance(component, RV):
+                for subcomp in component.components:
+                    self._add_component(subcomp)
+            else:
+                raise TypeError('component ' + component + ' is neither an instance '
+                              + 'of RVComp or RV')
+        self.name = self.name[:-2] + ']'
+
+    def _add_component(self, component):
+        # TODO: check if component is already contained? (does it matter somewhere?)
+        self.components.append(component)
+        self.dimension += component.dimension
+        self.name += component.name + ", "
+
+    def contains(self, component):
+        """Return True is this random value contains the exact same instance of
+        the `component`"""
+        for comp in self.components:
+            if id(comp) == id(component):
+                return True
+        return False
+
+
 class CPdf(object):
     """Base class for all Conditional Probability Density Functions
 
