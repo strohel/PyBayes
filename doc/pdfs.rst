@@ -5,6 +5,11 @@ Probability Density Functions
 .. automodule:: pybayes.pdfs
    :no-members:
 
+Probability Density Function prototype
+======================================
+
+.. autoclass:: CPdf
+
 Unconditional Probability Density Functions (pdfs)
 ==================================================
 
@@ -20,8 +25,6 @@ Conditional Probability Density Functions (cpdfs)
 =================================================
 
 In this section, variable :math:`c` in math exressions denotes condition.
-
-.. autoclass:: CPdf
 
 .. autoclass:: MLinGaussCPdf
 
