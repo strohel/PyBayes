@@ -18,11 +18,5 @@ cdef class Kalman:
     cdef bint _bayes_type_check
 
 
-    #def __init__(self, A, B, C, D, Q, R, state_pdf)
-        #n, k, j
-        #self.P = state_pdf
-        #self.S = GaussPdf()  # observation probability density function
-        #self._bayes_type_check = True  # whether to check arguments in bayes() method
-
     @cython.locals(K = ndarray)
     cpdef ndarray bayes(self, ndarray yt, ndarray ut)
