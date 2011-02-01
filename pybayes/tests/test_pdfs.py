@@ -26,10 +26,10 @@ class TestCpdf(PbTestCase):
         # [1] http://trac.cython.org/cython_trac/ticket/583
         self.assertRaises(NotImplementedError, self.cpdf.shape)
         self.assertRaises(NotImplementedError, self.cpdf.cond_shape)
-        self.assertRaises(NotImplementedError, self.cpdf.cmean, np.array([0.]))
-        self.assertRaises(NotImplementedError, self.cpdf.cvariance, np.array([0.]))
-        self.assertRaises(NotImplementedError, self.cpdf.ceval_log, np.array([0.]), np.array([0.]))
-        self.assertRaises(NotImplementedError, self.cpdf.csample, np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.mean, np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.variance, np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.eval_log, np.array([0.]), np.array([0.]))
+        self.assertRaises(NotImplementedError, self.cpdf.sample, np.array([0.]))
 
 
 class TestPdf(PbTestCase):
@@ -79,21 +79,21 @@ class TestUniPdf(PbTestCase):
 
     def test_mean(self):
         self.assertTrue(np.all(self.uni.mean() == np.array([5.])))
-        self.assertTrue(np.all(self.uni.cmean(None) == np.array([5.])))  # test also cond. variant
+        self.assertTrue(np.all(self.uni.mean(None) == np.array([5.])))  # test also cond. variant
         self.assertTrue(np.all(self.multiuni.mean() == np.array([0.5, 0., 3.])))
 
     def test_variance(self):
         self.assertTrue(np.all(self.uni.variance() == np.array([75.])))
-        self.assertTrue(np.all(self.uni.cvariance(None) == np.array([75.])))  # cond variant
+        self.assertTrue(np.all(self.uni.variance(None) == np.array([75.])))  # cond variant
         self.assertTrue(np.all(self.multiuni.variance() == np.array([1./12., 1./3., 1./3.])))
 
     def test_eval_log(self):
         self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
-        self.assertEqual(self.uni.ceval_log(np.array([-10.1]), None), float('-inf'))
+        self.assertEqual(self.uni.eval_log(np.array([-10.1]), None), float('-inf'))  # cond variant
         self.assertEqual(self.uni.eval_log(np.array([12.547])), log(1./30.))
-        self.assertEqual(self.uni.ceval_log(np.array([12.547]), None), log(1./30.))
+        self.assertEqual(self.uni.eval_log(np.array([12.547]), None), log(1./30.))  # cond variant
         self.assertEqual(self.uni.eval_log(np.array([-10.1])), float('-inf'))
-        self.assertEqual(self.uni.ceval_log(np.array([-10.1]), None), float('-inf'))
+        self.assertEqual(self.uni.eval_log(np.array([-10.1]), None), float('-inf'))  # cond variant
 
         (x, y, z) = (0.2, 0.8, 3.141592)  # this point belongs to multiuni's interval
         one_under = np.array([[-0.1, y, z],  # one of the values is lower
@@ -110,9 +110,9 @@ class TestUniPdf(PbTestCase):
     def test_sample(self):
         for i in range(100):
             sample = self.uni.sample()
-            csample = self.uni.csample(None)
+            cond_sample = self.uni.sample(None)  # cond variant
             self.assertTrue(-10. <= sample[0] <= 20.)  # test sample is within bounds
-            self.assertTrue(-10. <= csample[0] <= 20.)  # also for conditional variant
+            self.assertTrue(-10. <= cond_sample[0] <= 20.)  # also for conditional variant
 
         for i in range(100):
             sample = self.multiuni.sample()
@@ -323,17 +323,17 @@ class TestMLinGaussCPdf(PbTestCase):
     def test_cond_shape(self):
         self.assertEqual(self.gauss.cond_shape(), self.cond_shape)
 
-    def test_cmean(self):
+    def test_mean(self):
         for i in range(self.cond_means.shape[0]):
-            cmean = self.gauss.cmean(self.test_conds[i])
-            self.assertTrue(np.all(cmean == self.cond_means[i]))
+            mean = self.gauss.mean(self.test_conds[i])
+            self.assertTrue(np.all(mean == self.cond_means[i]))
 
-    def test_cvariance(self):
+    def test_variance(self):
         for i in range(self.test_conds.shape[0]):
             # test all test conditions, the result must not depend on it
-            self.assertTrue(np.all(self.gauss.cvariance(self.test_conds[i]) == self.variance))
+            self.assertTrue(np.all(self.gauss.variance(self.test_conds[i]) == self.variance))
 
-    def test_ceval_log(self):
+    def test_eval_log(self):
         x = np.array([0.])
         cond = np.array([0.])
         norm = pb.MLinGaussCPdf(np.array([[1.]]), np.array([[1.]]), np.array([-1.]))
@@ -354,19 +354,19 @@ class TestMLinGaussCPdf(PbTestCase):
             # cond is set to [1.], which should produce mean = [0.]
             x[0] = i - 5.
             cond[0] = 1.
-            res = exp(norm.ceval_log(x, cond))
+            res = exp(norm.eval_log(x, cond))
             self.assertApproxEqual(res, expected[i])
 
             # cond is set to [456.78], which should produce mean = [455.78]
             x[0] = i - 5. + 455.78
             cond[0] = 456.78
-            res = exp(norm.ceval_log(x, cond))
+            res = exp(norm.eval_log(x, cond))
             self.assertApproxEqual(res, expected[i])
 
-    def test_csample(self):
+    def test_sample(self):
         # we cannost test values, just test right dimension and shape
         for i in range(self.test_conds.shape[0]):
-            x = self.gauss.csample(self.test_conds[i])
+            x = self.gauss.sample(self.test_conds[i])
             self.assertEqual(x.ndim, 1)
             self.assertEqual(x.shape[0], self.covariance.shape[0])
 
@@ -396,7 +396,7 @@ class TestProdCPdf(PbTestCase):
         #self.assertTrue(np.all(variance[0:2] == self.uni.variance()))
         #self.assertTrue(np.all(variance[2:3] == self.gauss.variance()))
 
-    def test_ceval_log(self):
+    def test_eval_log(self):
         test_points = np.array([  # point we evaluate product in
             [-0.5, -0.5],
             [-0.5,  0.5],
@@ -410,11 +410,11 @@ class TestProdCPdf(PbTestCase):
         ])
 
         for i in range(test_points.shape[0]):
-            val = exp(self.prod.ceval_log(test_points[i], np.array([])))
-            expected = exp(self.gauss.ceval_log(test_points[i][:1], test_points[i][1:])) * exp(self.uni.eval_log(test_points[i][1:]))
+            val = exp(self.prod.eval_log(test_points[i], np.array([])))
+            expected = exp(self.gauss.eval_log(test_points[i][:1], test_points[i][1:])) * exp(self.uni.eval_log(test_points[i][1:]))
             self.assertApproxEqual(val, expected)
 
-    def test_csample(self):
+    def test_sample(self):
         for i in range(10):
             # this test is really dumb, but nothing better invented yet
-            self.assertEqual(self.prod.csample(np.array([])).shape, (2,))
+            self.assertEqual(self.prod.sample(np.array([])).shape, (2,))

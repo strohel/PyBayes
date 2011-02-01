@@ -11,19 +11,16 @@ from numpywrap cimport *
 cdef class CPdf(object):
     cpdef int shape(self) except -1
     cpdef int cond_shape(self) except -1
-    cpdef ndarray cmean(self, ndarray cond)
-    cpdef ndarray cvariance(self, ndarray cond)
-    cpdef double ceval_log(self, ndarray x, ndarray cond) except? -1
-    cpdef ndarray csample(self, ndarray cond)
+    cpdef ndarray mean(self, ndarray cond = *)
+    cpdef ndarray variance(self, ndarray cond = *)
+    cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
+    cpdef ndarray sample(self, ndarray cond = *)
 
     cpdef bint check_cond(self, ndarray cond) except False  # is internal to PyBayes, thus can be cdef TODO: cython bug
 
 
 cdef class Pdf(CPdf):
-    cpdef ndarray mean(self)
-    cpdef ndarray variance(self)
-    cpdef double eval_log(self, ndarray x) except? -1
-    cpdef ndarray sample(self)
+    pass
 
 
 cdef class UniPdf(Pdf):
@@ -36,26 +33,26 @@ cdef class ProdPdf(Pdf):
     cdef int _shape
 
     @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray mean(self)
+    cpdef ndarray mean(self, ndarray cond = *)
 
     @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray variance(self)
+    cpdef ndarray variance(self, ndarray cond = *)
 
     @cython.locals(curr = int, i = int, ret = double)
-    cpdef double eval_log(self, ndarray x)
+    cpdef double eval_log(self, ndarray x, ndarray cond = *)
 
     @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray sample(self)
+    cpdef ndarray sample(self, ndarray cond = *)
 
 
 cdef class GaussPdf(Pdf):
     cdef public ndarray mu, R  # dtype=double
 
     @cython.locals(log_norm = double, log_val = double)
-    cpdef double eval_log(self, ndarray x) except? -1
+    cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
 
     @cython.locals(z = ndarray)
-    cpdef ndarray sample(self)
+    cpdef ndarray sample(self, ndarray cond = *)
 
 
 cdef class MLinGaussPdf(CPdf):

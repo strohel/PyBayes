@@ -31,19 +31,19 @@ class CPdf(object):
         """Return shape of the condition as int"""
         raise NotImplementedError("Derived classes must implement this function")
 
-    def cmean(self, cond):
+    def mean(self, cond = None):
         """Return conditional mean value (a vector) of the pdf"""
         raise NotImplementedError("Derived classes must implement this function")
 
-    def cvariance(self, cond):
+    def variance(self, cond = None):
         """Return conditional variance (diagonal elements of covariance)"""
         raise NotImplementedError("Derived classes must implement this function")
 
-    def ceval_log(self, x, cond):
+    def eval_log(self, x, cond = None):
         """Return logarithm of conditional likelihood function in point x"""
         raise NotImplementedError("Derived classes must implement this function")
 
-    def csample(self, cond):
+    def sample(self, cond = None):
         """Return one random conditional sample. Density of samples should adhere to this density"""
         raise NotImplementedError("Derived classes must implement this function")
 
@@ -64,34 +64,6 @@ class Pdf(CPdf):
     def cond_shape(self):
         """Return shape of the condition, which is zero for unconditional Pdfs"""
         return 0
-
-    def cmean(self, cond):
-        return self.mean()
-
-    def mean(self):
-        """Return mean value (a vector) of the pdf"""
-        raise NotImplementedError("Derived classes must implement this function")
-
-    def cvariance(self, cond):
-        return self.variance()
-
-    def variance(self):
-        """Return variance (diagonal elements of covariance)"""
-        raise NotImplementedError("Derived classes must implement this function")
-
-    def ceval_log(self, x, cond):
-        return self.eval_log(x)
-
-    def eval_log(self, x):
-        """Return logarithm of likelihood function in point x"""
-        raise NotImplementedError("Derived classes must implement this function")
-
-    def csample(self, cond):
-        return self.sample()
-
-    def sample(self):
-        """Return one random sample. Density of samples should adhere to this density"""
-        raise NotImplementedError("Derived classes must implement this function")
 
 
 class UniPdf(Pdf):
@@ -117,20 +89,20 @@ class UniPdf(Pdf):
     def shape(self):
         return self.a.shape[0]
 
-    def mean(self):
+    def mean(self, cond = None):
         return (self.a+self.b)/2.  # element-wise division
 
-    def variance(self):
+    def variance(self, cond = None):
         return ((self.b-self.a)**2)/12.  # element-wise power and division
 
-    def eval_log(self, x):
+    def eval_log(self, x, cond = None):
         if x is None:  # cython-specific, but wont hurt in python
             raise TypeError("x must be numpy.ndarray")
         if np_any(x <= self.a) or np_any(x >= self.b):
             return float('-inf')
         return -log(prod(self.b-self.a))
 
-    def sample(self):
+    def sample(self, cond = None):
         return uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
 
 
@@ -168,13 +140,13 @@ class GaussPdf(Pdf):
     def shape(self):
         return self.mu.shape[0]
 
-    def mean(self):
+    def mean(self, cond = None):
         return self.mu
 
-    def variance(self):
+    def variance(self, cond = None):
         return diag(self.R)
 
-    def eval_log(self, x):
+    def eval_log(self, x, cond = None):
         if x is None:  # cython-specific, but wont hurt in python
             raise TypeError("x must be numpy.ndarray")
 
@@ -187,7 +159,7 @@ class GaussPdf(Pdf):
         log_val = -1/2. * dotvv(x - self.mu, dot(inv(self.R), x - self.mu))
         return log_norm + log_val  # = log(norm*val)
 
-    def sample(self):
+    def sample(self, cond = None):
         z = normal(size=self.mu.shape[0]);
         # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
         return self.mu + dot(cholesky(self.R), z);
@@ -225,7 +197,7 @@ class ProdPdf(Pdf):
     def shape(self):
         return self._shape
 
-    def mean(self):
+    def mean(self, cond = None):
         curr = 0
         ret = zeros(self.shape())
         for i in range(self.factors.shape[0]):
@@ -233,7 +205,7 @@ class ProdPdf(Pdf):
             curr += self.shapes[i]
         return ret;
 
-    def variance(self):
+    def variance(self, cond = None):
         curr = 0
         ret = zeros(self.shape())
         for i in range(self.factors.shape[0]):
@@ -241,7 +213,7 @@ class ProdPdf(Pdf):
             curr += self.shapes[i]
         return ret;
 
-    def eval_log(self, x):
+    def eval_log(self, x, cond = None):
         if x is None:  # cython-specific, but wont hurt in python
             raise TypeError("x must be numpy.ndarray")
         curr = 0
@@ -251,7 +223,7 @@ class ProdPdf(Pdf):
             curr += self.shapes[i]
         return ret;
 
-    def sample(self):
+    def sample(self, cond = None):
         curr = 0
         ret = zeros(self.shape())
         for i in range(self.factors.shape[0]):
@@ -293,22 +265,22 @@ class MLinGaussCPdf(CPdf):
     def cond_shape(self):
         return self.A.shape[1]
 
-    def cmean(self, cond):
+    def mean(self, cond = None):
         self.check_cond(cond)
         return dot(self.A, cond) + self.b
 
-    def cvariance(self, cond):
+    def variance(self, cond = None):
         # cond is unused here, so no need to check it
         return self.gauss.variance()
 
-    def ceval_log(self, x, cond):
-        # cond is checked in cmean()
-        self.gauss.mu = self.cmean(cond)
+    def eval_log(self, x, cond = None):
+        # cond is checked in mean()
+        self.gauss.mu = self.mean(cond)
         return self.gauss.eval_log(x)
 
-    def csample(self, cond):
-        # cond is checked in cmean()
-        self.gauss.mu = self.cmean(cond)
+    def sample(self, cond = None):
+        # cond is checked in mean()
+        self.gauss.mu = self.mean(cond)
         return self.gauss.sample()
 
 
@@ -357,13 +329,13 @@ class ProdCPdf(CPdf):
     def cond_shape(self):
         return self._cond_shape
 
-    def cmean(self, cond):
+    def mean(self, cond = None):
         raise NotImplementedError("Not yet implemented")
 
-    def cvariance(self, cond):
+    def variance(self, cond = None):
         raise NotImplementedError("Not yet implemented")
 
-    def ceval_log(self, x, cond):
+    def eval_log(self, x, cond = None):
         if x is None:  # cython-specific, but wont hurt in python
             raise TypeError("x must be numpy.ndarray")
         self.check_cond(cond)
@@ -378,11 +350,11 @@ class ProdCPdf(CPdf):
 
         for i in range(self.factors.shape[0]):
             cond_start += self.shapes[i]
-            ret += self.factors[i].ceval_log(comb_input[start:cond_start], comb_input[cond_start:])
+            ret += self.factors[i].eval_log(comb_input[start:cond_start], comb_input[cond_start:])
             start += self.shapes[i]
         return ret
 
-    def csample(self, cond):
+    def sample(self, cond = None):
         self.check_cond(cond)
 
         # combination of return value and condition
@@ -393,6 +365,6 @@ class ProdCPdf(CPdf):
         for i in range(self.factors.shape[0] -1, -1, -1):
             stop = start
             start -= self.shapes[i]
-            comb[start:stop] = self.factors[i].csample(comb[stop:])
+            comb[start:stop] = self.factors[i].sample(comb[stop:])
 
         return comb[:self.shape()]
