@@ -19,11 +19,15 @@ class TestRVComp(PbTestCase):
         rvcomp = pb.RVComp("pretty name", 123)
         self.assertEquals(rvcomp.name, "pretty name")
         self.assertEquals(rvcomp.dimension, 123)
+        rvcomp = pb.RVComp(None, 345)
+        self.assertEquals(rvcomp.name, None)
+        self.assertEquals(rvcomp.dimension, 345)
 
     def test_invalid_init(self):
         self.assertRaises(TypeError, pb.RVComp, "def", 0.45)
         self.assertRaises(TypeError, pb.RVComp, "def", "not a number")
         self.assertRaises(ValueError, pb.RVComp, "abc", -1)
+        self.assertRaises(TypeError, pb.RVComp, 0.456, 1)
 
 
 class TestRV(PbTestCase):
@@ -40,6 +44,9 @@ class TestRV(PbTestCase):
         rv_2 = pb.RV(rv_1)
         self.assertEquals(rv_2.name, "[a, b]")
         self.assertEquals(rv_2.dimension, 3)
+
+    def test_invalid_init(self):
+        self.assertRaises(ValueError, pb.RV)  # empy component list is not allowed
 
 
 class TestCpdf(PbTestCase):

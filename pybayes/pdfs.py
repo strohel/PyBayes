@@ -30,7 +30,9 @@ class RVComp(object):
         :raises ValueError: invalid dimension
         """
 
-        self.name = str(name)
+        if name is not None and not isinstance(name, str):
+            raise TypeError("name must be either None or a string")
+        self.name = name
         if not isinstance(dimension, int):
             raise TypeError("dimension must be integer (int)")
         if dimension < 1:
@@ -53,6 +55,8 @@ class RV(object):
         self.dimension = 0
         self.name = '['
         self.components = []
+        if len(components) is 0:
+            raise ValueError("at least one component must be passed")
         for component in components:
             if isinstance(component, RVComp):
                 self._add_component(component)
