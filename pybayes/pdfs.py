@@ -354,7 +354,7 @@ class ProdPdf(Pdf):
 
 
 class MLinGaussCPdf(CPdf):
-    r"""Conditional Gaussian pdf whose mean is a linear function of condition
+    r"""Conditional Gaussian pdf whose mean is a linear function of condition.
 
     .. math::
 
