@@ -6,3 +6,5 @@ Bayesian Filters
    :no-members:
 
 .. autoclass:: Kalman
+
+.. autoclass:: ParticleFilter

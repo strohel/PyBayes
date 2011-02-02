@@ -97,3 +97,16 @@ class Kalman(object):
         self.P.R -= dot(dot(K, self.C), self.P.R)  # a posteriori variance
 
         return self.P.mu
+
+
+class ParticleFilter(object):
+    """A filter whose aposteriori density takes the form
+
+    .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
+    """
+
+    def __init__(self, n, p_0, p_x_x, p_x_y):
+        """Initialise particle filter.
+
+        """
+        pass
