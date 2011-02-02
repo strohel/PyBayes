@@ -17,11 +17,18 @@ from numpywrap import *
 
 
 class RVComp(object):
-    """Atomic component of a random value"""
+    """Atomic component of a random value."""
 
     def __init__(self, name, dimension):
-        """Initialise new component of a random variable. It will be named
-        `name` with dimension `dimension`"""
+        """Initialise new component of a random variable.
+
+        :param name: name of the component. Pass None for an anonymous component
+        :type name: string or None
+        :param dimension: number of vector components this component occupies
+        :type dimension: positive integer
+        :raises TypeError: non-integer dimension or non-string name
+        :raises ValueError: invalid dimension
+        """
 
         self.name = str(name)
         if not isinstance(dimension, int):
@@ -32,12 +39,17 @@ class RVComp(object):
 
 
 class RV(object):
-    """Representation of a random variable made of one or more components
-    (see RVComp)"""
+    """Representation of a random variable made of one or more components."""
 
     def __init__(self, *components):
-        """Initialise new random variable made of one or more components. You may
-        also pass one or more existing RVs, whose components will be reused"""
+        """Initialise new random variable.
+
+        :param \*components: components that should form the random vector. You may
+            also pass another RVs which is a shotrcut for adding all their components.
+        :type \*components: RV or RVComp
+        :raises TypeError: invalid object passed (neither a RV or a RVComp)
+        :raises ValueError: zero components passed
+        """
         self.dimension = 0
         self.name = '['
         self.components = []
@@ -53,6 +65,9 @@ class RV(object):
         self.name = self.name[:-2] + ']'
 
     def _add_component(self, component):
+        """Add new component to this random variable.
+
+        Internal function, do not use outside of PyBayes"""
         # TODO: check if component is already contained? (does it matter somewhere?)
         self.components.append(component)
         self.dimension += component.dimension
@@ -60,7 +75,12 @@ class RV(object):
 
     def contains(self, component):
         """Return True is this random value contains the exact same instance of
-        the `component`"""
+        the component
+
+        :param component: component whose presence you want to test
+        :type component: RVComp
+        :rtype: bool
+        """
         for comp in self.components:
             if id(comp) == id(component):
                 return True
