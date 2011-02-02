@@ -20,7 +20,7 @@ class RVComp(object):
     """Atomic component of a random variable."""
 
     def __init__(self, name, dimension):
-        """Initialise new component of a random variable.
+        """Initialise new component of a random variable :class:`RV`.
 
         :param name: name of the component. Pass None for an anonymous component
         :type name: string or None
@@ -41,15 +41,16 @@ class RVComp(object):
 
 
 class RV(object):
-    """Representation of a random variable made of one or more components."""
+    """Representation of a random variable made of one or more components. See
+    :class:`RVComp`"""
 
     def __init__(self, *components):
         """Initialise new random variable.
 
         :param \*components: components that should form the random vector. You may
             also pass another RVs which is a shotrcut for adding all their components.
-        :type \*components: RV or RVComp
-        :raises TypeError: invalid object passed (neither a RV or a RVComp)
+        :type \*components: :class:`RV` or :class:`RVComp`
+        :raises TypeError: invalid object passed (neither a :class:`RV` or a :class:`RVComp`)
         :raises ValueError: zero components passed
 
         Usual way of creating RV could be:
@@ -91,7 +92,7 @@ class RV(object):
         the component
 
         :param component: component whose presence you want to test
-        :type component: RVComp
+        :type component: :class:`RVComp`
         :rtype: bool
         """
         for comp in self.components:
@@ -104,8 +105,8 @@ class CPdf(object):
     """Base class for all Conditional Probability Density Functions.
 
     When you evaluate a CPdf the result generally also depends on a condition
-    (vector) named `cond` in PyBayes. For CPdfs that are Pdfs this is not the
-    case, the result is unconditional.
+    (vector) named `cond` in PyBayes. For a CPdf that is a :class:`Pdf` this is
+    not the case, the result is unconditional.
     """
 
     def shape(self):
@@ -162,23 +163,35 @@ class CPdf(object):
 
 
 class Pdf(CPdf):
-    """Base class for all unconditional (static) multivariate Probability Density Functions"""
+    """Base class for all unconditional (static) multivariate Probability Density
+    Functions. Subclass of CPdf."""
 
     def cond_shape(self):
-        """Return shape of the condition, which is zero for unconditional Pdfs"""
+        """Return zero as Pdfs have no condition."""
         return 0
 
 
 class UniPdf(Pdf):
-    r"""Simple uniform multivariate probability density function
+    r"""Simple uniform multivariate probability density function.
 
     .. math:: f(x) = \Theta(x - a) \Theta(b - x) \prod_{i=1}^n \frac{1}{b_i-a_i}
+
+    :var numpy.ndarray a: left border
+    :var numpy.ndarray b: right border
+
+    You may modify these attributes as long as you don't change their shape and
+    assumption **a** < **b** still holds.
     """
 
     def __init__(self, a, b):
-        """Initialise uniform distribution with left point a and right point b
+        """Initialise uniform distribution.
 
-        a must be greater (in each dimension) than b
+        :param a: left border
+        :type a: numpy.ndarray
+        :param b: right border
+        :type b: numpy.ndarray
+
+        **b** must be greater (in each dimension) than **a**
         """
         self.a = asarray(a)
         self.b = asarray(b)
@@ -210,21 +223,22 @@ class UniPdf(Pdf):
 
 
 class GaussPdf(Pdf):
-    r"""Unconditional Gaussian (normal) probability density function
+    r"""Unconditional Gaussian (normal) probability density function.
 
     .. math:: f(x) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
+
+    :var numpy.ndarray mu: mean value
+    :var numpy.ndarray R: covariance matrix
+
+    You can modify object parameters only if you are absolutely sure that you
+    pass allowable values, because parameters are only checked once in constructor.
     """
 
     def __init__(self, mean=array([0]), covariance=array([[1]])):
-        """Initialise Gaussian pdf with mean value mean and covariance matrix covariance
+        """Initialise Gaussian pdf.
 
-        mean should be 1D array and covariance must be a matrix (2D array). To make
-        1D GaussPdf, pass [[number]] as covariance.
-
-        mean is stored in mu attribute
-        covariance is stored in R attribute
-        you can modify object parameters only if you are absolutely sure that you
-        pass correct values, because parameters are only checked once in constructor
+        :param numpy.ndarray mean: mean value (1D array)
+        :param numpy.ndarray covariance: covariance matrix (2D array)
         """
         mean = asarray(mean)
         covariance = asarray(covariance)
