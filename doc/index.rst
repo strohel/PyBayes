@@ -8,6 +8,7 @@ PyBayes Documentation
    :maxdepth: 2
 
    pdfs
+   filters
 
 Indices and tables
 ==================

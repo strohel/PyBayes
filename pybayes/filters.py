@@ -2,7 +2,14 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""Kalman filter"""
+"""
+This module contains Bayesian filters.
+
+All classes from this module are currently imported to top-level pybayes module,
+so instead of ``from pybayes.filters import Kalman`` you can type ``from pybayes import
+Kalman``.
+"""
+
 
 from numpywrap import *
 
