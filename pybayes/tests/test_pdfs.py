@@ -415,7 +415,7 @@ class TestProdCPdf(PbTestCase):
         identity = np.array([[1.]])
         self.gauss = pb.MLinGaussCPdf(identity, identity, np.array([0.]))
         self.uni = pb.UniPdf(np.array([0.]), np.array([2.]))
-        self.prod = pb.ProdCPdf(np.array([self.gauss, self.uni]))
+        self.prod = pb.ProdCPdf(self.gauss, self.uni)
 
     def test_shape(self):
         self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())

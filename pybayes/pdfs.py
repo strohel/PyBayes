@@ -411,15 +411,19 @@ class ProdCPdf(CPdf):
     .. math:: f(x_1 x_2 x_3 | c) = f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c)
     """
 
-    def __init__(self, factors):
+    def __init__(self, *factors):
         """Construct chain rule of multiple cpdfs.
 
-        .. factors - 1D numpy.ndarray of objects of type CPdf (or subclasses)
-        """
-        self.factors = asarray(factors)
-        if self.factors.ndim != 1:
-            raise ValueError("factors must be 1D numpy.ndarray")
+        :param \*factors: objects of type CPdf (or subclasses)
+        :type \*factors: :class:`CPdf`
 
+        Usual way of creating ProdCPdf could be:
+
+        >>> prod = ProdCPdf(MLinGaussCPdf(..), UniPdf(...))
+        """
+        if len(factors) is 0:
+            raise ValueError("at least one factor must be passed")
+        self.factors = array(factors, dtype=Pdf)
         self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
 
         accumulate_cond_shape = 0
