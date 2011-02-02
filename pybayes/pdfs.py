@@ -17,7 +17,7 @@ from numpywrap import *
 
 
 class RVComp(object):
-    """Atomic component of a random value."""
+    """Atomic component of a random variable."""
 
     def __init__(self, name, dimension):
         """Initialise new component of a random variable.
@@ -51,6 +51,15 @@ class RV(object):
         :type \*components: RV or RVComp
         :raises TypeError: invalid object passed (neither a RV or a RVComp)
         :raises ValueError: zero components passed
+
+        Usual way of creating RV could be:
+
+        >>> x = RV(RVComp('x_1', 1), RVComp('x_2', 1))
+        >>> x.name
+        '[x_1, x_2]'
+        >>> xy = RV(x, RVComp('y', 2))
+        >>> xy.name
+        '[x_1, x_2, y]'
         """
         self.dimension = 0
         self.name = '['
@@ -78,7 +87,7 @@ class RV(object):
         self.name += component.name + ", "
 
     def contains(self, component):
-        """Return True is this random value contains the exact same instance of
+        """Return True if this random variable contains the exact same instance of
         the component
 
         :param component: component whose presence you want to test
@@ -273,7 +282,11 @@ class ProdPdf(Pdf):
     def __init__(self, factors):
         """Construct product of unconditional pdfs.
 
-        .. factors: nunpy.ndarray whose elements are Pdf objects
+        :param factors: array whose elements are Pdf objects
+        :type factors: numpy.ndarray
+
+        Usual way of creating ProdPdf could be:
+
         >>> prod = ProdPdf(numpy.array([UniPdf(...), GaussPdf(...)]))
         """
         self.factors = asarray(factors)
