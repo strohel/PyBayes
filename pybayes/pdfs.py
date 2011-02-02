@@ -293,19 +293,19 @@ class ProdPdf(Pdf):
     .. math:: f(x_1 x_2 x_3) = f_1(x_1) f_2(x_2) f_3(x_3)
     """
 
-    def __init__(self, factors):
-        """Construct product of unconditional pdfs.
+    def __init__(self, *factors):
+        """Initialise product of unconditional pdfs.
 
-        :param factors: array whose elements are Pdf objects
-        :type factors: numpy.ndarray
+        :param \*factors: sub-distributions
+        :type \*factors: :class:`Pdf`
 
         Usual way of creating ProdPdf could be:
 
-        >>> prod = ProdPdf(numpy.array([UniPdf(...), GaussPdf(...)]))
+        >>> prod = ProdPdf(UniPdf(...), GaussPdf(...))
         """
-        self.factors = asarray(factors)
-        if self.factors.ndim != 1:
-            raise ValueError("factors must be 1D numpy.ndarray")
+        if len(factors) is 0:
+            raise ValueError("at least one factor must be passed")
+        self.factors = array(factors, dtype=Pdf)
         self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
         for i in range(self.factors.shape[0]):
             if not isinstance(self.factors[i], Pdf):
