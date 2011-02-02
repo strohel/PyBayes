@@ -4,6 +4,6 @@
 
 """PyBayes' tests"""
 
-from test_kalman import *
+from test_filters import *
 from test_numpywrap import *
 from test_pdfs import *
