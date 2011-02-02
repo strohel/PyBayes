@@ -230,14 +230,34 @@ class TestGaussPdf(PbTestCase):
             1.48671951473e-06,
         ])
         for i in xrange(0, 11):
-            x[0] = i - 5
+            x[0] = i - 5.
             res = exp(norm.eval_log(x))
             self.assertApproxEqual(res, expected[i])
 
-        # non-zero mean:
+        # same variance, non-zero mean:
         norm = pb.GaussPdf(np.array([17.9]), np.array([[1.]]))
         for i in xrange(0, 11):
             x[0] = i - 5. + 17.9
+            res = exp(norm.eval_log(x))
+            self.assertApproxEqual(res, expected[i])
+
+        # non-unit variance:
+        norm = pb.GaussPdf(np.array([0.]), np.array([[15.0]]))
+        expected = np.array([
+            0.044766420317807747,
+            0.060428346749642113,
+            0.076309057876818423,
+            0.090148500118746672,
+            0.099629500639377908,
+            0.10300645387285032,
+            0.099629500639377908,
+            0.090148500118746672,
+            0.076309057876818423,
+            0.060428346749642113,
+            0.044766420317807747,
+        ])
+        for i in xrange(0, 11):
+            x[0] = (i - 5.)
             res = exp(norm.eval_log(x))
             self.assertApproxEqual(res, expected[i])
 

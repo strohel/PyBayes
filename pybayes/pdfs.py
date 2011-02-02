@@ -234,11 +234,15 @@ class GaussPdf(Pdf):
     pass allowable values, because parameters are only checked once in constructor.
     """
 
-    def __init__(self, mean=array([0]), covariance=array([[1]])):
+    def __init__(self, mean, covariance):
         """Initialise Gaussian pdf.
 
         :param numpy.ndarray mean: mean value (1D array)
         :param numpy.ndarray covariance: covariance matrix (2D array)
+
+        To create standard normal distribution:
+
+        >>> norm = GaussPdf(np.array([0.]), np.array([[1.]]))  # note the shape of covariance
         """
         mean = asarray(mean)
         covariance = asarray(covariance)

@@ -62,7 +62,7 @@ class Kalman(object):
         self.A, self.B, self.C, self.D, self.Q, self.R = A, B, C, D, Q, R
 
         self.P = state_pdf
-        self.S = GaussPdf()  # observation probability density function
+        self.S = GaussPdf(array([0.]), array([[1.]]))  # observation probability density function
 
         self._bayes_type_check = True  # whether to check arguments in bayes() method
 
