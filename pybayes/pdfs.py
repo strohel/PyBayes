@@ -92,38 +92,57 @@ class RV(object):
 
 
 class CPdf(object):
-    """Base class for all Conditional Probability Density Functions
+    """Base class for all Conditional Probability Density Functions.
 
-    When you evaluate a CPdf the result also depends on condition (vector), in
-    PyBayes named cond.
+    When you evaluate a CPdf the result generally also depends on a condition
+    (vector) named `cond` in PyBayes. For CPdfs that are Pdfs this is not the
+    case, the result is unconditional.
     """
 
     def shape(self):
-        """Return shape of the random variable (and mean) as int"""
+        """Return shape of the random variable (and mean).
+
+        :rtype: int"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def cond_shape(self):
-        """Return shape of the condition as int"""
+        """Return shape of the condition.
+
+        :rtype: int"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def mean(self, cond = None):
-        """Return conditional mean value (a vector) of the pdf"""
+        """Return (conditional) mean value of the pdf.
+
+        :rtype: numpy.ndarray"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def variance(self, cond = None):
-        """Return conditional variance (diagonal elements of covariance)"""
+        """Return (conditional) variance (diagonal elements of covariance).
+
+        :rtype: numpy.ndarray"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def eval_log(self, x, cond = None):
-        """Return logarithm of conditional likelihood function in point x"""
+        """Return logarithm of (conditional) likelihood function in point x.
+
+        :param x: point which to evaluate the function in
+        :type x: numpy.ndarray
+        :rtype: double"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def sample(self, cond = None):
-        """Return one random conditional sample. Density of samples should adhere to this density"""
+        """Return one random (conditional) sample from this distribution
+
+        :rtype: numpy.ndarray"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def check_cond(self, cond):
-        """Return True if cond has correct type and shape, raise Error otherwise"""
+        """Return True if cond has correct type and shape, raise Error otherwise
+
+        :raises TypeError: cond is not of correct type
+        :raises ValueError: cond doesn't have appropriate shape
+        :rtype: bool"""
         if cond is None:  # cython-specific
             raise TypeError("cond must be numpy.ndarray")
         if cond.ndim != 1:
