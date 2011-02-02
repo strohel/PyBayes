@@ -47,6 +47,10 @@ In this section, variable :math:`c` in math exressions denotes condition.
 
    .. automethod:: __init__
 
+.. autoclass:: LinGaussCPdf
+
+   .. automethod:: __init__
+
 .. autoclass:: ProdCPdf
 
    .. automethod:: __init__

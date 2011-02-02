@@ -4,7 +4,7 @@
 
 """Tests for pdfs"""
 
-from math import exp, log
+from math import exp, log, sqrt
 
 import numpy as np
 
@@ -426,6 +426,83 @@ class TestMLinGaussCPdf(PbTestCase):
             x = self.gauss.sample(self.test_conds[i])
             self.assertEqual(x.ndim, 1)
             self.assertEqual(x.shape[0], self.covariance.shape[0])
+
+
+class TestLinGaussCPdf(PbTestCase):
+    """Test conditional Gaussian pdf with mean and cov as linear functions of cond"""
+
+    def setUp(self):
+        # constructor parameters:
+        (a, b, c, d) = (10., 5., 0.1, -1.)
+
+        # array of test conditions (shared by various tests)
+        self.test_conds = np.array([
+            [-1., 20.],
+            [0., 30.],
+            [1., 11.],
+        ])
+        # array of mean values that match (first n entries of) test_conds
+        self.cond_means = np.array([
+            [-5.],
+            [5.],
+            [15.]
+        ])
+        # array of variance values that match (first n entries of) test_conds
+        self.cond_vars = np.array([
+            [1.],
+            [2.],
+            [0.1]
+        ])
+
+        self.gauss = pb.LinGaussCPdf(a, b, c, d)
+
+    def test_init(self):
+        self.assertEqual(type(self.gauss), pb.LinGaussCPdf)
+
+    def test_invalid_init(self):
+        constructor = pb.MLinGaussCPdf
+
+        self.assertRaises(TypeError, constructor, 1, 2, 3, 4)
+
+    def test_shape(self):
+        self.assertEqual(self.gauss.shape(), 1)
+
+    def test_cond_shape(self):
+        self.assertEqual(self.gauss.cond_shape(), 2)
+
+    def test_mean(self):
+        for i in range(self.cond_means.shape[0]):
+            mean = self.gauss.mean(self.test_conds[i])
+            self.assertTrue(np.all(mean == self.cond_means[i]))
+
+    def test_variance(self):
+        for i in range(self.test_conds.shape[0]):
+            variance = self.gauss.variance(self.test_conds[i])
+            self.assertApproxEqual(variance, self.cond_vars[i])
+
+    def test_eval_log(self):
+        # for this test, we assume that GaussPdf is already well tested and correct
+        for i in range(self.test_conds.shape[0]):
+            cond = self.test_conds[i]
+            mean = self.cond_means[i]
+            var = self.cond_vars[i].reshape((1,1))
+            gauss = pb.GaussPdf(mean, var)
+            for j in range (-5, 6):
+                x = mean + j*var[0]/2.
+                ret = self.gauss.eval_log(x, cond)
+                self.assertApproxEqual(ret, gauss.eval_log(x))
+
+    def test_sample(self):
+        n = 3.3
+        # test that 10 samples are within mean +- n*sigma (>99.9% probability for n=3.3)
+        for i in range(self.test_conds.shape[0]):
+            cond = self.test_conds[i]
+            mean = self.cond_means[i][0]
+            sigma = sqrt(self.cond_vars[i][0])
+            for j in range (10):
+                sample = self.gauss.sample(cond)[0] - mean
+                self.assertTrue(-n*sigma < sample < n*sigma)
+        # TODO: one may also generate much more samples and calculate moments
 
 
 class TestProdCPdf(PbTestCase):

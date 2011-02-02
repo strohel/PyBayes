@@ -73,6 +73,11 @@ cdef class MLinGaussPdf(CPdf):
     cdef readonly GaussPdf gauss
 
 
+cdef class LinGaussPdf(CPdf):
+    cdef public double a, b, c, d
+    cdef GaussPdf gauss
+
+
 cdef class ProdCPdf(CPdf):
     cdef readonly ndarray factors  # dtype=CPdf
     cdef readonly ndarray shapes  # dtype=int

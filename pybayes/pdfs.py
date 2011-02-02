@@ -409,6 +409,65 @@ class MLinGaussCPdf(CPdf):
         return self.gauss.sample()
 
 
+class LinGaussCPdf(CPdf):
+    r"""Conditional one-dimensional Gaussian pdf whose mean and covariance are
+    linear functions of condition.
+
+    .. math::
+
+       f(x|c_1 c_2) \propto \exp \left( - \frac{\left( x-\mu \right)^2}{2\sigma^2} \right)
+       \quad \quad \text{where} \quad \mu := a c_1 + b \quad \text{and}
+       \quad \sigma^2 := c c_2 + d
+    """
+
+    def __init__(self, a, b, c, d):
+        """Initialise Linear Gaussian conditional pdf.
+
+        :param double a, b: mean = a*cond_1 + b
+        :param double c, d: covariance = c*cond_2 + d
+        """
+        if not isinstance(a, float):
+            raise TypeError("all parameters must be floats")
+        self.a = a
+        if not isinstance(b, float):
+            raise TypeError("all parameters must be floats")
+        self.b = b
+        if not isinstance(c, float):
+            raise TypeError("all parameters must be floats")
+        self.c = c
+        if not isinstance(d, float):
+            raise TypeError("all parameters must be floats")
+        self.d = d
+        self.gauss = GaussPdf(zeros(1), array([[1.]]))
+
+    def shape(self):
+        return 1
+
+    def cond_shape(self):
+        return 2
+
+    def mean(self, cond = None):
+        self.check_cond(cond)
+        self.gauss.mu[0] = self.a*cond[0] + self.b  # gauss.mu is used just as a holder
+        return self.gauss.mu
+
+    def variance(self, cond = None):
+        self.check_cond(cond)
+        return array([self.c*cond[1] + self.d])
+
+    def eval_log(self, x, cond = None):
+        self.check_cond(cond)
+        self.gauss.mu[0] = self.a*cond[0] + self.b
+        self.gauss.R[0,0] = self.c*cond[1] + self.d
+        return self.gauss.eval_log(x)
+
+    def sample(self, cond = None):
+        self.check_cond(cond)
+        self.gauss.mu[0] = self.a*cond[0] + self.b
+        self.gauss.R[0,0] = self.c*cond[1] + self.d
+        return self.gauss.sample()
+
+
 class ProdCPdf(CPdf):
     r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
 
