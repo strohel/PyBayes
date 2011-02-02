@@ -10,23 +10,33 @@ Random Variables and their Components
 
 .. autoclass:: RV
 
+   .. automethod:: __init__
+
 .. autoclass:: RVComp
+
+   .. automethod:: __init__
 
 Probability Density Function prototype
 ======================================
 
 .. autoclass:: CPdf
 
+.. autoclass:: Pdf
+
 Unconditional Probability Density Functions (pdfs)
 ==================================================
 
-.. autoclass:: Pdf
-
 .. autoclass:: UniPdf
+
+   .. automethod:: __init__
 
 .. autoclass:: GaussPdf
 
+   .. automethod:: __init__
+
 .. autoclass:: ProdPdf
+
+   .. automethod:: __init__
 
 Conditional Probability Density Functions (cpdfs)
 =================================================
@@ -35,4 +45,8 @@ In this section, variable :math:`c` in math exressions denotes condition.
 
 .. autoclass:: MLinGaussCPdf
 
+   .. automethod:: __init__
+
 .. autoclass:: ProdCPdf
+
+   .. automethod:: __init__

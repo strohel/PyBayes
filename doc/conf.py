@@ -218,6 +218,6 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 
 # Options for autodoc
-autoclass_content = "both"
+autoclass_content = "class" # both, class
 autodoc_member_order = "bysource"
 autodoc_default_flags = ["members", "show_inheritance"]
