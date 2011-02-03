@@ -60,7 +60,7 @@ class RV(object):
             also pass another RVs which is a shotrcut for adding all their components.
         :type \*components: :class:`RV` or :class:`RVComp`
         :raises TypeError: invalid object passed (neither a :class:`RV` or a :class:`RVComp`)
-        :raises ValueError: zero components passed
+        :raises ValueError: zero components passed, or the same component passed twice (currently unsupported, speak up if you need it)
 
         Usual way of creating RV could be:
 
@@ -91,7 +91,11 @@ class RV(object):
         """Add new component to this random variable.
 
         Internal function, do not use outside of PyBayes"""
-        # TODO: check if component is already contained? (does it matter somewhere?)
+        # fail if component is already present
+        if self.contains(component):
+            raise ValueError('Attempt to add the exact same component twice. This '
+                           + 'is currently unsupported, but if you have a reason '
+                           + 'for this, it may get allowed in future versions.')
         self.components.append(component)
         self.dimension += component.dimension
         self.name += component.name + ", "
