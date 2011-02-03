@@ -55,10 +55,10 @@ class RV(object):
 
         Usual way of creating RV could be:
 
-        >>> x = RV(RVComp('x_1', 1), RVComp('x_2', 1))
+        >>> x = RV(RVComp(1, 'x_1'), RVComp(1, 'x_2'))
         >>> x.name
         '[x_1, x_2]'
-        >>> xy = RV(x, RVComp('y', 2))
+        >>> xy = RV(x, RVComp(2, 'y'))
         >>> xy.name
         '[x_1, x_2, y]'
         """
