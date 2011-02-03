@@ -10,7 +10,7 @@ import pstats
 from optparse import OptionParser
 import os
 
-import pybayes.tests.stress_kalman
+import pybayes.tests.stress_filters
 
 
 # parse cmdline arguments
@@ -27,7 +27,7 @@ if not os.path.isdir(options.datadir):
     exit(1)
 
 # define stress tests
-stresses = [pybayes.tests.stress_kalman]
+stresses = [pybayes.tests.stress_filters]
 
 # run stress tests
 for stress in stresses:
