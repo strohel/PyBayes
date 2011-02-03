@@ -10,12 +10,12 @@ from numpywrap cimport *
 
 cdef class RVComp(object):
     cdef readonly int dimension
-    cdef readonly str name
+    cdef public str name
 
 
 cdef class RV(object):
     cdef readonly int dimension
-    cdef readonly str name
+    cdef public str name
     cdef readonly list components
 
     cpdef bint contains(self, RVComp component)

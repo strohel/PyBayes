@@ -17,7 +17,11 @@ from numpywrap import *
 
 
 class RVComp(object):
-    """Atomic component of a random variable."""
+    """Atomic component of a random variable.
+
+    :var int dimension: dimension; do not change unless you know what you are doing
+    :var str name: name; can be changed as long as it remains a string (warn: parent RVs are not updated)
+    """
 
     def __init__(self, dimension, name = None):
         """Initialise new component of a random variable :class:`RV`.
@@ -42,7 +46,12 @@ class RVComp(object):
 
 class RV(object):
     """Representation of a random variable made of one or more components. See
-    :class:`RVComp`"""
+    :class:`RVComp`.
+
+    :var int dimension: cummulative dimension; do not change
+    :var str name: pretty name, can be changed but needs to be a string
+    :var list components: list of RVComps; do not change
+    """
 
     def __init__(self, *components):
         """Initialise new random variable.
@@ -91,7 +100,7 @@ class RV(object):
         """Return True if this random variable contains the exact same instance of
         the component
 
-        :param component: component whose presence you want to test
+        :param component: component whose presence is tested
         :type component: :class:`RVComp`
         :rtype: bool
         """
