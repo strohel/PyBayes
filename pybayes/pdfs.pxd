@@ -29,7 +29,7 @@ cdef class CPdf(object):
     cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
     cpdef ndarray sample(self, ndarray cond = *)
 
-    cpdef bint check_cond(self, ndarray cond) except False  # is internal to PyBayes, thus can be cdef TODO: cython bug
+    cpdef bint _check_cond(self, ndarray cond) except False  # is internal to PyBayes, thus can be cdef TODO: cython bug
 
 
 cdef class Pdf(CPdf):

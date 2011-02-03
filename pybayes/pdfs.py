@@ -160,7 +160,7 @@ class CPdf(object):
         :rtype: numpy.ndarray"""
         raise NotImplementedError("Derived classes must implement this function")
 
-    def check_cond(self, cond):
+    def _check_cond(self, cond):
         """Return True if cond has correct type and shape, raise Error otherwise
 
         :raises TypeError: cond is not of correct type
@@ -404,7 +404,7 @@ class MLinGaussCPdf(CPdf):
         return self.A.shape[1]
 
     def mean(self, cond = None):
-        self.check_cond(cond)
+        self._check_cond(cond)
         return dot(self.A, cond) + self.b
 
     def variance(self, cond = None):
@@ -460,22 +460,22 @@ class LinGaussCPdf(CPdf):
         return 2
 
     def mean(self, cond = None):
-        self.check_cond(cond)
+        self._check_cond(cond)
         self.gauss.mu[0] = self.a*cond[0] + self.b  # gauss.mu is used just as a holder
         return self.gauss.mu
 
     def variance(self, cond = None):
-        self.check_cond(cond)
+        self._check_cond(cond)
         return array([self.c*cond[1] + self.d])
 
     def eval_log(self, x, cond = None):
-        self.check_cond(cond)
+        self._check_cond(cond)
         self.gauss.mu[0] = self.a*cond[0] + self.b
         self.gauss.R[0,0] = self.c*cond[1] + self.d
         return self.gauss.eval_log(x)
 
     def sample(self, cond = None):
-        self.check_cond(cond)
+        self._check_cond(cond)
         self.gauss.mu[0] = self.a*cond[0] + self.b
         self.gauss.R[0,0] = self.c*cond[1] + self.d
         return self.gauss.sample()
@@ -539,7 +539,7 @@ class ProdCPdf(CPdf):
     def eval_log(self, x, cond = None):
         if x is None:  # cython-specific, but wont hurt in python
             raise TypeError("x must be numpy.ndarray")
-        self.check_cond(cond)
+        self._check_cond(cond)
 
         start = 0
         cond_start = 0
@@ -556,7 +556,7 @@ class ProdCPdf(CPdf):
         return ret
 
     def sample(self, cond = None):
-        self.check_cond(cond)
+        self._check_cond(cond)
 
         # combination of return value and condition
         comb = zeros(self.shape() + self.cond_shape())
