@@ -281,7 +281,7 @@ class TestProdPdf(PbTestCase):
     def setUp(self):
         self.uni = pb.UniPdf(np.array([0., 0.]), np.array([1., 2.]))
         self.gauss = pb.GaussPdf(np.array([0.]), np.array([[1.]]))
-        self.prod = pb.ProdPdf(self.uni, self.gauss)
+        self.prod = pb.ProdPdf((self.uni, self.gauss))
 
     def test_shape(self):
         self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())
@@ -321,7 +321,7 @@ class TestProdPdf(PbTestCase):
         uni_list = []
         for i in range(10):
             uni_list.append(pb.UniPdf(np.array([i+0.]), np.array([i+1.])))
-        uni_prod = pb.ProdPdf(*uni_list)  # a product of 10 UniPdfs
+        uni_prod = pb.ProdPdf(uni_list)  # a product of 10 UniPdfs
         for i in range(100):
             sample = uni_prod.sample()
             for j in range(10): # test each component..
@@ -462,7 +462,7 @@ class TestLinGaussCPdf(PbTestCase):
         self.assertEqual(type(self.gauss), pb.LinGaussCPdf)
 
     def test_invalid_init(self):
-        constructor = pb.MLinGaussCPdf
+        constructor = pb.LinGaussCPdf
 
         self.assertRaises(TypeError, constructor, 1, 2, 3, 4)
 
@@ -514,7 +514,7 @@ class TestProdCPdf(PbTestCase):
         identity = np.array([[1.]])
         self.gauss = pb.MLinGaussCPdf(identity, identity, np.array([0.]))
         self.uni = pb.UniPdf(np.array([0.]), np.array([2.]))
-        self.prod = pb.ProdCPdf(self.gauss, self.uni)
+        self.prod = pb.ProdCPdf((self.gauss, self.uni))
 
     def test_shape(self):
         self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())

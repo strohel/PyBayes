@@ -323,15 +323,15 @@ class ProdPdf(Pdf):
     .. math:: f(x_1 x_2 x_3) = f_1(x_1) f_2(x_2) f_3(x_3)
     """
 
-    def __init__(self, *factors):
+    def __init__(self, factors):
         r"""Initialise product of unconditional pdfs.
 
-        :param \*factors: sub-distributions
-        :type \*factors: :class:`Pdf`
+        :param factors: sequence of sub-distributions
+        :type factors: sequence of :class:`Pdf`
 
         Usual way of creating ProdPdf could be:
 
-        >>> prod = ProdPdf(UniPdf(...), GaussPdf(...))
+        >>> prod = ProdPdf((UniPdf(...), GaussPdf(...)))  # note the double (( and ))
         """
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
@@ -502,15 +502,15 @@ class ProdCPdf(CPdf):
     .. math:: f(x_1 x_2 x_3 | c) = f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c)
     """
 
-    def __init__(self, *factors):
+    def __init__(self, factors):
         """Construct chain rule of multiple cpdfs.
 
-        :param \*factors: objects of type CPdf (or subclasses)
-        :type \*factors: :class:`CPdf`
+        :param factors: sequence of densities that will form the product
+        :type factors: sequence of :class:`CPdf`
 
         Usual way of creating ProdCPdf could be:
 
-        >>> prod = ProdCPdf(MLinGaussCPdf(..), UniPdf(...))
+        >>> prod = ProdCPdf((MLinGaussCPdf(..), UniPdf(..)))  # note the double (( ))
         """
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
@@ -560,7 +560,7 @@ class ProdCPdf(CPdf):
 
         ret = 0.
         comb_input = zeros(self.shape() + self.cond_shape())  # combined x and cond
-        comb_input[:self.shape()] = x  # TODO: check that x has right shape
+        comb_input[:self.shape()] = x
         comb_input[self.shape():] = cond
 
         for i in range(self.factors.shape[0]):
