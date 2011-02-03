@@ -19,15 +19,15 @@ from numpywrap import *
 class RVComp(object):
     """Atomic component of a random variable."""
 
-    def __init__(self, name, dimension):
+    def __init__(self, dimension, name = None):
         """Initialise new component of a random variable :class:`RV`.
 
-        :param name: name of the component. Pass None for an anonymous component
-        :type name: string or None
         :param dimension: number of vector components this component occupies
         :type dimension: positive integer
+        :param name: name of the component; default: None for anonymous component
+        :type name: string or None
         :raises TypeError: non-integer dimension or non-string name
-        :raises ValueError: invalid dimension
+        :raises ValueError: non-positive dimension
         """
 
         if name is not None and not isinstance(name, str):

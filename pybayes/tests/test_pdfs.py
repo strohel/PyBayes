@@ -16,26 +16,26 @@ class TestRVComp(PbTestCase):
     """Test random variable component"""
 
     def test_init(self):
-        rvcomp = pb.RVComp("pretty name", 123)
+        rvcomp = pb.RVComp(123, "pretty name")
         self.assertEquals(rvcomp.name, "pretty name")
         self.assertEquals(rvcomp.dimension, 123)
-        rvcomp = pb.RVComp(None, 345)
+        rvcomp = pb.RVComp(345)
         self.assertEquals(rvcomp.name, None)
         self.assertEquals(rvcomp.dimension, 345)
 
     def test_invalid_init(self):
-        self.assertRaises(TypeError, pb.RVComp, "def", 0.45)
-        self.assertRaises(TypeError, pb.RVComp, "def", "not a number")
-        self.assertRaises(ValueError, pb.RVComp, "abc", -1)
-        self.assertRaises(TypeError, pb.RVComp, 0.456, 1)
+        self.assertRaises(TypeError, pb.RVComp, 0.45, "def")
+        self.assertRaises(TypeError, pb.RVComp, "not a number", "def")
+        self.assertRaises(ValueError, pb.RVComp, -1, "abc")
+        self.assertRaises(TypeError, pb.RVComp, 1, 0.456)
 
 
 class TestRV(PbTestCase):
     """Test random variable representation"""
 
     def test_init(self):
-        comp_a = pb.RVComp("a", 1)
-        comp_b = pb.RVComp("b", 2)
+        comp_a = pb.RVComp(1, "a")
+        comp_b = pb.RVComp(2, "b")
         rv_1 = pb.RV(comp_a, comp_b)
         self.assertEquals(rv_1.name, "[a, b]")
         self.assertEquals(rv_1.dimension, 3)
@@ -44,6 +44,8 @@ class TestRV(PbTestCase):
         rv_2 = pb.RV(rv_1)
         self.assertEquals(rv_2.name, "[a, b]")
         self.assertEquals(rv_2.dimension, 3)
+        self.assertTrue(rv_2.contains(comp_a))
+        self.assertTrue(rv_2.contains(comp_b))
 
     def test_invalid_init(self):
         self.assertRaises(ValueError, pb.RV)  # empy component list is not allowed
