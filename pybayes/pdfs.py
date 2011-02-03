@@ -161,7 +161,7 @@ class CPdf(object):
         raise NotImplementedError("Derived classes must implement this function")
 
     def _check_cond(self, cond):
-        """Return True if cond has correct type and shape, raise Error otherwise
+        """Return True if cond has correct type and shape, raise Error otherwise.
 
         :raises TypeError: cond is not of correct type
         :raises ValueError: cond doesn't have appropriate shape
@@ -171,7 +171,22 @@ class CPdf(object):
         if cond.ndim != 1:
             raise ValueError("cond must be 1D numpy array (a vector)")
         if cond.shape[0] != self.cond_shape():
-            raise ValueError("cond must be of shape ({0},) array of shape ({1},) given".format(cond_shape(), cond.shape[0]))
+            raise ValueError("cond must be of shape ({0},) array of shape ({1},) given".format(self.cond_shape(), cond.shape[0]))
+        return True
+
+    def _check_x(self, x):
+        """Return True if x has correct type and shape (determined by shape()),
+        raise Error otherwise.
+
+        :raises TypeError: cond is not of correct type
+        :raises ValueError: cond doesn't have appropriate shape
+        :rtype: bool"""
+        if x is None:  # cython-specific
+            raise TypeError("x must be numpy.ndarray")
+        if x.ndim != 1:
+            raise ValueError("x must be 1D numpy array (a vector)")
+        if x.shape[0] != self.shape():
+            raise ValueError("x must be of shape ({0},) array of shape ({1},) given".format(self.shape(), x.shape[0]))
         return True
 
 
@@ -225,8 +240,7 @@ class UniPdf(Pdf):
         return ((self.b-self.a)**2)/12.  # element-wise power and division
 
     def eval_log(self, x, cond = None):
-        if x is None:  # cython-specific, but wont hurt in python
-            raise TypeError("x must be numpy.ndarray")
+        self._check_x(x)
         if np_any(x <= self.a) or np_any(x >= self.b):
             return float('-inf')
         return -log(prod(self.b-self.a))
@@ -281,8 +295,7 @@ class GaussPdf(Pdf):
         return diag(self.R)
 
     def eval_log(self, x, cond = None):
-        if x is None:  # cython-specific, but wont hurt in python
-            raise TypeError("x must be numpy.ndarray")
+        self._check_x(x)
 
         # compute logarithm of normalization constant (can be cached in future)
         # log(2*Pi) = 1.83787706640935
@@ -311,7 +324,7 @@ class ProdPdf(Pdf):
     """
 
     def __init__(self, *factors):
-        """Initialise product of unconditional pdfs.
+        r"""Initialise product of unconditional pdfs.
 
         :param \*factors: sub-distributions
         :type \*factors: :class:`Pdf`
@@ -352,8 +365,8 @@ class ProdPdf(Pdf):
         return ret;
 
     def eval_log(self, x, cond = None):
-        if x is None:  # cython-specific, but wont hurt in python
-            raise TypeError("x must be numpy.ndarray")
+        self._check_x(x)
+
         curr = 0
         ret = 0.  # 1 is neutral element in multiplication; log(1) = 0
         for i in range(self.factors.shape[0]):
@@ -412,6 +425,7 @@ class MLinGaussCPdf(CPdf):
         return self.gauss.variance()
 
     def eval_log(self, x, cond = None):
+        # x is checked in self.gauss
         # cond is checked in mean()
         self.gauss.mu = self.mean(cond)
         return self.gauss.eval_log(x)
@@ -469,6 +483,7 @@ class LinGaussCPdf(CPdf):
         return array([self.c*cond[1] + self.d])
 
     def eval_log(self, x, cond = None):
+        # x is checked in self.gauss
         self._check_cond(cond)
         self.gauss.mu[0] = self.a*cond[0] + self.b
         self.gauss.R[0,0] = self.c*cond[1] + self.d
@@ -537,8 +552,7 @@ class ProdCPdf(CPdf):
         raise NotImplementedError("Not yet implemented")
 
     def eval_log(self, x, cond = None):
-        if x is None:  # cython-specific, but wont hurt in python
-            raise TypeError("x must be numpy.ndarray")
+        self._check_x(x)
         self._check_cond(cond)
 
         start = 0
