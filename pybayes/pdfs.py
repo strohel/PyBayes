@@ -115,11 +115,46 @@ class RV(object):
 
 
 class CPdf(object):
-    """Base class for all Conditional Probability Density Functions.
+    r"""Base class for all Conditional (in general) Probability Density Functions.
 
     When you evaluate a CPdf the result generally also depends on a condition
     (vector) named `cond` in PyBayes. For a CPdf that is a :class:`Pdf` this is
     not the case, the result is unconditional.
+
+    Every CPdf takes (apart from others) 2 optional arguments to constructor:
+    **rv** (:class:`RV`) and **cond_rv** (:class:`RV`). When specified, they
+    denote that the CPdf is associated with particular random variable (respectively
+    its condition is associated with particular random variable); when unspecified,
+    *anonymous* random variable is assumed (exceptions exist, see :class:`ProdPdf`).
+    It is an error to pass RV whose dimension is not same as CPdf's dimension
+    (or cond dimension respectively). These arguments must be generally passed
+    as *keyword arguments* i.e. ``Pdf(..., rv=RV(...))`` and not
+    ``Pdf(..., RV(...))``.
+
+    While entire idea of random variable associations may not be needed in simple
+    cases, it allows you to express more complicated situations, assume the state
+    variable is composed of 2 components :math:`x_t = [a_t, b_t]` and following
+    distribution is to be modelled:
+
+    .. math::
+
+       p(x_t|x_{t-1}) &:= p_1(a_t|a_{t-1}, b_t) p_2(b_t|b_{t-1}) \\
+       p_1(a_t|a_{t-1}, b_t) &:= \mathcal{N}(a_{t-1}, b_t) \\
+       p_2(b_t|b_{t-1}) &:= \mathcal{N}(b_{t-1}, 0.0001)
+
+    This is done in PyBayes with associated RVs:
+
+    >>> a_t, b_t = RVComp(1, 'a_t'), RVComp(1, 'b_t')  # create RV components
+    >>> a_tp, b_tp = RVComp(1, 'a_{t-1}'), RVComp(1, 'b_{t-1}')  # t-1 case
+
+    >>> p1 = LinGaussPdf(1., 0., 1., 0., rv=RV(a_t), rv_cond=RV(a_tp, b_t))
+    >>> cov, A, b = np.array([[0.0001]]), np.array([[1.]]), np.array([0.])  # params for p2
+    >>> p2 = MLinGaussPdf(cov, A, b, rv=RV(b_t), rv_cond=RV(b_tp))
+
+    >>> p = ProdCPdf((p1, p2), rv=RV(a_t, b_t), rv_cond=RV(a_tp, b_tp))
+
+    >>> p.sample(np.array([1., 2.]))
+    >>> p.eval_log()
     """
 
     def shape(self):
@@ -192,7 +227,12 @@ class CPdf(object):
 
 class Pdf(CPdf):
     """Base class for all unconditional (static) multivariate Probability Density
-    Functions. Subclass of CPdf."""
+    Functions. Subclass of :class:`CPdf`.
+
+    As in CPdf, constructor of every Pdf takes optional **rv** (:class:`RV`)
+    keyword argument (and no *cond_rv* argument as it would make no sense). For
+    discussion about associated random variables see :class:`CPdf`.
+    """
 
     def cond_shape(self):
         """Return zero as Pdfs have no condition."""
@@ -211,7 +251,7 @@ class UniPdf(Pdf):
     assumption **a** < **b** still holds.
     """
 
-    def __init__(self, a, b):
+    def __init__(self, a, b, rv = None):
         """Initialise uniform distribution.
 
         :param a: left border
@@ -261,7 +301,7 @@ class GaussPdf(Pdf):
     pass allowable values, because parameters are only checked once in constructor.
     """
 
-    def __init__(self, mean, covariance):
+    def __init__(self, mean, covariance, rv = None):
         """Initialise Gaussian pdf.
 
         :param numpy.ndarray mean: mean value (1D array)
@@ -323,7 +363,7 @@ class ProdPdf(Pdf):
     .. math:: f(x_1 x_2 x_3) = f_1(x_1) f_2(x_2) f_3(x_3)
     """
 
-    def __init__(self, factors):
+    def __init__(self, factors, rv = None):
         r"""Initialise product of unconditional pdfs.
 
         :param factors: sequence of sub-distributions
@@ -392,7 +432,7 @@ class MLinGaussCPdf(CPdf):
        \quad \quad \text{where} ~ \mu := A c + b
     """
 
-    def __init__(self, covariance, A, b):
+    def __init__(self, covariance, A, b, rv = None, cond_rv = None):
         """Initialise Mean-Linear Gaussian conditional pdf.
 
         covariance - covariance of underlying Gaussian pdf
@@ -447,7 +487,7 @@ class LinGaussCPdf(CPdf):
        \quad \sigma^2 := c c_2 + d
     """
 
-    def __init__(self, a, b, c, d):
+    def __init__(self, a, b, c, d, rv = None, cond_rv = None):
         """Initialise Linear Gaussian conditional pdf.
 
         :param double a, b: mean = a*cond_1 + b
@@ -502,7 +542,7 @@ class ProdCPdf(CPdf):
     .. math:: f(x_1 x_2 x_3 | c) = f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c)
     """
 
-    def __init__(self, factors):
+    def __init__(self, factors, rv = None, cond_rv = None):
         """Construct chain rule of multiple cpdfs.
 
         :param factors: sequence of densities that will form the product
@@ -510,7 +550,7 @@ class ProdCPdf(CPdf):
 
         Usual way of creating ProdCPdf could be:
 
-        >>> prod = ProdCPdf((MLinGaussCPdf(..), UniPdf(..)))  # note the double (( ))
+        >>> prod = ProdCPdf((MLinGaussCPdf(..), UniPdf(..)), rv=RV(..), rv_cond=RV(..))
         """
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
