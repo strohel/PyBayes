@@ -18,7 +18,9 @@ cdef class RV(object):
     cdef public str name
     cdef readonly list components
 
-    cpdef bint contains(self, RVComp component)
+    cpdef bint contains(self, RVComp component) except? False
+
+    cpdef bint _add_component(self, RVComp component) except False  # cython bug: can be cdef
 
 
 cdef class CPdf(object):

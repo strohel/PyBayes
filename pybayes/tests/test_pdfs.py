@@ -24,10 +24,11 @@ class TestRVComp(PbTestCase):
         self.assertEquals(rvcomp.dimension, 345)
 
     def test_invalid_init(self):
-        self.assertRaises(TypeError, pb.RVComp, 0.45, "def")
+        self.assertRaises(TypeError, pb.RVComp, 0.45)  # non-integer dimension
         self.assertRaises(TypeError, pb.RVComp, "not a number", "def")
+        self.assertRaises(ValueError, pb.RVComp, 0)  # zero dimension should not be allowed
         self.assertRaises(ValueError, pb.RVComp, -1, "abc")
-        self.assertRaises(TypeError, pb.RVComp, 1, 0.456)
+        self.assertRaises(TypeError, pb.RVComp, 1, 0.456)  # non-string name
 
 
 class TestRV(PbTestCase):
@@ -47,8 +48,12 @@ class TestRV(PbTestCase):
         self.assertTrue(rv_2.contains(comp_a))
         self.assertTrue(rv_2.contains(comp_b))
 
+        empty_rv = pb.RV()
+        self.assertEquals(empty_rv.dimension, 0)
+        self.assertEquals(empty_rv.name, "[]")
+
     def test_invalid_init(self):
-        self.assertRaises(ValueError, pb.RV)  # empy component list is not allowed
+        self.assertRaises(TypeError, pb.RV, 0.46)
 
 
 class TestCpdf(PbTestCase):

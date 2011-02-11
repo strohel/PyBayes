@@ -60,7 +60,6 @@ class RV(object):
             also pass another RVs which is a shotrcut for adding all their components.
         :type \*components: :class:`RV` or :class:`RVComp`
         :raises TypeError: invalid object passed (neither a :class:`RV` or a :class:`RVComp`)
-        :raises ValueError: zero components passed, or the same component passed twice (currently unsupported, speak up if you need it)
 
         Usual way of creating RV could be:
 
@@ -72,33 +71,31 @@ class RV(object):
         '[x_1, x_2, y]'
         """
         self.dimension = 0
-        self.name = '['
         self.components = []
         if len(components) is 0:
-            raise ValueError("at least one component must be passed")
-        for component in components:
-            if isinstance(component, RVComp):
-                self._add_component(component)
-            elif isinstance(component, RV):
-                for subcomp in component.components:
-                    self._add_component(subcomp)
-            else:
-                raise TypeError('component ' + component + ' is neither an instance '
-                              + 'of RVComp or RV')
-        self.name = self.name[:-2] + ']'
+            self.name = '[]'
+        else:
+            self.name = '['
+            for component in components:
+                if isinstance(component, RVComp):
+                    self._add_component(component)
+                elif isinstance(component, RV):
+                    for subcomp in component.components:
+                        self._add_component(subcomp)
+                else:
+                    raise TypeError('component ' + component + ' is neither an instance '
+                                + 'of RVComp or RV')
+            self.name = self.name[:-2] + ']'
 
     def _add_component(self, component):
         """Add new component to this random variable.
 
-        Internal function, do not use outside of PyBayes"""
+        Internal function, do not use outside of RV."""
         # fail if component is already present
-        if self.contains(component):
-            raise ValueError('Attempt to add the exact same component twice. This '
-                           + 'is currently unsupported, but if you have a reason '
-                           + 'for this, it may get allowed in future versions.')
         self.components.append(component)
         self.dimension += component.dimension
         self.name += component.name + ", "
+        return True
 
     def contains(self, component):
         """Return True if this random variable contains the exact same instance of
