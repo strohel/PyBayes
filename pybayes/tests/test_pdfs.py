@@ -112,6 +112,18 @@ class TestUniPdf(PbTestCase):
     def test_invalid_init(self):
         self.assertRaises(ValueError, pb.UniPdf, np.zeros(5), np.array([1., 2., 3., -0.01, 3.]))  # b must be > a element-wise
 
+    def test_rvs(self):
+        self.assertEqual(self.uni.rv.dimension, 1)
+        self.assertEqual(self.uni.cond_rv.dimension, 0)
+        self.assertEqual(self.multiuni.rv.dimension, 3)
+        self.assertEqual(self.multiuni.cond_rv.dimension, 0)
+
+        a = pb.RVComp(2, "a")
+        b = pb.RVComp(1, "b")
+        test_uni = pb.UniPdf(np.array([0., -1., 2.]), np.array([1., 1., 4.]), pb.RV(a, b))
+        self.assertTrue(test_uni.rv.contains(a))
+        self.assertTrue(test_uni.rv.contains(b))
+
     def test_shape(self):
         self.assertEqual(self.uni.shape(), 1)
         self.assertEqual(self.multiuni.shape(), 3)
@@ -209,6 +221,19 @@ class TestGaussPdf(PbTestCase):
 
         # TODO: non positive-definite variance
 
+    def test_rvs(self):
+        self.assertEqual(self.gauss.rv.dimension, 3)
+        self.assertEqual(self.gauss.cond_rv.dimension, 0)
+
+        a, b = pb.RVComp(2, "a"), pb.RVComp(1, "b")
+        gauss_rv = pb.GaussPdf(self.mean, self.covariance, pb.RV(a, b))
+        self.assertTrue(gauss_rv.rv.contains(a))
+        self.assertTrue(gauss_rv.rv.contains(b))
+
+        # invalid total rv dimension:
+        c = pb.RVComp(2)
+        self.assertRaises(ValueError, pb.GaussPdf, self.mean, self.covariance, pb.RV(a, c))
+
     def test_shape(self):
         self.assertEqual(self.gauss.shape(), self.shape)
 
@@ -287,6 +312,28 @@ class TestProdPdf(PbTestCase):
         self.uni = pb.UniPdf(np.array([0., 0.]), np.array([1., 2.]))
         self.gauss = pb.GaussPdf(np.array([0.]), np.array([[1.]]))
         self.prod = pb.ProdPdf((self.uni, self.gauss))
+
+    def test_rvs(self):
+        self.assertEqual(self.prod.rv.dimension, 3)
+
+        # test that child rv components are copied into parent ProdPdf
+        a, b, c = pb.RVComp(1, "a"), pb.RVComp(1, "b"), pb.RVComp(1, "c")
+        uni = pb.UniPdf(np.array([0., 0.]), np.array([1., 2.]), pb.RV(a, b))
+        gauss = pb.GaussPdf(np.array([0.]), np.array([[1.]]), pb.RV(c))
+        prod = pb.ProdPdf((uni, gauss))
+
+        self.assertEquals(prod.rv.name, "[a, b, c]")
+        for rv_comp in a, b, c:
+            self.assertTrue(prod.rv.contains(rv_comp))
+
+        # that that custom rv passed to constructor is accepted
+        d = pb.RVComp(3, "d")
+        prod_custom = pb.ProdPdf((uni, gauss), pb.RV(d))
+        self.assertEquals(prod_custom.rv.name, "[d]")
+        self.assertTrue(prod_custom.rv.contains(d))
+        self.assertFalse(prod_custom.rv.contains(a))
+        self.assertFalse(prod_custom.rv.contains(b))
+        self.assertFalse(prod_custom.rv.contains(c))
 
     def test_shape(self):
         self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())
