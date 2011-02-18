@@ -123,9 +123,7 @@ class CPdf(object):
     its condition is associated with particular random variable); when unspecified,
     *anonymous* random variable is assumed (exceptions exist, see :class:`ProdPdf`).
     It is an error to pass RV whose dimension is not same as CPdf's dimension
-    (or cond dimension respectively). These arguments must be generally passed
-    as *keyword arguments* i.e. ``Pdf(..., rv=RV(...))`` and not
-    ``Pdf(..., RV(...))``.
+    (or cond dimension respectively).
 
     :var RV rv: associated random variable (always set in constructor, contains at least one RVComp)
     :var RV cond_rv: associated condition random variable (set in constructor to potentially empty RV)
@@ -136,7 +134,7 @@ class CPdf(object):
     While entire idea of random variable associations may not be needed in simple
     cases, it allows you to express more complicated situations, assume the state
     variable is composed of 2 components :math:`x_t = [a_t, b_t]` and following
-    distribution is to be modelled:
+    probability density function has to be modelled:
 
     .. math::
 
@@ -149,11 +147,11 @@ class CPdf(object):
     >>> a_t, b_t = RVComp(1, 'a_t'), RVComp(1, 'b_t')  # create RV components
     >>> a_tp, b_tp = RVComp(1, 'a_{t-1}'), RVComp(1, 'b_{t-1}')  # t-1 case
 
-    >>> p1 = LinGaussPdf(1., 0., 1., 0., rv=RV(a_t), rv_cond=RV(a_tp, b_t))
+    >>> p1 = LinGaussPdf(1., 0., 1., 0., RV(a_t), RV(a_tp, b_t))
     >>> cov, A, b = np.array([[0.0001]]), np.array([[1.]]), np.array([0.])  # params for p2
-    >>> p2 = MLinGaussPdf(cov, A, b, rv=RV(b_t), rv_cond=RV(b_tp))
+    >>> p2 = MLinGaussPdf(cov, A, b, RV(b_t), RV(b_tp))
 
-    >>> p = ProdCPdf((p1, p2), rv=RV(a_t, b_t), rv_cond=RV(a_tp, b_tp))
+    >>> p = ProdCPdf((p1, p2), RV(a_t, b_t), RV(a_tp, b_tp))
 
     >>> p.sample(np.array([1., 2.]))
     >>> p.eval_log()
@@ -400,6 +398,11 @@ class ProdPdf(Pdf):
         :param factors: sequence of sub-distributions
         :type factors: sequence of :class:`Pdf`
 
+        As an exception from the general rule, ProdPdf does not create anonymous
+        associated random variable if you do not supply it in constructor - it
+        rather reuses components of underlying factor pdfs. (You can of course
+        override this behaviour by bassing custom **rv**.)
+
         Usual way of creating ProdPdf could be:
 
         >>> prod = ProdPdf((UniPdf(...), GaussPdf(...)))  # note the double (( and ))
@@ -595,7 +598,7 @@ class ProdCPdf(CPdf):
 
         Usual way of creating ProdCPdf could be:
 
-        >>> prod = ProdCPdf((MLinGaussCPdf(..), UniPdf(..)), rv=RV(..), rv_cond=RV(..))
+        >>> prod = ProdCPdf((MLinGaussCPdf(..), UniPdf(..)), RV(..), RV(..))
         """
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
