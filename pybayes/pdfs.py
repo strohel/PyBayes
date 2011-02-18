@@ -427,7 +427,7 @@ class ProdPdf(Pdf):
         self._shape = sum(self.shapes)
         # associate with a rv (needs to be after _shape calculation)
         if rv_comps is None:
-            self._set_rvs(None, None)
+            self._set_rvs(rv, None)
         else:
             self._set_rvs(RV(*rv_comps), None)
 
