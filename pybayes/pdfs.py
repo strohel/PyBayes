@@ -83,7 +83,7 @@ class RV(object):
                     for subcomp in component.components:
                         self._add_component(subcomp)
                 else:
-                    raise TypeError('component ' + component + ' is neither an instance '
+                    raise TypeError('component ' + str(component) + ' is neither an instance '
                                 + 'of RVComp or RV')
             self.name = self.name[:-2] + ']'
 
@@ -91,10 +91,9 @@ class RV(object):
         """Add new component to this random variable.
 
         Internal function, do not use outside of RV."""
-        # fail if component is already present
         self.components.append(component)
         self.dimension += component.dimension
-        self.name += component.name + ", "
+        self.name = '{0}{1}, '.format(self.name, component.name)
         return True
 
     def contains(self, component):
@@ -127,6 +126,12 @@ class CPdf(object):
     (or cond dimension respectively). These arguments must be generally passed
     as *keyword arguments* i.e. ``Pdf(..., rv=RV(...))`` and not
     ``Pdf(..., RV(...))``.
+
+    :var RV rv: associated random variable (always set in constructor, contains at least one RVComp)
+    :var RV cond_rv: associated condition random variable (set in constructor to potentially empty RV)
+
+    *While you can assign different rv and cond_rv to a CPdf, you should be
+    cautious because sanity checks are only performed in constructor.*
 
     While entire idea of random variable associations may not be needed in simple
     cases, it allows you to express more complicated situations, assume the state
@@ -221,6 +226,33 @@ class CPdf(object):
             raise ValueError("x must be of shape ({0},) array of shape ({1},) given".format(self.shape(), x.shape[0]))
         return True
 
+    def _set_rvs(self, rv, cond_rv):
+        """Internal heper to check and set rv and cond_rv.
+
+        :raises TypeError: rv or cond_rv doesnt have right type
+        :raises ValueError: dimensions do not match"""
+        if rv is None:
+            self.rv = RV(RVComp(self.shape()))  # create RV with one anonymous component
+        else:
+            if not isinstance(rv, RV):
+                raise TypeError("rv (is specified) must be (a subclass of) RV")
+            if rv.dimension != self.shape():
+                raise ValueError("rv has wrong dimension " + str(rv.dimension) + ", " + str(self.shape()) + " expected")
+            self.rv = rv
+
+        if cond_rv is None:
+            if self.cond_shape() is 0:
+                self.cond_rv = RV()  # create empty RV to denote empty condition
+            else:
+                self.cond_rv = RV(RVComp(self.cond_shape()))  # create RV with one anonymous component
+        else:
+            if not isinstance(cond_rv, RV):
+                raise TypeError("cond_rv (is specified) must be (a subclass of) RV")
+            if cond_rv.dimension is not self.cond_shape():
+                raise ValueError("cond_rv has wrong dimension " + cond_rv.dimension + ", " + self.cond_shape() + " expected")
+            self.cond_rv = cond_rv
+        return True
+
 
 class Pdf(CPdf):
     """Base class for all unconditional (static) multivariate Probability Density
@@ -266,6 +298,7 @@ class UniPdf(Pdf):
             raise ValueError("a must have same shape as b")
         if np_any(self.b <= self.a):
             raise ValueError("b must be greater than a in each dimension")
+        self._set_rvs(rv, None)
 
     def shape(self):
         return self.a.shape[0]
@@ -321,6 +354,7 @@ class GaussPdf(Pdf):
         # TODO: covariance must be positive definite
         self.mu = mean
         self.R = covariance
+        self._set_rvs(rv, None)
 
     def shape(self):
         return self.mu.shape[0]
@@ -370,6 +404,11 @@ class ProdPdf(Pdf):
 
         >>> prod = ProdPdf((UniPdf(...), GaussPdf(...)))  # note the double (( and ))
         """
+        if rv is None:
+            rv_comps = []  # prepare to construnct associated rv
+        else:
+            rv_comps = None
+
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
         self.factors = array(factors, dtype=Pdf)
@@ -378,9 +417,16 @@ class ProdPdf(Pdf):
             if not isinstance(self.factors[i], Pdf):
                 raise TypeError("all records in factors must be (subclasses of) Pdf")
             self.shapes[i] = self.factors[i].shape()
+            if rv_comps is not None:
+                rv_comps.extend(self.factors[i].rv.components)  # add components of child rvs
 
         # pre-calclate shape
         self._shape = sum(self.shapes)
+        # associate with a rv (needs to be after _shape calculation)
+        if rv_comps is None:
+            self._set_rvs(None, None)
+        else:
+            self._set_rvs(RV(*rv_comps), None)
 
     def shape(self):
         return self._shape
@@ -446,6 +492,7 @@ class MLinGaussCPdf(CPdf):
             raise ValueError("b must have same number of cols as covariance")
         if self.A.shape[0] != self.b.shape[0]:
             raise ValueError("A must have same number of rows as covariance")
+        self._set_rvs(rv, cond_rv)
 
     def shape(self):
         return self.b.shape[0]
@@ -503,6 +550,7 @@ class LinGaussCPdf(CPdf):
             raise TypeError("all parameters must be floats")
         self.d = d
         self.gauss = GaussPdf(zeros(1), array([[1.]]))
+        self._set_rvs(rv, cond_rv)
 
     def shape(self):
         return 1

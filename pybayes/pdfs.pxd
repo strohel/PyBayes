@@ -24,6 +24,8 @@ cdef class RV(object):
 
 
 cdef class CPdf(object):
+    cdef public RV rv, cond_rv
+
     cpdef int shape(self) except -1
     cpdef int cond_shape(self) except -1
     cpdef ndarray mean(self, ndarray cond = *)
@@ -33,6 +35,7 @@ cdef class CPdf(object):
 
     cpdef bint _check_cond(self, ndarray cond) except False  # is internal to PyBayes, thus can be cdef TODO: cython bug
     cpdef bint _check_x(self, ndarray x) except False  # ditto
+    cpdef bint _set_rvs(self, RV rv, RV cond_rv) except False  # ditto
 
 
 cdef class Pdf(CPdf):
