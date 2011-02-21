@@ -105,7 +105,7 @@ class RV(object):
         :rtype: bool
         """
         for comp in self.components:
-            if id(comp) == id(component):
+            if comp is component:
                 return True
         return False
 
