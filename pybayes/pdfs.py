@@ -247,7 +247,7 @@ class CPdf(object):
             if not isinstance(cond_rv, RV):
                 raise TypeError("cond_rv (is specified) must be (a subclass of) RV")
             if cond_rv.dimension is not self.cond_shape():
-                raise ValueError("cond_rv has wrong dimension " + cond_rv.dimension + ", " + self.cond_shape() + " expected")
+                raise ValueError("cond_rv has wrong dimension " + str(cond_rv.dimension) + ", " + str(self.cond_shape()) + " expected")
             self.cond_rv = cond_rv
         return True
 

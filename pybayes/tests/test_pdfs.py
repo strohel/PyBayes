@@ -428,6 +428,24 @@ class TestMLinGaussCPdf(PbTestCase):
         # b not compatible with covariance:
         self.assertRaises(ValueError, constructor, self.covariance, self.A, np.array([1., 2.]))
 
+    def test_rvs(self):
+        self.assertEqual(self.gauss.rv.dimension, 3)
+        self.assertEqual(self.gauss.cond_rv.dimension, 2)
+
+        a, b, c, d = pb.RVComp(2, 'a'), pb.RVComp(1, 'b'), pb.RVComp(1, 'c'), pb.RVComp(1, 'd')
+        rv = pb.RV(a, b)
+        cond_rv = pb.RV(c, d)
+        gauss = pb.MLinGaussCPdf(self.covariance, self.A, self.b, rv, cond_rv)
+        self.assertTrue(gauss.rv.contains(a))
+        self.assertTrue(gauss.rv.contains(b))
+        self.assertFalse(gauss.rv.contains(c))
+        self.assertFalse(gauss.rv.contains(d))
+
+        self.assertFalse(gauss.cond_rv.contains(a))
+        self.assertFalse(gauss.cond_rv.contains(b))
+        self.assertTrue(gauss.cond_rv.contains(c))
+        self.assertTrue(gauss.cond_rv.contains(d))
+
     def test_shape(self):
         self.assertEqual(self.gauss.shape(), self.shape)
 
@@ -487,7 +505,7 @@ class TestLinGaussCPdf(PbTestCase):
 
     def setUp(self):
         # constructor parameters:
-        (a, b, c, d) = (10., 5., 0.1, -1.)
+        self.coeficients = (10., 5., 0.1, -1.)
 
         # array of test conditions (shared by various tests)
         self.test_conds = np.array([
@@ -508,7 +526,7 @@ class TestLinGaussCPdf(PbTestCase):
             [0.1]
         ])
 
-        self.gauss = pb.LinGaussCPdf(a, b, c, d)
+        self.gauss = pb.LinGaussCPdf(*self.coeficients)
 
     def test_init(self):
         self.assertEqual(type(self.gauss), pb.LinGaussCPdf)
@@ -517,6 +535,22 @@ class TestLinGaussCPdf(PbTestCase):
         constructor = pb.LinGaussCPdf
 
         self.assertRaises(TypeError, constructor, 1, 2, 3, 4)
+
+    def test_rvs(self):
+        self.assertEqual(self.gauss.rv.dimension, 1)
+        self.assertEqual(self.gauss.cond_rv.dimension, 2)
+
+        a, b, c = pb.RVComp(1, 'a'), pb.RVComp(1, 'b'), pb.RVComp(1, 'c')
+        rv = pb.RV(a)
+        cond_rv = pb.RV(b, c)
+        gauss = pb.LinGaussCPdf(*self.coeficients, rv=rv, cond_rv=cond_rv)
+        self.assertTrue(gauss.rv.contains(a))
+        self.assertFalse(gauss.rv.contains(b))
+        self.assertFalse(gauss.rv.contains(c))
+
+        self.assertFalse(gauss.cond_rv.contains(a))
+        self.assertTrue(gauss.cond_rv.contains(b))
+        self.assertTrue(gauss.cond_rv.contains(c))
 
     def test_shape(self):
         self.assertEqual(self.gauss.shape(), 1)
