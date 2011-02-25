@@ -51,6 +51,22 @@ class RV(object):
     :var int dimension: cummulative dimension; do not change
     :var str name: pretty name, can be changed but needs to be a string
     :var list components: list of RVComps; do not change
+
+    *Please take into account that all RVComp comparisons inside RV are
+    instance-based and component names are purely informational. To demonstrate:*
+
+    >>> rv = RV(RVComp(1, "a"))
+    >>> ...
+    >>> rv.contains(RVComp(1, "a"))
+    False
+
+    Right way to do this would be:
+
+    >>> a = RVComp(1, "arbitrary pretty name for a")
+    >>> rv = RV(a)
+    >>> ...
+    >>> rv.contains(a)
+    True
     """
 
     def __init__(self, *components):
@@ -104,10 +120,23 @@ class RV(object):
         :type component: :class:`RVComp`
         :rtype: bool
         """
+        # TODO: define == for RVComp and change this to "if component in self.components
         for comp in self.components:
             if comp is component:
                 return True
         return False
+
+    def contains_all(self, components):
+        """Return True if this RV contains all RVComps from sequence
+        **components**.
+
+        :param components: list of components whose presence is checked
+        :type components: sequence of :class:`RVComp` items
+        """
+        for test_comp in components:
+            if not self.contains(test_comp):
+                return False
+        return True;
 
 
 class CPdf(object):
