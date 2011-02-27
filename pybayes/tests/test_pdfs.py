@@ -597,10 +597,17 @@ class TestProdCPdf(PbTestCase):
     """Test conditional product of pdfs"""
 
     def setUp(self):
-        identity = np.array([[1.]])
-        self.gauss = pb.MLinGaussCPdf(identity, identity, np.array([0.]))
+        ide = np.array([[1.]])  # 1x1 identity matrix
+        self.gauss = pb.MLinGaussCPdf(ide, ide, np.array([0.]))
         self.uni = pb.UniPdf(np.array([0.]), np.array([2.]))
         self.prod = pb.ProdCPdf((self.gauss, self.uni))
+
+    def test_init_with_rvs(self):
+        x, y = pb.RVComp(1, "result"), pb.RVComp(1, "condition")
+        self.uni.rv = pb.RV(y)
+        self.gauss.cond_rv = pb.RV(y)
+        self.gauss.rv = pb.RV(x)
+        prod2 = pb.ProdCPdf((self.gauss, self.uni), pb.RV(x, y), pb.RV())
 
     def test_shape(self):
         self.assertEqual(self.prod.shape(), self.uni.shape() + self.gauss.shape())

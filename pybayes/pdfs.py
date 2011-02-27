@@ -663,9 +663,32 @@ class LinGaussCPdf(CPdf):
 
 
 class ProdCPdf(CPdf):
-    r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
+    r"""Pdf that is formed as a chain rule of multiple conditional pdfs. In a
+    simple textbook case denoted below it isn't needed to specify random variables
+    at all. In this case when no random variable associations are passed,
+    ProdCPdf ignores rv associations of its factors and everything is determined
+    from their order. (:math:`x_i` are arbitrary vectors)
 
-    .. math:: f(x_1 x_2 x_3 | c) = f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c)
+    .. math::
+
+        f(x_1 x_2 x_3 | c) &= f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c) \\
+        \text{or} \quad f(x_1 x_2 x_3) &= f_1(x_1 | x_2 x_3) f_2(x_2 | x_3) f_3(x_3)
+
+    >>> f = ProdCPdf((f1, f2, f3))
+
+    For less simple situations, specifiying random value associations is needed
+    to estabilish data chain:
+
+    .. math:: p(x_1 x_2 | y_1 y_2) = p_1(x_1 | x_2) p_2(x_2 | y_2 y_1)
+
+    >>> # prepare random variable components:
+    >>> x_1, x_2 = RVComp(1), RVComp(1, "name is optional")
+    >>> y_1, y_2 = RVComp(1), RVComp(1, "but recommended")
+
+    >>> p_1 = SomePdf(..., rv=RV(x_1), cond_rv=RV(x_2))
+    >>> p_2 = SomePdf(..., rv=RV(x_2), cond_rv=RV(y_2, y_1))
+    >>> p = ProdCPdf((p_2, p_1), rv=RV(x_1, x_2), cond_rv=RV(y_1, y_2))  # order of
+    >>> # pdfs is insignificant - order of rv components determines data flow
     """
 
     def __init__(self, factors, rv = None, cond_rv = None):
@@ -680,30 +703,104 @@ class ProdCPdf(CPdf):
         """
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
-        self.factors = array(factors, dtype=Pdf)
-        self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
 
-        accumulate_cond_shape = 0
-        for i in range(self.factors.shape[0] -1, -1, -1):
-            if not isinstance(self.factors[i], CPdf):
+        self.in_indeces = []  # data link representations
+        self.out_indeces = []
+
+        if rv is None and cond_rv is None:
+            self._init_anonymous(factors)
+        elif rv is not None and cond_rv is not None:
+            self._init_with_rvs(list(factors), rv, cond_rv)  # needs factors as list
+        else:
+            raise AttributeError("Please pass both rv and cond_rv or none of them, other combinations not (yet) supported")
+
+        self._set_rvs(rv, cond_rv)
+
+    def _init_anonymous(self, factors):
+        self.factors = array(factors, dtype=CPdf)
+
+        # overall cond shape equals last factor cond shape:
+        self._cond_shape = factors[-1].cond_shape()
+        self._shape = factors[0].shape() + factors[0].cond_shape() - self._cond_shape
+
+        start_ind = 0  # current start index in cummulate rv and cond_rv data array
+        for i in range(self.factors.shape[0]):
+            factor = self.factors[i]
+            if not isinstance(factor, CPdf):
                 raise TypeError("all records in factors must be (subclasses of) CPdf")
-            self.shapes[i] = self.factors[i].shape()
-            if self.shapes[i] == 0:
-                raise ValueError("ProdCPdf cannot contain zero-shaped factors (factor {0})".format(i))
-            if accumulate_cond_shape == 0:  # the last factor
-                self._cond_shape = self.factors[i].cond_shape()
-                accumulate_cond_shape += self._cond_shape
-            else:  # other factors
-                if self.factors[i].cond_shape() != accumulate_cond_shape:
-                    raise ValueError("Expected cond_shape() of factor {0} will be {1}, ".format(i, accumulate_cond_shape)
-                              + "got {0}. (because factor on the right has ".format(self.factors[i].cond_shape())
-                              + "shape() {0} and cond_shape() {1}".format(self.shapes[i+1], self.factors[i+1].cond_shape()))
 
-            # prepare for next iteration:
-            accumulate_cond_shape += self.shapes[i]
+            shape = factor.shape()
+            cond_shape = factor.cond_shape()
+            # expected (normal + cond) shape:
+            exp_shape = self._shape + self._cond_shape - start_ind
+            if shape + cond_shape != exp_shape:
+                raise ValueError("Expected that pdf {0} will have shape (={1}) + ".
+                    format(factor, shape) + "cond_shape (={0}) == {1}".
+                    format(cond_shape, exp_shape))
 
-        # pre-calculate shape
-        self._shape = sum(self.shapes)
+            self.in_indeces.append(arange(start_ind + shape, start_ind + shape + cond_shape))
+            self.out_indeces.append(arange(start_ind, start_ind + shape))
+
+            start_ind += shape
+
+        if start_ind != self._shape:
+            raise ValueError("Shapes do not match")
+
+    def _init_with_rvs(self, factors, rv, cond_rv):
+        """Initialise ProdCPdf using rv components for data chain construction.
+
+        :param factors: factor pdfs that will form the product
+        :type factors: :class:`list` of :class:`CPdf` items
+        """
+        # gradually filled set of components that would be available in e.g.
+        # sample() computation:
+        avail_rvcomps = set(cond_rv.components)
+
+        self.factors = ndarray(len(factors), dtype=CPdf)  # initialise factor array
+
+        i = self.factors.shape[0] - 1  # factors are filled from right to left
+        # iterate until all input pdfs are processed
+        while len(factors) > 0:
+            # find next pdf that can be added to data chain (all its cond
+            # components can be already computed)
+            for j in range(len(factors)):
+                factor = factors[j]
+                if not isinstance(factor, CPdf):
+                    raise TypeError("all records in factors must be (subclasses of) CPdf")
+                if factor.cond_rv.contained_in(avail_rvcomps):
+                    # one such pdf found
+                    #DEBUG: print "Appropriate pdf found:", factor, "with rv:", factor.rv, "and cond_rv:", factor.cond_rv
+                    if not rv.contains_all(factor.rv.components):
+                        raise AttributeError(("Some of {0}'s associated rv components "
+                            + "({1}) aren't present in rv ({2})").format(factor, factor.rv, rv))
+                    avail_rvcomps.update(factor.rv.components)
+                    self.factors[i] = factor
+                    i += -1
+                    del factors[j]
+                    break;
+            else:
+                # we are stuck somewhere in data chain
+                print "Appropriate pdf not found. avail_rvcomps:", avail_rvcomps, "candidates:"
+                for factor in factors:
+                    print "  ", factor, "with cond_rv:", factor.cond_rv
+                raise AttributeError("Cannont construct data chain. This means "
+                    + "that it is impossible to arrange factor pdfs into a DAG "
+                    + "that starts with ProdCPdf's cond_rv components. Please "
+                    + "check cond_rv and factor rvs and cond_rvs.")
+        if not rv.contained_in(avail_rvcomps):
+            print "These components can be computed:", avail_rvcomps
+            print "... but we have to fill following rv:", rv
+            raise AttributeError("Data chain built, some components cannot be "
+                + "computed with it.")
+
+        cummulate_rv = RV(rv, cond_rv)
+        for i in range(self.factors.shape[0]):
+            factor = self.factors[i]
+            self.in_indeces.append(factor.cond_rv.indexed_in(cummulate_rv))
+            self.out_indeces.append(factor.rv.indexed_in(cummulate_rv))
+
+        self._shape = rv.dimension
+        self._cond_shape = cond_rv.dimension
 
     def shape(self):
         return self._shape
@@ -721,31 +818,26 @@ class ProdCPdf(CPdf):
         self._check_x(x)
         self._check_cond(cond)
 
-        start = 0
-        cond_start = 0
-
+        # combination of evaluation point and condition:
+        data = ndarray(self._shape + self._cond_shape)
+        data[0:self._shape] = x
+        data[self._shape:] = cond
         ret = 0.
-        comb_input = zeros(self.shape() + self.cond_shape())  # combined x and cond
-        comb_input[:self.shape()] = x
-        comb_input[self.shape():] = cond
 
         for i in range(self.factors.shape[0]):
-            cond_start += self.shapes[i]
-            ret += self.factors[i].eval_log(comb_input[start:cond_start], comb_input[cond_start:])
-            start += self.shapes[i]
+            ret += self.factors[i].eval_log(data[self.out_indeces[i]], data[self.in_indeces[i]])
         return ret
 
     def sample(self, cond = None):
         self._check_cond(cond)
 
-        # combination of return value and condition
-        comb = zeros(self.shape() + self.cond_shape())
-        start = self.shape()
-        comb[start:] = cond
+        # combination of sampled variables and condition:
+        data = ndarray(self._shape + self._cond_shape)
+        data[self._shape:] = cond  # rest is undefined
 
+        # process pdfs from right to left (they are arranged so that data flow
+        # is well defined in this case):
         for i in range(self.factors.shape[0] -1, -1, -1):
-            stop = start
-            start -= self.shapes[i]
-            comb[start:stop] = self.factors[i].sample(comb[stop:])
+            data[self.out_indeces[i]] = self.factors[i].sample(self.in_indeces[i])
 
-        return comb[:self.shape()]
+        return data[:self._shape]  # return right portion of data
