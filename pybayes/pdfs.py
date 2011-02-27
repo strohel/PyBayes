@@ -44,10 +44,10 @@ class RVComp(object):
         self.dimension = dimension
 
     #def __eq__(self, other):
-        """We want RVComp have to be hashable
-        (http://docs.python.org/glossary.html#term-hashable), but default __eq__()
-        and __hash__() implementations suffice, as they are instance-based.
-        """
+        #"""We want RVComp have to be hashable
+        #(http://docs.python.org/glossary.html#term-hashable), but default __eq__()
+        #and __hash__() implementations suffice, as they are instance-based.
+        #"""
 
 
 class RV(object):
