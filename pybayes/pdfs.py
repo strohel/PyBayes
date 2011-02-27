@@ -80,7 +80,7 @@ class RV(object):
 
         :param \*components: components that should form the random vector. You may
             also pass another RVs which is a shotrcut for adding all their components.
-        :type \*components: :class:`RV` or :class:`RVComp`
+        :type \*components: :class:`RV`, :class:`RVComp` or a sequence of :class:`RVComp` items
         :raises TypeError: invalid object passed (neither a :class:`RV` or a :class:`RVComp`)
 
         Usual way of creating RV could be:
@@ -161,12 +161,12 @@ class RV(object):
 
     def indexed_in(self, super_rv):
         """Return index array such that this rv is indexed in **super_rv**, which
-        must be superset of this rv. Resulting array can be used with numpy.take()
-        and numpy.put().
+        must be superset of this rv. Resulting array can be used with :func:`numpy.take`
+        and :func:`numpy.put`.
 
         :param super_rv: returned indices apply to this rv
         :type super_rv: :class:`RV`
-        :rtype: 1-D numpy.ndarray of ints with dimension = self.dimension
+        :rtype: 1-D :class:`numpy.ndarray` of ints with dimension = self.dimension
         """
         ret = ndarray(self.dimension, dtype=int)
         ret_ind = 0  # current index in returned index array
@@ -250,27 +250,27 @@ class CPdf(object):
     def mean(self, cond = None):
         """Return (conditional) mean value of the pdf.
 
-        :rtype: numpy.ndarray"""
+        :rtype: :class:`numpy.ndarray`"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def variance(self, cond = None):
         """Return (conditional) variance (diagonal elements of covariance).
 
-        :rtype: numpy.ndarray"""
+        :rtype: :class:`numpy.ndarray`"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def eval_log(self, x, cond = None):
         """Return logarithm of (conditional) likelihood function in point x.
 
         :param x: point which to evaluate the function in
-        :type x: numpy.ndarray
+        :type x: :class:`numpy.ndarray`
         :rtype: double"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def sample(self, cond = None):
         """Return one random (conditional) sample from this distribution
 
-        :rtype: numpy.ndarray"""
+        :rtype: :class:`numpy.ndarray`"""
         raise NotImplementedError("Derived classes must implement this function")
 
     def _check_cond(self, cond):
@@ -349,8 +349,10 @@ class UniPdf(Pdf):
 
     .. math:: f(x) = \Theta(x - a) \Theta(b - x) \prod_{i=1}^n \frac{1}{b_i-a_i}
 
-    :var numpy.ndarray a: left border
-    :var numpy.ndarray b: right border
+    :var a: left border
+    :type a: :class:`numpy.ndarray`
+    :var b: right border
+    :type b: :class:`numpy.ndarray`
 
     You may modify these attributes as long as you don't change their shape and
     assumption **a** < **b** still holds.
@@ -360,9 +362,9 @@ class UniPdf(Pdf):
         """Initialise uniform distribution.
 
         :param a: left border
-        :type a: numpy.ndarray
+        :type a: :class:`numpy.ndarray`
         :param b: right border
-        :type b: numpy.ndarray
+        :type b: :class:`numpy.ndarray`
 
         **b** must be greater (in each dimension) than **a**
         """
@@ -400,8 +402,10 @@ class GaussPdf(Pdf):
 
     .. math:: f(x) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
 
-    :var numpy.ndarray mu: mean value
-    :var numpy.ndarray R: covariance matrix
+    :var mu: mean value
+    :type mu: 1-D :class:`numpy.ndarray`
+    :var R: covariance matrix
+    :type R: 2-D :class:`numpy.ndarray`
 
     You can modify object parameters only if you are absolutely sure that you
     pass allowable values, because parameters are only checked once in constructor.
@@ -410,8 +414,10 @@ class GaussPdf(Pdf):
     def __init__(self, mean, covariance, rv = None):
         """Initialise Gaussian pdf.
 
-        :param numpy.ndarray mean: mean value (1D array)
-        :param numpy.ndarray covariance: covariance matrix (2D array)
+        :param mean: mean value
+        :type mean: 1-D :class:`numpy.ndarray`
+        :param covariance: covariance matrix
+        :type covariance: 2-D :class:`numpy.ndarray`
 
         To create standard normal distribution:
 
