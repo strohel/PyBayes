@@ -43,6 +43,12 @@ class RVComp(object):
             raise ValueError("dimension must be non-zero positive")
         self.dimension = dimension
 
+    #def __eq__(self, other):
+        """We want RVComp have to be hashable
+        (http://docs.python.org/glossary.html#term-hashable), but default __eq__()
+        and __hash__() implementations suffice, as they are instance-based.
+        """
+
 
 class RV(object):
     """Representation of a random variable made of one or more components. See
@@ -90,23 +96,30 @@ class RV(object):
         self.components = []
         if len(components) is 0:
             self.name = '[]'
-        else:
-            self.name = '['
-            for component in components:
-                if isinstance(component, RVComp):
-                    self._add_component(component)
-                elif isinstance(component, RV):
-                    for subcomp in component.components:
+            return
+
+        self.name = '['
+        for component in components:
+            if isinstance(component, RVComp):
+                self._add_component(component)
+            elif isinstance(component, RV):
+                for subcomp in component.components:
+                    self._add_component(subcomp)
+            else:
+                try:
+                    for subcomp in component:
                         self._add_component(subcomp)
-                else:
+                except TypeError:
                     raise TypeError('component ' + str(component) + ' is neither an instance '
-                                + 'of RVComp or RV')
-            self.name = self.name[:-2] + ']'
+                                + 'of RVComp or RV and is not iterable of RVComps')
+        self.name = self.name[:-2] + ']'
 
     def _add_component(self, component):
         """Add new component to this random variable.
 
         Internal function, do not use outside of RV."""
+        if not isinstance(component, RVComp):
+            raise TypeError("component is not of type RVComp")
         self.components.append(component)
         self.dimension += component.dimension
         self.name = '{0}{1}, '.format(self.name, component.name)
@@ -120,23 +133,59 @@ class RV(object):
         :type component: :class:`RVComp`
         :rtype: bool
         """
-        # TODO: define == for RVComp and change this to "if component in self.components
-        for comp in self.components:
-            if comp is component:
-                return True
-        return False
+        return component in self.components
 
-    def contains_all(self, components):
+    def contains_all(self, test_components):
         """Return True if this RV contains all RVComps from sequence
         **components**.
 
         :param components: list of components whose presence is checked
         :type components: sequence of :class:`RVComp` items
         """
-        for test_comp in components:
+        for test_comp in test_components:
             if not self.contains(test_comp):
                 return False
         return True;
+
+    def contained_in(self, test_components):
+        """Return True if sequence **components** contains all all components
+        from this RV (and perhaps more).
+
+        :param components: set of components whose presence is checked
+        :type components: sequence of :class:`RVComp` items
+        """
+        for component in self.components:
+            if component not in test_components:
+                return False
+        return True
+
+    def indexed_in(self, super_rv):
+        """Return index array such that this rv is indexed in **super_rv**, which
+        must be superset of this rv. Resulting array can be used with numpy.take()
+        and numpy.put().
+
+        :param super_rv: returned indices apply to this rv
+        :type super_rv: :class:`RV`
+        :rtype: 1-D numpy.ndarray of ints with dimension = self.dimension
+        """
+        ret = ndarray(self.dimension, dtype=int)
+        ret_ind = 0  # current index in returned index array
+        # process each component from target rv
+        for comp in self.components:
+            # find associated component in source_rv components:
+            src_ind = 0  # index in source vector
+            for source_comp in super_rv.components:
+                if source_comp is comp:
+                    ret[ret_ind:] = arange(src_ind, src_ind + comp.dimension)
+                    ret_ind += comp.dimension
+                    break;
+                src_ind += source_comp.dimension
+            else:
+                raise AttributeError("Cannont find component "+str(comp)+" in source_rv.components.")
+        return ret
+
+    def __str__(self):
+        return "<pybayes.pdfs.RV '{0}' dim={1} {2}>".format(self.name, self.dimension, self.components)
 
 
 class CPdf(object):
