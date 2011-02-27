@@ -87,5 +87,5 @@ cdef class LinGaussPdf(CPdf):
 
 cdef class ProdCPdf(CPdf):
     cdef readonly ndarray factors  # dtype=CPdf
-    cdef readonly ndarray shapes  # dtype=int
+    cdef readonly list in_indeces, out_indeces  # dtype=ndarray of ints
     cdef readonly int _shape, _cond_shape

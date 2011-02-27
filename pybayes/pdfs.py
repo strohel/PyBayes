@@ -844,6 +844,6 @@ class ProdCPdf(CPdf):
         # process pdfs from right to left (they are arranged so that data flow
         # is well defined in this case):
         for i in range(self.factors.shape[0] -1, -1, -1):
-            data[self.out_indeces[i]] = self.factors[i].sample(self.in_indeces[i])
+            data[self.out_indeces[i]] = self.factors[i].sample(data[self.in_indeces[i]])
 
         return data[:self._shape]  # return right portion of data
