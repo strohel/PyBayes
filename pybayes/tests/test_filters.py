@@ -4,7 +4,7 @@
 
 """Tests for kalman"""
 
-from numpy import array, mat
+import numpy as np
 
 import pybayes as pb
 from support import PbTestCase
@@ -16,22 +16,22 @@ class TestKalmanFilter(PbTestCase):
     def setUp(self):
         # synthetic parameters. May be completely mathematically invalid
         self.setup_1 = {  # n = 2, k = 3, j = 4
-            "A":array([[1, 2], [3, 4]]),  # n*n
-            "B":array([[1, 2, 3], [4, 5, 6]]),  # n*k
-            "C":array([[1, 2], [3, 4], [5, 6], [7, 8]]),  # j*n
-            "D":array([[1, 2, 3], [5, 6, 7], [9, 1, 2], [2, 3, 4]]),  # j*k
-            "Q":array([[2, 3], [4, 5]]),  # n*n
-            "R":array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 1, 2, 3], [2, 3, 4, 5]]),  # j*j
-            "state_pdf":pb.GaussPdf(array([1, 2]), array([[1, 0], [0, 2]]))  # n
+            "A":np.array([[1, 2], [3, 4]]),  # n*n
+            "B":np.array([[1, 2, 3], [4, 5, 6]]),  # n*k
+            "C":np.array([[1, 2], [3, 4], [5, 6], [7, 8]]),  # j*n
+            "D":np.array([[1, 2, 3], [5, 6, 7], [9, 1, 2], [2, 3, 4]]),  # j*k
+            "Q":np.array([[2, 3], [4, 5]]),  # n*n
+            "R":np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 1, 2, 3], [2, 3, 4, 5]]),  # j*j
+            "state_pdf":pb.GaussPdf(np.array([1, 2]), np.array([[1, 0], [0, 2]]))  # n
         }
         self.setup_2 = {  # n = 2, k = 1, j = 1
-            "A":array([[1.0, -0.5],[1.0, 0.0]]),
-            "B":array([[1.0],[0.1]]),
-            "C":array([[1.0, 0.0]]),
-            "D":array([[0.1]]),
-            "Q":array([[0.2, 0.0],[0.0, 0.2]]),
-            "R":array([[0.01]]),
-            "state_pdf":pb.GaussPdf(array([0.0, 0.0]), array([[200.0, 0.0],[0.0, 200.0]]))
+            "A":np.array([[1.0, -0.5],[1.0, 0.0]]),
+            "B":np.array([[1.0],[0.1]]),
+            "C":np.array([[1.0, 0.0]]),
+            "D":np.array([[0.1]]),
+            "Q":np.array([[0.2, 0.0],[0.0, 0.2]]),
+            "R":np.array([[0.01]]),
+            "state_pdf":pb.GaussPdf(np.array([0.0, 0.0]), np.array([[200.0, 0.0],[0.0, 200.0]]))
         }
 
     def test_init(self):
@@ -46,25 +46,25 @@ class TestKalmanFilter(PbTestCase):
         # invalid type:
         for arg in args:
             setup = self.setup_1.copy()
-            setup[arg] = mat([[1,2],[3,4]])
+            setup[arg] = np.mat([[1,2],[3,4]])
             self.assertRaises(TypeError, pb.KalmanFilter, **setup)
 
         # invalid dimension
         del args[6]  # remove state_pdf
         for arg in args:
             setup = self.setup_1.copy()
-            setup[arg] = array([[1],[2]])
+            setup[arg] = np.array([[1],[2]])
             self.assertRaises(ValueError, pb.KalmanFilter, **setup)
-        gauss = pb.GaussPdf(array([1]), array([[1]]))
+        gauss = pb.GaussPdf(np.array([1]), np.array([[1]]))
         setup = self.setup_1.copy()
         setup['state_pdf'] = gauss
         self.assertRaises(ValueError, pb.KalmanFilter, **setup)
 
     def test_bayes(self):
         k = pb.KalmanFilter(**self.setup_2)
-        y = array([[4.1], [-0.2], [1.4], [-2.1]])
-        u = array([[4.8], [-0.3], [1.1], [-1.8]])
-        exp_mu = array([
+        y = np.array([[4.1], [-0.2], [1.4], [-2.1]])
+        u = np.array([[4.8], [-0.3], [1.1], [-1.8]])
+        exp_mu = np.array([
             [ 3.62004716, -0.46320771],
             [-0.16638519,  3.58787721],
             [ 1.21108425,  0.0224309 ],
@@ -73,3 +73,14 @@ class TestKalmanFilter(PbTestCase):
         for i in xrange(4):
             mu = k.bayes(y[i], u[i]).mu
             self.assertApproxEqual(mu, exp_mu[i])
+
+
+class testParticleFilter(PbTestCase):
+    """Tests for particle filter"""
+
+    def test_init(self):
+        init_pdf = pb.UniPdf(np.array([-5.]), np.array([5.]))
+        p_xt_xtp = pb.MLinGaussCPdf(np.array([[1.]]), np.array([[1.]]), np.array([0.]))
+        p_xt_yt = pb.MLinGaussCPdf(np.array([[10.]]), np.array([[1.]]), np.array([0.]))
+
+        self.pf = pb.ParticleFilter(5, init_pdf, p_xt_xtp, p_xt_yt)

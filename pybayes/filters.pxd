@@ -13,6 +13,7 @@ from pdfs cimport CPdf, GaussPdf
 cdef class Filter(object):
     cpdef CPdf bayes(self, ndarray yt, ndarray ut = *)
 
+
 cdef class KalmanFilter(Filter):
     cdef public ndarray A, B, C, D, Q, R
     cdef readonly int n, k, j
@@ -20,3 +21,7 @@ cdef class KalmanFilter(Filter):
 
     @cython.locals(K = ndarray)
     cpdef CPdf bayes(self, ndarray yt, ndarray ut = *)
+
+
+cdef class ParticleFilter(Filter):
+    cdef ndarray particles  # TODO: move to EmpPdf

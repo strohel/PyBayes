@@ -106,14 +106,34 @@ class KalmanFilter(Filter):
         return self.P
 
 
-class ParticleFilter(object):
-    """A filter whose aposteriori density takes the form
+class ParticleFilter(Filter):
+    r"""A filter whose aposteriori density takes the form
 
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
     """
 
-    def __init__(self, n, p_0, p_x_x, p_x_y):
-        """Initialise particle filter.
+    def __init__(self, n, init_pdf, p_xt_xtp, p_xt_yt):
+        r"""Initialise particle filter.
 
+        :param int n: number of particles
+        :param init_pdf: probability density which initial particles are sampled from
+        :type init_pdf: :class:`~pybayes.pdfs.Pdf`
+        :param p_xt_xtp: :math:`p(x_t|x_{t-1})` pdf of state in *t* given state in *t-1*
+        :type p_xt_xtp: :class:`~pybayes.pdfs.CPdf`
+        :param p_xt_yt: :math:`p(x_t|y_t)` pdf of state in *t* given observation in *t*
+        :type p_xt_yt: :class:`~pybayes.pdfs.CPdf`
         """
-        pass
+        dim = init_pdf.shape()  # dimension of state
+        if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() != dim:
+            raise ValueError("Expected shape() and cond_shape() of p_xt_xtp() will "
+                + "be {0}; ({1}, {2}) given.".format(dim, p_xt_xtp.shape(),
+                p_xt_xtp.cond_shape()))
+        if p_xt_yt.shape() != dim:
+            raise ValueError("Expected shape() of p_xt_yt() will be {0}; {1} given."
+                .format(dim, p_xt_yt.shape()))
+
+        # generate initial particles:
+        self.particles = ndarray((n, dim))
+        for i in range(n):
+            self.particles[i] = init_pdf.sample()
+        print self.particles
