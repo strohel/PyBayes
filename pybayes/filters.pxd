@@ -21,4 +21,4 @@ cdef class KalmanFilter:
 
 
     @cython.locals(K = ndarray)
-    cpdef ndarray bayes(self, ndarray yt, ndarray ut)
+    cpdef CPdf bayes(self, ndarray yt, ndarray ut)

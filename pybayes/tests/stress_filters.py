@@ -30,7 +30,7 @@ def run_kalman_on_mat_data(input_file, output_file):
 
     start = np.array([time.time(), time.clock()])
     for t in xrange(1, N):  # the 1 start offset is intentional
-        Mu_py[t] = kalman.bayes(y[t], u[t])
+        Mu_py[t] = kalman.bayes(y[t], u[t]).mu
     spent = np.array([time.time(), time.clock()]) - start
 
     Mu_py = Mu_py.T

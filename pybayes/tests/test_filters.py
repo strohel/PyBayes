@@ -64,12 +64,12 @@ class TestKalmanFilter(PbTestCase):
         k = pb.KalmanFilter(**self.setup_2)
         y = array([[4.1], [-0.2], [1.4], [-2.1]])
         u = array([[4.8], [-0.3], [1.1], [-1.8]])
-        exp_x = array([
+        exp_mu = array([
             [ 3.62004716, -0.46320771],
             [-0.16638519,  3.58787721],
             [ 1.21108425,  0.0224309 ],
             [-1.87141692,  0.98517451]
         ])
         for i in xrange(4):
-            x = k.bayes(y[i], u[i])
-            self.assertApproxEqual(x, exp_x[i])
+            mu = k.bayes(y[i], u[i]).mu
+            self.assertApproxEqual(mu, exp_mu[i])

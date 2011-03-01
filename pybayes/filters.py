@@ -108,7 +108,7 @@ class KalmanFilter(object):
         self.P.mu += dot(K, (yt - self.S.mu))  # a posteriori estimate
         self.P.R -= dot(dot(K, self.C), self.P.R)  # a posteriori variance
 
-        return self.P.mu
+        return self.P
 
 
 class ParticleFilter(object):
