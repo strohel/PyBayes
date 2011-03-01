@@ -75,12 +75,12 @@ cdef class GaussPdf(Pdf):
     cpdef ndarray sample(self, ndarray cond = *)
 
 
-cdef class MLinGaussPdf(CPdf):
+cdef class MLinGaussCPdf(CPdf):
     cdef public ndarray A, b  # dtype=double
     cdef readonly GaussPdf gauss
 
 
-cdef class LinGaussPdf(CPdf):
+cdef class LinGaussCPdf(CPdf):
     cdef public double a, b, c, d
     cdef GaussPdf gauss
 
