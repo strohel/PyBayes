@@ -19,16 +19,18 @@ from pybayes.pdfs import GaussPdf
 class Filter(object):
     """Abstract prototype of a bayesian filter"""
 
-    def bayes(self, y_t):
-        """Approximate bayes rule (one iteration)
+    def bayes(self, yt, ut = None):
+        """Approximate or exact bayes rule (one iteration)
 
-        :param y_t: observation at time t
-        :type y_t: :class:`numpy.ndarray`
+        :param yt: observation at time t
+        :type yt: :class:`numpy.ndarray`
+        :param ut: intervence at time t (appliciable only to some filters)
+        :type ut: :class:`numpy.ndarray`
         """
         raise NotImplementedError("Derived classes must implement this method")
 
 
-class KalmanFilter(object):
+class KalmanFilter(Filter):
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
@@ -42,7 +44,7 @@ class KalmanFilter(object):
         matrices = {"A":A, "B":B, "C":C, "D":D, "Q":Q, "R":R}
         for name in matrices:
             matrix = matrices[name]
-            if type(matrix) != ndarray:
+            if type(matrix) != ndarray:  # TODO: insinstance(), but has different semantics
                 raise TypeError(name + " must be (exactly) numpy.ndarray, " +
                                 str(type(matrix)) + " given")
             if matrix.ndim != 2:
@@ -76,9 +78,8 @@ class KalmanFilter(object):
         self.P = state_pdf
         self.S = GaussPdf(array([0.]), array([[1.]]))  # observation probability density function
 
-    def bayes(self, yt, ut):
-        """Approximate Bayes rule"""
-        if type(yt) != ndarray or type(ut) != ndarray:
+    def bayes(self, yt, ut = None):
+        if not isinstance(yt, ndarray) or not isinstance(ut, ndarray):
             raise TypeError("Both yt and ut must be numpy.ndarray. " +
                             str(type(yt)) + " and " + str(type(ut)) + " given")
         if yt.ndim != 1 or yt.shape[0] != self.j:
