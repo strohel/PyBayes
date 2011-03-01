@@ -11,7 +11,7 @@ cimport pybayes.pdfs as pdfs
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
-@cython.locals(kalman = filters.Kalman,
+@cython.locals(kalman = filters.KalmanFilter,
                y = np.ndarray,
                u = np.ndarray,
                Mu_py = np.ndarray,

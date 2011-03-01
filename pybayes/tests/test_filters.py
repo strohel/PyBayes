@@ -10,7 +10,7 @@ import pybayes as pb
 from support import PbTestCase
 
 
-class TestKalman(PbTestCase):
+class TestKalmanFilter(PbTestCase):
     """Tests for kalman filter"""
 
     def setUp(self):
@@ -35,10 +35,10 @@ class TestKalman(PbTestCase):
         }
 
     def test_init(self):
-        k = pb.Kalman(**self.setup_1)
-        self.assertEqual(type(k), pb.Kalman)
-        l = pb.Kalman(**self.setup_2)
-        self.assertEqual(type(l), pb.Kalman)
+        k = pb.KalmanFilter(**self.setup_1)
+        self.assertEqual(type(k), pb.KalmanFilter)
+        l = pb.KalmanFilter(**self.setup_2)
+        self.assertEqual(type(l), pb.KalmanFilter)
 
     def test_invalid_init(self):
         args = ["A", "B", "C", "D", "Q", "R", "state_pdf"]
@@ -47,21 +47,21 @@ class TestKalman(PbTestCase):
         for arg in args:
             setup = self.setup_1.copy()
             setup[arg] = mat([[1,2],[3,4]])
-            self.assertRaises(TypeError, pb.Kalman, **setup)
+            self.assertRaises(TypeError, pb.KalmanFilter, **setup)
 
         # invalid dimension
         del args[6]  # remove state_pdf
         for arg in args:
             setup = self.setup_1.copy()
             setup[arg] = array([[1],[2]])
-            self.assertRaises(ValueError, pb.Kalman, **setup)
+            self.assertRaises(ValueError, pb.KalmanFilter, **setup)
         gauss = pb.GaussPdf(array([1]), array([[1]]))
         setup = self.setup_1.copy()
         setup['state_pdf'] = gauss
-        self.assertRaises(ValueError, pb.Kalman, **setup)
+        self.assertRaises(ValueError, pb.KalmanFilter, **setup)
 
     def test_bayes(self):
-        k = pb.Kalman(**self.setup_2)
+        k = pb.KalmanFilter(**self.setup_2)
         y = array([[4.1], [-0.2], [1.4], [-2.1]])
         u = array([[4.8], [-0.3], [1.1], [-1.8]])
         exp_x = array([

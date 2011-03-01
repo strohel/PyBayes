@@ -30,7 +30,7 @@ class TestNumpywrap(PbTestCase):
             self.assertApproxEqual(res, exp)
 
     def test_dot_as_in_kalman(self):
-        # a specific test that occurt in Kalman.bayes()
+        # a specific test for a problem that occured in KalmanFilter.bayes()
         A = array([[1., -0.5], [1., 0.]])
         R = array([[200., 0.], [0., 200.]])
         R = nw.dot(nw.dot(A, R), A.T)

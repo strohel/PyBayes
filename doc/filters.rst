@@ -7,7 +7,7 @@ Bayesian Filters
 
 .. autoclass:: Filter
 
-.. autoclass:: Kalman
+.. autoclass:: KalmanFilter
 
    .. automethod:: __init__
 

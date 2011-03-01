@@ -6,8 +6,8 @@
 This module contains Bayesian filters.
 
 All classes from this module are currently imported to top-level pybayes module,
-so instead of ``from pybayes.filters import Kalman`` you can type ``from pybayes import
-Kalman``.
+so instead of ``from pybayes.filters import KalmanFilter`` you can type ``from
+pybayes import KalmanFilter``.
 """
 
 
@@ -28,7 +28,7 @@ class Filter(object):
         raise NotImplementedError("Derived classes must implement this method")
 
 
-class Kalman(object):
+class KalmanFilter(object):
     """Kalman filter"""
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):

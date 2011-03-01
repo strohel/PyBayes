@@ -22,7 +22,7 @@ def run_kalman_on_mat_data(input_file, output_file):
     u = d.pop('u').T
 
     gauss = pdfs.GaussPdf(mu0, P0)
-    kalman = filters.Kalman(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
+    kalman = filters.KalmanFilter(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
 
     N = y.shape[0]
     n = mu0.shape[0]
