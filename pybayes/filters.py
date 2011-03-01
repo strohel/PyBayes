@@ -16,6 +16,18 @@ from numpywrap import *
 from pybayes.pdfs import GaussPdf
 
 
+class Filter(object):
+    """Abstract prototype of a bayesian filter"""
+
+    def bayes(self, y_t):
+        """Approximate bayes rule (one iteration)
+
+        :param y_t: observation at time t
+        :type y_t: :class:`numpy.ndarray`
+        """
+        raise NotImplementedError("Derived classes must implement this method")
+
+
 class Kalman(object):
     """Kalman filter"""
 

@@ -7,11 +7,13 @@
 cimport cython
 from numpywrap cimport *
 
-from pdfs cimport GaussPdf
+from pdfs cimport CPdf, GaussPdf
 
+
+cdef class Filter:
+    cpdef CPdf bayes(self, ndarray y_t)
 
 cdef class Kalman:
-
     cdef public ndarray A, B, C, D, Q, R
     cdef readonly int n, k, j
     cdef readonly GaussPdf P, S
