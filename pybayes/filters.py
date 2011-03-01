@@ -76,23 +76,17 @@ class KalmanFilter(object):
         self.P = state_pdf
         self.S = GaussPdf(array([0.]), array([[1.]]))  # observation probability density function
 
-        self._bayes_type_check = True  # whether to check arguments in bayes() method
-
-
     def bayes(self, yt, ut):
         """Approximate Bayes rule"""
-        if self._bayes_type_check:
-            if type(yt) != ndarray or type(ut) != ndarray:
-                raise TypeError("Both yt and ut must be numpy.ndarray. " +
-                                str(type(yt)) + " and " + str(type(ut)) + " given")
-            if yt.ndim != 1 or yt.shape[0] != self.j:
-                raise ValueError("yt must have shape " + str((self.j,)) + ". (" +
-                                str(yt.shape[0]) + ",) given")  # TODO
-            if ut.ndim != 1 or ut.shape[0] != self.k:
-                raise ValueError("yt must have shape " + str((self.k,)) + ". (" +
-                                str(ut.shape[0]) + ",) given")  # TODO
-        else:
-            self._bayes_type_check = False  # for performance reasons check only first time
+        if type(yt) != ndarray or type(ut) != ndarray:
+            raise TypeError("Both yt and ut must be numpy.ndarray. " +
+                            str(type(yt)) + " and " + str(type(ut)) + " given")
+        if yt.ndim != 1 or yt.shape[0] != self.j:
+            raise ValueError("yt must have shape " + str((self.j,)) + ". (" +
+                            str(yt.shape[0]) + ",) given")  # TODO
+        if ut.ndim != 1 or ut.shape[0] != self.k:
+            raise ValueError("yt must have shape " + str((self.k,)) + ". (" +
+                            str(ut.shape[0]) + ",) given")  # TODO
 
         # predict
         self.P.mu = dot(self.A, self.P.mu) + dot(self.B, ut)  # a priori estimate

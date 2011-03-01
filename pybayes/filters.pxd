@@ -17,8 +17,6 @@ cdef class KalmanFilter:
     cdef public ndarray A, B, C, D, Q, R
     cdef readonly int n, k, j
     cdef readonly GaussPdf P, S
-    cdef bint _bayes_type_check
-
 
     @cython.locals(K = ndarray)
     cpdef CPdf bayes(self, ndarray yt, ndarray ut)
