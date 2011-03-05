@@ -47,6 +47,16 @@ cdef class UniPdf(Pdf):
     cdef public ndarray a, b  # dtype=double
 
 
+cdef class GaussPdf(Pdf):
+    cdef public ndarray mu, R  # dtype=double
+
+    @cython.locals(log_norm = double, log_val = double)
+    cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
+
+    @cython.locals(z = ndarray)
+    cpdef ndarray sample(self, ndarray cond = *)
+
+
 cdef class ProdPdf(Pdf):
     cdef readonly ndarray factors  # dtype=Pdf
     cdef readonly ndarray shapes  # dtype=int
@@ -62,16 +72,6 @@ cdef class ProdPdf(Pdf):
     cpdef double eval_log(self, ndarray x, ndarray cond = *)
 
     @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray sample(self, ndarray cond = *)
-
-
-cdef class GaussPdf(Pdf):
-    cdef public ndarray mu, R  # dtype=double
-
-    @cython.locals(log_norm = double, log_val = double)
-    cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
-
-    @cython.locals(z = ndarray)
     cpdef ndarray sample(self, ndarray cond = *)
 
 
