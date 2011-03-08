@@ -305,6 +305,25 @@ class TestGaussPdf(PbTestCase):
         #    print norm.sample()[0]
 
 
+class TestEmpPdf(PbTestCase):
+    """Test empirical pdf"""
+
+    def setUp(self):
+        particles = np.array([
+            [1., 2.],
+            [2., 4.],
+            [3., 6.],
+            [4., 8.],
+        ])
+        self.emp = pb.EmpPdf(particles)
+
+    def test_mean(self):
+        print self.emp.mean()
+
+    def test_variance(self):
+        print self.emp.variance()
+
+
 class TestProdPdf(PbTestCase):
     """Test unconditional product of unconditional pdfs"""
 

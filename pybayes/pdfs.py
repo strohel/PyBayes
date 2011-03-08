@@ -468,6 +468,58 @@ class GaussPdf(Pdf):
         return self.mu + dot(cholesky(self.R), z);
 
 
+class EmpPdf(Pdf):
+    r"""Weighted empirical probability density function.
+
+    .. math::
+
+       p(x) &= \sum_{i=1}^n \omega_i \delta(x - x^{(i)}) \\
+       \text{where} \quad x^{(i)} &\text{ is value of the i}^{th} \text{ particle} \\
+       \omega_i \geq 0 &\text{ is weight of the i}^{th} \text{ particle} \quad \sum \omega_i = 1
+
+    :var numpy.ndarray particles: 2D array of particles; shape: (n, m) where n
+       is the number of particles, m dimension of this pdf
+    :var numpy.ndarray weights: 1D array of particle weights
+
+    *You may alter particles and weights, but you must ensure that their shapes
+    match and that weight constraints still hold.*
+    """
+
+    def __init__(self, init_particles, rv = None):
+        r"""Initialise empirical pdf.
+
+        :param init_particles: 2D array of initial particles; shape (*n*, *m*)
+           determines that *n* *m*-dimensioned particles will be used
+        :type init_particles: :class:`numpy.ndarray`
+        """
+        self.particles = init_particles
+        # set n weights to 1/n
+        self.weights = ones(self.particles.shape[0]) / self.particles.shape[0]
+
+        self._set_rvs(rv, None)
+
+    def shape(self):
+        return self.particles.shape[0]
+
+    def mean(self, cond = None):
+        ret = zeros(self.particles.shape[1])
+        for i in range(self.particles.shape[0]):
+            ret += self.weights[i] * self.particles[i]
+        return ret
+
+    def variance(self, cond = None):
+        ret = zeros(self.particles.shape[1])
+        for i in range(self.particles.shape[0]):
+            ret += self.weights[i] * (self.particles[i])**2
+        return ret - self.mean()**2
+
+    def eval_log(self, x, cond = None):
+        raise NotImplementedError("eval_log doesn't make much sense for discrete distribution")
+
+    def sample(self, cond = None):
+        raise NotImplementedError("Sample for empirical pdf not (yet?) implemented")
+
+
 class ProdPdf(Pdf):
     r"""Unconditional product of multiple unconditional pdfs.
 

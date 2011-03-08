@@ -57,6 +57,11 @@ cdef class GaussPdf(Pdf):
     cpdef ndarray sample(self, ndarray cond = *)
 
 
+cdef class EmpPdf(Pdf):
+    cdef public ndarray particles  # dtype=double, ndims=2
+    cdef public ndarray weights  # dtype=double, ndims=1
+
+
 cdef class ProdPdf(Pdf):
     cdef readonly ndarray factors  # dtype=Pdf
     cdef readonly ndarray shapes  # dtype=int
