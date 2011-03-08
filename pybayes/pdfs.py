@@ -20,7 +20,8 @@ class RVComp(object):
     """Atomic component of a random variable.
 
     :var int dimension: dimension; do not change unless you know what you are doing
-    :var str name: name; can be changed as long as it remains a string (warn: parent RVs are not updated)
+    :var str name: name; can be changed as long as it remains a string (warning:
+       parent RVs are not updated)
     """
 
     def __init__(self, dimension, name = None):
@@ -203,8 +204,10 @@ class CPdf(object):
     It is an error to pass RV whose dimension is not same as CPdf's dimension
     (or cond dimension respectively).
 
-    :var RV rv: associated random variable (always set in constructor, contains at least one RVComp)
-    :var RV cond_rv: associated condition random variable (set in constructor to potentially empty RV)
+    :var RV rv: associated random variable (always set in constructor, contains
+       at least one RVComp)
+    :var RV cond_rv: associated condition random variable (set in constructor to
+       potentially empty RV)
 
     *While you can assign different rv and cond_rv to a CPdf, you should be
     cautious because sanity checks are only performed in constructor.*

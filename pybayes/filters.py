@@ -136,4 +136,3 @@ class ParticleFilter(Filter):
         self.particles = ndarray((n, dim))
         for i in range(n):
             self.particles[i] = init_pdf.sample()
-        print self.particles
