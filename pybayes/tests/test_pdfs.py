@@ -310,18 +310,30 @@ class TestEmpPdf(PbTestCase):
 
     def setUp(self):
         particles = np.array([
-            [1., 2.],
-            [2., 4.],
-            [3., 6.],
-            [4., 8.],
+            [1., 2., 23.67, 0.],
+            [2., 4., 23.67, 1.],
+            [3., 6., 23.67, 3.],
+            [4., 8., 23.67, 6.],
         ])
         self.emp = pb.EmpPdf(particles)
 
     def test_mean(self):
-        print self.emp.mean()
+        self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.5]))
+        self.emp.weights = np.array([0., 0.5, 0.5, 0])  # set different weights
+        self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.]))
+        # test also normalisation:
+        self.emp.weights = np.array([0., 14.7, 14.7, 0])
+        self.emp.normalise_weights()
+        self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.]))
 
     def test_variance(self):
-        print self.emp.variance()
+        self.assertApproxEqual(self.emp.variance(), np.array([1.25, 5., 0., 5.25]))
+        self.emp.weights = np.array([0., 0.5, 0.5, 0])  # set different weights
+        self.assertApproxEqual(self.emp.variance(), np.array([0.25, 1., 0., 1.]))
+        # test also normalisation:
+        self.emp.weights = np.array([0., 0.255, 0.255, 0])
+        self.emp.normalise_weights()
+        self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.]))
 
 
 class TestProdPdf(PbTestCase):

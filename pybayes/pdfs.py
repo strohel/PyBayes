@@ -481,8 +481,9 @@ class EmpPdf(Pdf):
        is the number of particles, m dimension of this pdf
     :var numpy.ndarray weights: 1D array of particle weights
 
-    *You may alter particles and weights, but you must ensure that their shapes
-    match and that weight constraints still hold.*
+    You may alter particles and weights, but you must ensure that their shapes
+    match and that weight constraints still hold. You can use
+    :meth:`normalise_weights` to do some work for you.
     """
 
     def __init__(self, init_particles, rv = None):
@@ -514,10 +515,24 @@ class EmpPdf(Pdf):
         return ret - self.mean()**2
 
     def eval_log(self, x, cond = None):
-        raise NotImplementedError("eval_log doesn't make much sense for discrete distribution")
+        raise NotImplementedError("eval_log doesn't make sense for discrete distribution")
 
     def sample(self, cond = None):
         raise NotImplementedError("Sample for empirical pdf not (yet?) implemented")
+
+    def normalise_weights(self):
+        r"""Multiply weights by appropriate constant so that
+        :math:`\sum \omega_i = 1`
+
+        :raise AttributeError: when :math:`\exists i: \omega_i < 0` or
+           :math:`\forall i: \omega_i = 0`
+        """
+        if np_any(self.weights < 0.):
+            raise AttributeError("Weights must not be negative")
+        wsum = sum(self.weights)
+        if wsum == 0:
+            raise AttributeError("Sum of weights == 0: weights cannot be normalised")
+        self.weights *= 1./wsum
 
 
 class ProdPdf(Pdf):
