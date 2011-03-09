@@ -169,7 +169,7 @@ class RV(object):
         :type super_rv: :class:`RV`
         :rtype: 1-D :class:`numpy.ndarray` of ints with dimension = self.dimension
         """
-        ret = ndarray(self.dimension, dtype=int)
+        ret = empty(self.dimension, dtype=int)
         ret_ind = 0  # current index in returned index array
         # process each component from target rv
         for comp in self.components:
@@ -832,7 +832,7 @@ class ProdCPdf(CPdf):
         # sample() computation:
         avail_rvcomps = set(cond_rv.components)
 
-        self.factors = ndarray(len(factors), dtype=CPdf)  # initialise factor array
+        self.factors = empty(len(factors), dtype=CPdf)  # initialise factor array
 
         i = self.factors.shape[0] - 1  # factors are filled from right to left
         # iterate until all input pdfs are processed
@@ -895,7 +895,7 @@ class ProdCPdf(CPdf):
         self._check_cond(cond)
 
         # combination of evaluation point and condition:
-        data = ndarray(self._shape + self._cond_shape)
+        data = empty(self._shape + self._cond_shape)
         data[0:self._shape] = x
         data[self._shape:] = cond
         ret = 0.
@@ -908,7 +908,7 @@ class ProdCPdf(CPdf):
         self._check_cond(cond)
 
         # combination of sampled variables and condition:
-        data = ndarray(self._shape + self._cond_shape)
+        data = empty(self._shape + self._cond_shape)
         data[self._shape:] = cond  # rest is undefined
 
         # process pdfs from right to left (they are arranged so that data flow

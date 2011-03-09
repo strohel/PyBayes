@@ -133,6 +133,6 @@ class ParticleFilter(Filter):
                 .format(dim, p_xt_yt.shape()))
 
         # generate initial particles:
-        self.particles = ndarray((n, dim))
+        self.particles = empty((n, dim))
         for i in range(n):
             self.particles[i] = init_pdf.sample()
