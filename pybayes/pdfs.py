@@ -276,6 +276,18 @@ class CPdf(object):
         :rtype: :class:`numpy.ndarray`"""
         raise NotImplementedError("Derived classes must implement this function")
 
+    def samples(self, n, cond = None):
+        """Return n samples in an array. A convenience function that just calls
+        :meth:`shape` multiple times.
+
+        :param int n: number of samples to return
+        :rtype: 2D :class:`numpy.ndarray` of shape (*n*, m) where m is pdf
+           dimension"""
+        ret = empty((n, self.shape()))
+        for i in range(n):
+            ret[i] = self.sample(cond)
+        return ret
+
     def _check_cond(self, cond):
         """Return True if cond has correct type and shape, raise Error otherwise.
 

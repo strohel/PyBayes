@@ -175,6 +175,13 @@ class TestUniPdf(PbTestCase):
             self.assertTrue(np.all(self.a <= sample))
             self.assertTrue(np.all(sample <= self.b))
 
+    def test_samples(self):
+        n = 10
+        samples = self.uni.samples(n)
+        self.assertEqual(samples.shape[0], n)
+        for i in range(n):
+            self.assertTrue(-10. <= samples[i][0] <= 20.)
+
 
 class TestGaussPdf(PbTestCase):
     """Test Gaussian pdf"""
