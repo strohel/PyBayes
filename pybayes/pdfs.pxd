@@ -21,7 +21,7 @@ cdef class RV(object):
     cpdef bint contains(self, RVComp component) except? False
     cpdef bint contains_all(self, components) except? False
 
-    cpdef bint _add_component(self, RVComp component) except False  # cython bug: can be cdef
+    cdef bint _add_component(self, RVComp component) except False
 
 
 cdef class CPdf(object):
@@ -35,9 +35,9 @@ cdef class CPdf(object):
     cpdef ndarray sample(self, ndarray cond = *)
     cpdef ndarray samples(self, int n, ndarray cond = *)
 
-    cpdef bint _check_cond(self, ndarray cond) except False  # is internal to PyBayes, thus can be cdef TODO: cython bug
-    cpdef bint _check_x(self, ndarray x) except False  # ditto
-    cpdef bint _set_rvs(self, RV rv, RV cond_rv) except False  # ditto
+    cdef bint _check_cond(self, ndarray cond) except False
+    cdef bint _check_x(self, ndarray x) except False
+    cdef bint _set_rvs(self, RV rv, RV cond_rv) except False
 
 
 cdef class Pdf(CPdf):
@@ -61,6 +61,8 @@ cdef class GaussPdf(Pdf):
 cdef class EmpPdf(Pdf):
     cdef public ndarray particles  # dtype=double, ndims=2
     cdef public ndarray weights  # dtype=double, ndims=1
+
+    cpdef bint normalise_weights(self) except False
 
 
 cdef class ProdPdf(Pdf):
@@ -94,4 +96,4 @@ cdef class LinGaussCPdf(CPdf):
 cdef class ProdCPdf(CPdf):
     cdef readonly ndarray factors  # dtype=CPdf
     cdef readonly list in_indeces, out_indeces  # dtype=ndarray of ints
-    cdef readonly int _shape, _cond_shape
+    cdef int _shape, _cond_shape

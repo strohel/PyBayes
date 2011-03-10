@@ -545,6 +545,7 @@ class EmpPdf(Pdf):
         if wsum == 0:
             raise AttributeError("Sum of weights == 0: weights cannot be normalised")
         self.weights *= 1./wsum
+        return True
 
 
 class ProdPdf(Pdf):
