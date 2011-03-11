@@ -78,9 +78,19 @@ class TestKalmanFilter(PbTestCase):
 class testParticleFilter(PbTestCase):
     """Tests for particle filter"""
 
-    def test_init(self):
+    def setUp(self):
         init_pdf = pb.UniPdf(np.array([-5.]), np.array([5.]))
-        p_xt_xtp = pb.MLinGaussCPdf(np.array([[1.]]), np.array([[1.]]), np.array([0.]))
-        p_xt_yt = pb.MLinGaussCPdf(np.array([[10.]]), np.array([[1.]]), np.array([0.]))
+        p_xt_xtp = pb.MLinGaussCPdf(np.array([[2.]]), np.array([[1.]]), np.array([0.]))
+        p_yt_xt = pb.MLinGaussCPdf(np.array([[1.]]), np.array([[1.]]), np.array([0.]))
 
-        self.pf = pb.ParticleFilter(5, init_pdf, p_xt_xtp, p_xt_yt)
+        self.pf = pb.ParticleFilter(20, init_pdf, p_xt_xtp, p_yt_xt)
+
+    def test_init(self):
+        self.assertEqual(type(self.pf), pb.ParticleFilter)
+
+    def test_bayes(self):
+        np.set_printoptions(linewidth=120, precision=2, suppress=True)
+        for i in range(20):
+            pdf = self.pf.bayes(np.array([i], dtype=float))
+            print "observation, mean:", i, pdf.mean()[0]
+            #print "particles, mean:", pdf.particles.view().squeeze()
