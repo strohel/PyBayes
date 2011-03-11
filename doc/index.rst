@@ -7,8 +7,10 @@ PyBayes Documentation
 .. toctree::
    :maxdepth: 2
 
+   README
    pdfs
    filters
+   HACKING
 
 Indices and tables
 ==================
