@@ -5,9 +5,21 @@ PyBayes
 About
 =====
 
-PyBayes is a Python library in early stage of development. It's aim is to
-create universal framework for Bayesian filtering and decision-making in
-Python.
+A long-term goal of PyBayes is to be the preferred python library for
+implementing Bayesian filtering (recursive estimation) and decision-making
+systems.
+
+Already done are classes for both basic static and conditional probability
+densities ([c]pdfs) and a special cpdf representing a chain rule. Particle
+filter that uses cpdfs extensively is implemented, Kalman filter is also present.
+
+Future plans include more specialised variants of Kalman/particle filters and
+speed optimisations. The project is also interesting technically as it is
+dual-mode: can be be used without cython at all or compiled to gain more speed
+- with nearly no code duplication.
+
+Automatically generated **documentation** can be found at
+http://strohel.github.com/PyBayes-doc/
 
 Licensing
 ---------
@@ -109,6 +121,9 @@ Proceed with following steps:
 
 Building Documentation
 ----------------------
+
+*There is no need to build documentation yourself, an online version is at*
+http://strohel.github.com/PyBayes-doc/
 
 PyBayes uses Sphinx_ to prepare documentation. The documentation is built separately.
 In order to build it, change directory to `doc/` under PyBayes source directory

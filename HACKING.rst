@@ -9,7 +9,7 @@ General Layout and Principles
 =============================
 
 PyBayes is developed with special dual-mode technique - it is both perfectly
-valid pure Python library and optimised cython-built binary python package.
+valid pure Python library and optimised cython-built binary python module.
 
 PyBayes modules are laid out with following rules:
 
@@ -33,16 +33,17 @@ Imports and cimports
 ====================
 
 **No internal module** can ``import pybayes``! That would result in an infinite
-recursion. External PyBayes clients should, however, only ``import pybayes``
-(and in future also ``import pybayes.subpackage``). Just import relevant
-pybayes modules, e.g. ``import pdfs``.
+recursion. External PyBayes clients can and should, however, only ``import pybayes``
+(and in future also ``import pybayes.subpackage``). From insibe PyBayes just
+import relevant pybayes modules, e.g. ``import pdfs``.
 
-Imports in \*.py files adhere to following rules:
+Imports in \*.py files should adhere to following rules:
 
 * import first system modules (sys, io..), then external modules (matplotlib..)
   and then pybayes modules
 * **never import numpy directly**, import numpywrap instead (and perhaps extend
-  symbols that numpywrap.{py,pyx} imports)
+  symbols that numpywrap.{py,pyx} imports) [TODO: numpywrap handling should be
+  refactored a bit]
 * ``from module import symbol1, symbol2`` syntax is the preferred one
 * ``from module import *`` is prohibited
 
