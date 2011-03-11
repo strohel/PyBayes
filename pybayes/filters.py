@@ -10,10 +10,10 @@ so instead of ``from pybayes.filters import KalmanFilter`` you can type ``from
 pybayes import KalmanFilter``.
 """
 
+from math import exp
 
 from numpywrap import *
-
-from pybayes.pdfs import GaussPdf
+from pybayes.pdfs import GaussPdf, EmpPdf
 
 
 class Filter(object):
@@ -112,7 +112,7 @@ class ParticleFilter(Filter):
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
     """
 
-    def __init__(self, n, init_pdf, p_xt_xtp, p_xt_yt):
+    def __init__(self, n, init_pdf, p_xt_xtp, p_yt_xt):
         r"""Initialise particle filter.
 
         :param int n: number of particles
@@ -120,19 +120,44 @@ class ParticleFilter(Filter):
         :type init_pdf: :class:`~pybayes.pdfs.Pdf`
         :param p_xt_xtp: :math:`p(x_t|x_{t-1})` pdf of state in *t* given state in *t-1*
         :type p_xt_xtp: :class:`~pybayes.pdfs.CPdf`
-        :param p_xt_yt: :math:`p(x_t|y_t)` pdf of state in *t* given observation in *t*
-        :type p_xt_yt: :class:`~pybayes.pdfs.CPdf`
+        :param p_yt_xt: :math:`p(y_t|x_t)` pdf of observation in *t* given state in *t*
+        :type p_yt_xt: :class:`~pybayes.pdfs.CPdf`
         """
         dim = init_pdf.shape()  # dimension of state
         if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() != dim:
-            raise ValueError("Expected shape() and cond_shape() of p_xt_xtp() will "
+            raise ValueError("Expected shape() and cond_shape() of p_xt_xtp will "
                 + "be {0}; ({1}, {2}) given.".format(dim, p_xt_xtp.shape(),
                 p_xt_xtp.cond_shape()))
-        if p_xt_yt.shape() != dim:
-            raise ValueError("Expected shape() of p_xt_yt() will be {0}; {1} given."
-                .format(dim, p_xt_yt.shape()))
+        self.p_xt_xtp = p_xt_xtp
+        if p_yt_xt.cond_shape() != dim:
+            raise ValueError("Expected cond_shape() of p_yt_xt will be {0}; {1} given."
+                .format(dim, p_yt_xt.cond_shape()))
+        self.p_yt_xt = p_yt_xt
 
         # generate initial particles:
-        self.particles = empty((n, dim))
-        for i in range(n):
-            self.particles[i] = init_pdf.sample()
+        self.emp = EmpPdf(init_pdf.samples(n))
+
+    def bayes(self, yt, ut = None):
+        r"""Perform next iteration. The algorithm is as follows:
+
+        1. generate new particles: :math:`x_t^{(i)} = \text{sample from }
+           p(x_t^{(i)}|x_{t-1}^{(i)}) \quad \forall i`
+        2. recompute weights: :math:`\omega_i = p(y_t|x_t^{(i)})
+           \omega_i \quad \forall i`
+        3. normalise weights
+        4. resample particles
+        """
+        for i in range(self.emp.particles.shape[0]):
+            # generate new ith particle:
+            self.emp.particles[i] = self.p_xt_xtp.sample(self.emp.particles[i])
+
+            # recompute ith weight:
+            self.emp.weights[i] *= exp(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))
+
+        # assure that weights are normalised
+        self.emp.normalise_weights()
+
+        # resample
+        self.emp.resample()
+
+        return self.emp

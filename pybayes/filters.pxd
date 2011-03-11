@@ -7,7 +7,7 @@
 cimport cython
 from numpywrap cimport *
 
-from pdfs cimport CPdf, GaussPdf
+from pdfs cimport CPdf, GaussPdf, EmpPdf
 
 
 cdef class Filter(object):
@@ -24,4 +24,5 @@ cdef class KalmanFilter(Filter):
 
 
 cdef class ParticleFilter(Filter):
-    cdef ndarray particles  # TODO: move to EmpPdf
+    cdef readonly CPdf p_xt_xtp, p_yt_xt
+    cdef readonly EmpPdf emp
