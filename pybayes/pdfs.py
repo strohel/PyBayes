@@ -547,6 +547,27 @@ class EmpPdf(Pdf):
         self.weights *= 1./wsum
         return True
 
+    def resample(self):
+        """Drop low-weight particles, replace them with copies of more weighted
+        ones. Also reset weights to uniform."""
+        n = self.particles.shape[0]
+        cum_weights = cumsum(self.weights)
+
+        u = (arange(n, dtype=float) + uniform()) / n
+        # u[i] = (i + fuzz) / n
+
+        # calculate number of babies for each particle
+        baby_indeces = zeros(n, dtype=int)  # index array: a[i] contains index of
+        # original particle that should be at i-th place in new particle array
+        j = 0
+        for i in range(n):
+            while u[i] > cum_weights[j]:
+                j += 1
+            baby_indeces[i] = j
+
+        self.particles = self.particles[baby_indeces]
+        self.weights[:] = 1./n
+
 
 class ProdPdf(Pdf):
     r"""Unconditional product of multiple unconditional pdfs.

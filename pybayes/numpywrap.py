@@ -6,7 +6,7 @@
 
 # just import and flatten numpy types and functions
 
-from numpy import any as np_any, arange, array, asarray, diag, dot, dot as dotvv, empty, ndarray, ones, prod, sum, zeros
+from numpy import any as np_any, arange, array, asarray, cumsum, diag, dot, dot as dotvv, empty, ndarray, ones, prod, sum, zeros
 from numpy.linalg import cholesky, inv
 from numpy.random import normal, uniform
 
