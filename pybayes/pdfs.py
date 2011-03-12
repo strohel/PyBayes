@@ -228,9 +228,9 @@ class CPdf(object):
     >>> a_t, b_t = RVComp(1, 'a_t'), RVComp(1, 'b_t')  # create RV components
     >>> a_tp, b_tp = RVComp(1, 'a_{t-1}'), RVComp(1, 'b_{t-1}')  # t-1 case
 
-    >>> p1 = LinGaussPdf(1., 0., 1., 0., RV(a_t), RV(a_tp, b_t))
+    >>> p1 = LinGaussCPdf(1., 0., 1., 0., RV(a_t), RV(a_tp, b_t))
     >>> cov, A, b = np.array([[0.0001]]), np.array([[1.]]), np.array([0.])  # params for p2
-    >>> p2 = MLinGaussPdf(cov, A, b, RV(b_t), RV(b_tp))
+    >>> p2 = MLinGaussCPdf(cov, A, b, RV(b_t), RV(b_tp))
 
     >>> p = ProdCPdf((p1, p2), RV(a_t, b_t), RV(a_tp, b_tp))
 
