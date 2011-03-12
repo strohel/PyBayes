@@ -10,7 +10,27 @@ import pstats
 from optparse import OptionParser
 import os
 
-import pybayes.tests.stress_filters
+import numpy as np
+
+from pybayes.stresses import *
+
+
+class Timer(object):
+    """Simple timer used to measure real and cpu time of stresses."""
+
+    def __init__(self):
+        self.cummulative = 0.
+
+    def start(self):
+        self.start = np.array([time.time(), time.clock()])
+
+    def stop(self):
+        self.spent = np.array([time.time(), time.clock()]) - self.start
+        self.cummulative += self.spent[0]
+
+    def __str__(self):
+        return "time spent: {0}s real time; {1}s CPU time".format(self.spent[0],
+               self.spent[1])
 
 
 # parse cmdline arguments
@@ -27,18 +47,32 @@ if not os.path.isdir(options.datadir):
     exit(1)
 
 # define stress tests
-stresses = [pybayes.tests.stress_filters]
+stresses = [stress_kalman, stress_pf_1]
+
+timer = Timer()
 
 # run stress tests
+count = 0
+failed = 0
 for stress in stresses:
     name = stress.__name__
-    print(name + ":")
+    print name + ":"
     if options.profile:
         filename = "profile_" + name + ".prof"
 
-        cProfile.runctx(name + ".main(options)", globals(), locals(), filename)
+        cProfile.runctx(name + "(options, timer)", globals(), locals(), filename)
 
         s = pstats.Stats(filename)
         s.sort_stats("time").print_stats()
     else:
-        stress.main(options)
+        try:
+            stress(options, timer)
+        except Exception, e:
+            print "   Exception occured:", e
+            failed += 1
+        else:
+            print "   {0}".format(timer)
+    count += 1
+
+print "Ran", count, "stresses,", failed, "of them failed."
+print

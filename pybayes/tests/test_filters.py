@@ -92,5 +92,5 @@ class testParticleFilter(PbTestCase):
         np.set_printoptions(linewidth=120, precision=2, suppress=True)
         for i in range(20):
             pdf = self.pf.bayes(np.array([i], dtype=float))
-            print "observation, mean:", i, pdf.mean()[0]
+            #print "observation, mean:", i, pdf.mean()[0]
             #print "particles, mean:", pdf.particles.view().squeeze()

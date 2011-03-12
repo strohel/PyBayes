@@ -115,17 +115,20 @@ params = {'name':'PyBayes',
           'author_email':'matej@laitl.cz',
           'url':'http://github.com/strohel/PyBayes',
           #'package_data':{'pybayes.tests':['stress_kalman_data.mat']}  # this unfortunately
-          # breaks cython build, as params['packages'] is empty then
+          # does not work in cython build, as params['packages'] is empty then
          }
 
 if options.use_cython is True:
     params['cmdclass'] = {'build_ext': options.build_ext}
-    params['py_modules'] = ['pybayes.__init__', 'pybayes.tests.__init__']
+    params['py_modules'] = ['pybayes.__init__', 'pybayes.stresses.__init__', 'pybayes.tests.__init__']
     params['ext_modules'] = []
 
-    pxd_deps = ['filters.pxd',
+    pxd_deps = ['__init__.pxd',
+                'filters.pxd',
                 'pdfs.pxd',
                 'numpywrap.pxd',
+
+                'stresses/stress_filters.pxd',
                 ]
     deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
     deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
@@ -134,7 +137,8 @@ if options.use_cython is True:
                   'pdfs.py',
                   'numpywrap.pyx',
 
-                  'tests/stress_filters.py',
+                  'stresses/stress_filters.py',
+
                   'tests/support.py',
                   'tests/test_filters.py',
                   'tests/test_numpywrap.py',
@@ -162,6 +166,6 @@ if options.use_cython is True:
     ))
 
 else:  # options.use_cython is False
-    params['packages'] = ['pybayes', 'pybayes.tests']
+    params['packages'] = ['pybayes', 'pybayes.stresses', 'pybayes.tests']
 
 setup(**params)

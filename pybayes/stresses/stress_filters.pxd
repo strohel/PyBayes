@@ -5,15 +5,14 @@
 cimport cython
 cimport numpy as np
 
-cimport pybayes.filters as filters
-cimport pybayes.pdfs as pdfs
+cimport pybayes as pb
 
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
-@cython.locals(kalman = filters.KalmanFilter,
+@cython.locals(kalman = pb.KalmanFilter,
                y = np.ndarray,
                u = np.ndarray,
                Mu_py = np.ndarray,
                t = int)
-cpdef run_kalman_on_mat_data(input_file, output_file)
+cpdef run_kalman_on_mat_data(input_file, output_file, timer)
