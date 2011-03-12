@@ -19,17 +19,17 @@ class Timer(object):
     """Simple timer used to measure real and cpu time of stresses."""
 
     def __init__(self):
-        self.cummulative = 0.
+        self.cumtime = 0.  # cummulative time
 
     def start(self):
-        self.start = np.array([time.time(), time.clock()])
+        self.start_time = np.array([time.time(), time.clock()])
 
     def stop(self):
-        self.spent = np.array([time.time(), time.clock()]) - self.start
-        self.cummulative += self.spent[0]
+        self.spent = np.array([time.time(), time.clock()]) - self.start_time
+        self.cumtime += self.spent[0]
 
     def __str__(self):
-        return "time spent: {0}s real time; {1}s CPU time".format(self.spent[0],
+        return "Time spent: {0}s real time; {1}s CPU time".format(self.spent[0],
                self.spent[1])
 
 
@@ -56,23 +56,24 @@ count = 0
 failed = 0
 for stress in stresses:
     name = stress.__name__
-    print name + ":"
+    print name + "():"
     if options.profile:
         filename = "profile_" + name + ".prof"
 
         cProfile.runctx(name + "(options, timer)", globals(), locals(), filename)
 
         s = pstats.Stats(filename)
-        s.sort_stats("time").print_stats()
+        s.sort_stats("cumulative").print_stats()  # or sort_stats("time")
     else:
         try:
             stress(options, timer)
         except Exception, e:
-            print "   Exception occured:", e
+            print "  Exception occured:", e
             failed += 1
         else:
-            print "   {0}".format(timer)
+            print "  {0}".format(timer)
     count += 1
 
-print "Ran", count, "stresses,", failed, "of them failed."
+print "Ran {0} stresses in {1}s, {2} of them failed.".format(
+      count, timer.cumtime, failed)
 print

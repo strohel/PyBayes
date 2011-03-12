@@ -37,7 +37,9 @@ def run_kalman_on_mat_data(input_file, output_file, timer):
     savemat(output_file, {"Mu_py":Mu_py, "exec_time_pybayes":timer.spent[0]}, oned_as='row')
 
 def stress_pf_1(options, timer):
-    n = 100  # number of particles
+    nr_particles = 100  # number of particles
+    N = 100 # number of time steps
+
     # prepare pdfs:
     a_t, b_t = pb.RVComp(1, 'a_t'), pb.RVComp(1, 'b_t')  # state in t
     a_tp, b_tp = pb.RVComp(1, 'a_{t-1}'), pb.RVComp(1, 'b_{t-1}')  # state in t-1
@@ -47,11 +49,16 @@ def stress_pf_1(options, timer):
     p_xt_xtp = pb.ProdCPdf((p1, p2), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
 
     y_t = pb.RVComp(1, "y_t")  # observation in t
-    p1 = pb.MLinGaussCPdf(1., 0., 1., 0., pb.RV(y_t), pb.RV(b_t))  # TODO: ?????
-    p_yt_xt = pb.ProdCPdf((p1), pb.RV(y_t), pb.RV(a_t, b_t))
+    p1 = pb.MLinGaussCPdf(np.array([[1.]]), np.array([[1.]]), np.array([0.]), pb.RV(y_t), pb.RV(b_t))  # TODO: jine nez v zadani
+    p_yt_xt = pb.ProdCPdf((p1,), pb.RV(y_t), pb.RV(a_t, b_t))
 
-    init_pdf = pb.UniPdf(np.array([-5., -5.]), np.array([-5., -5.]))
-    pf = pb.ParticleFilter(n, init_pdf, p_xt_xtp, p_yt_xt)
+    init_pdf = pb.UniPdf(np.array([3., 3.]), np.array([5., 5.]))
+    pf = pb.ParticleFilter(nr_particles, init_pdf, p_xt_xtp, p_yt_xt)
+
+    timer.start()
+    for i in range(N):
+        pf.bayes(np.random.uniform(0.5, 3., (1,)))
+    timer.stop()
 
 def stress_kalman(options, timer):
     input_file = options.datadir + "/stress_kalman_data.mat"
