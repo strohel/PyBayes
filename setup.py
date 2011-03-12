@@ -109,7 +109,7 @@ configure_build(options)
 
 # generic distutils parameters
 params = {'name':'PyBayes',
-          'version':'0.1-pre',
+          'version':'0.2',
           'description':'Library for convenient and fast Bayesian decision making',
           'author':'Matej Laitl',
           'author_email':'matej@laitl.cz',
