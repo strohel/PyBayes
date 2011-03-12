@@ -62,7 +62,11 @@ cdef class EmpPdf(Pdf):
     cdef public ndarray particles  # dtype=double, ndims=2
     cdef public ndarray weights  # dtype=double, ndims=1
 
+    @cython.locals(wsum = double)
     cpdef bint normalise_weights(self) except False
+
+    @cython.locals(n = int, cum_weights = ndarray, u = ndarray, baby_indeces = ndarray, j = int)
+    cpdef bint resample(self) except False
 
 
 cdef class ProdPdf(Pdf):

@@ -567,6 +567,7 @@ class EmpPdf(Pdf):
 
         self.particles = self.particles[baby_indeces]
         self.weights[:] = 1./n
+        return True
 
 
 class ProdPdf(Pdf):
