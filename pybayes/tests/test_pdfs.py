@@ -643,6 +643,46 @@ class TestLinGaussCPdf(PbTestCase):
         # TODO: one may also generate much more samples and calculate moments
 
 
+class TestGaussCPdf(PbTestCase):
+    """Test general gauss cpdf"""
+
+    def setUp(self):
+        def f(x):
+            return -x
+        def g(x):
+            return np.diag(-x)
+        self.cgauss = pb.GaussCPdf(2, 2, f, g)
+        self.gauss = pb.GaussPdf(np.array([1., 2.]), np.array([[1., 0.], [0., 2.]]))
+        self.cond = np.array([-1., -2.])  # condition that makes cgauss behave as gauss
+
+    def test_mean(self):
+        self.assertApproxEqual(self.cgauss.mean(self.cond), self.gauss.mean())
+
+    def test_variance(self):
+        self.assertApproxEqual(self.cgauss.variance(self.cond), self.gauss.variance())
+
+    def test_eval_log(self):
+        for i in range(15):
+            x = np.array([i - 6.156, i - 4.7967])
+            self.assertApproxEqual(self.cgauss.eval_log(x, self.cond), self.gauss.eval_log(x))
+
+    def test_sample(self):
+        N = 500  # number of samples
+        samples = self.cgauss.samples(N, self.cond)
+        emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us
+
+        mean = self.cgauss.mean(self.cond)
+        fuzz = np.array([0.2, 0.2])
+        #print "mean", emp.mean()
+        self.assertTrue(np.all(mean - fuzz <= emp.mean()))
+        self.assertTrue(np.all(emp.mean() <= mean + fuzz))
+
+        #print "variance", emp.variance()
+        var = self.cgauss.mean(self.cond)
+        self.assertTrue(np.all(var - fuzz <= emp.variance()))
+        self.assertTrue(np.all(emp.variance() <= var + fuzz))
+
+
 class TestProdCPdf(PbTestCase):
     """Test conditional product of pdfs"""
 

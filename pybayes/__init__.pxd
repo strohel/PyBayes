@@ -7,5 +7,6 @@ Cython definition file for PyBayes
 """
 
 # TODO: cython bug(?): Cannot type from pdfs cimport Something
-from pybayes.pdfs cimport RVComp, RV, CPdf, Pdf, UniPdf, GaussPdf, EmpPdf, ProdPdf, MLinGaussCPdf, LinGaussCPdf, ProdCPdf
+from pybayes.pdfs cimport RVComp, RV, CPdf, Pdf, UniPdf, GaussPdf, EmpPdf, ProdPdf
+from pybayes.pdfs cimport MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
 from pybayes.filters cimport Filter, KalmanFilter, ParticleFilter

@@ -55,6 +55,10 @@ In this section, variable :math:`c` in math exressions denotes condition.
 
    .. automethod:: __init__
 
+.. autoclass:: GaussCPdf
+
+   .. automethod:: __init__
+
 .. autoclass:: ProdCPdf
 
    .. automethod:: __init__

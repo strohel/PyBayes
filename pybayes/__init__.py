@@ -7,5 +7,6 @@ PyBayes is meant as a Python/Cython suite for performing common operations in
 Bayesian statistics... TODO
 """
 
-from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, GaussPdf, EmpPdf, ProdPdf, MLinGaussCPdf, LinGaussCPdf, ProdCPdf
+from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, GaussPdf, EmpPdf, ProdPdf
+from pdfs import MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
 from filters import Filter, KalmanFilter, ParticleFilter

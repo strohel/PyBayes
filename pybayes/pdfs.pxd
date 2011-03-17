@@ -97,6 +97,12 @@ cdef class LinGaussCPdf(CPdf):
     cdef GaussPdf gauss
 
 
+cdef class GaussCPdf(CPdf):
+    cdef int _shape, _cond_shape
+    cdef public object f, g  # callables
+    cdef GaussPdf gauss
+
+
 cdef class ProdCPdf(CPdf):
     cdef readonly ndarray factors  # dtype=CPdf
     cdef readonly list in_indeces, out_indeces  # dtype=ndarray of ints

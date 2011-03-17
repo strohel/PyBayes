@@ -773,6 +773,63 @@ class LinGaussCPdf(CPdf):
         return self.gauss.sample()
 
 
+class GaussCPdf(CPdf):
+    r"""The most general normal conditional pdf. Use it only if you cannot use
+    :class:`MLinGaussCPdf` or :class:`LinGaussCPdf` as this cpdf is least
+    optimised.
+
+    .. math::
+
+       f(x|c) &\propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right) \\
+       \text{where} \quad \mu &:= f(c) \text{ (interpreted n-dimensional vector)} \\
+       R &:= g(c) \text{ (interpreted as n*n matrix)}
+    """
+
+    def __init__(self, shape, cond_shape, f, g, rv = None, cond_rv = None):
+        r"""Initialise general gauss cpdf.
+
+        :param int shape: dimension of random vector
+        :param int cond_shape: dimension of condition
+        :param callable f: :math:`\mu := f(c)` where c = condition
+        :param callable g: :math:`R := g(c)` where c = condition
+
+        TODO: better specification of callback functions
+        """
+        self._shape = shape
+        self._cond_shape = cond_shape
+        self.f = f
+        self.g = g
+        self.gauss = GaussPdf(zeros(shape), zeros((shape, shape)))
+        self._set_rvs(rv, cond_rv)
+
+    def shape(self):
+        return self._shape
+
+    def cond_shape(self):
+        return self._cond_shape
+
+    def mean(self, cond = None):
+        self._check_cond(cond)
+        return self.f(cond).reshape(self._shape)
+
+    def variance(self, cond = None):
+        self._check_cond(cond)
+        return self.g(cond).reshape((self._shape, self._shape)).diagonal()
+
+    def eval_log(self, x, cond = None):
+        # x is checked in self.gauss
+        self._check_cond(cond)
+        self.gauss.mu = self.f(cond).reshape(self._shape)
+        self.gauss.R = self.g(cond).reshape((self._shape, self._shape))
+        return self.gauss.eval_log(x)
+
+    def sample(self, cond = None):
+        self._check_cond(cond)
+        self.gauss.mu = self.f(cond).reshape(self._shape)
+        self.gauss.R = self.g(cond).reshape((self._shape, self._shape))
+        return self.gauss.sample()
+
+
 class ProdCPdf(CPdf):
     r"""Pdf that is formed as a chain rule of multiple conditional pdfs. In a
     simple textbook case denoted below it isn't needed to specify random variables
