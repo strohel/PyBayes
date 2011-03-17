@@ -324,6 +324,18 @@ class TestEmpPdf(PbTestCase):
         ])
         self.emp = pb.EmpPdf(particles)
 
+    def test_shape(self):
+        # there were an error where EmpPdf returned nr of particles, so we use
+        # different data-set to detect such error
+        particles = np.array([
+            [1., 2.],
+            [2., 4.],
+            [3., 6.],
+            [4., 8.],
+        ])
+        emp = pb.EmpPdf(particles)
+        self.assertEqual(emp.shape(), 2)
+
     def test_mean(self):
         self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.5]))
         self.emp.weights = np.array([0., 0.5, 0.5, 0])  # set different weights

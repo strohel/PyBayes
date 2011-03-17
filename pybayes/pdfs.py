@@ -512,7 +512,7 @@ class EmpPdf(Pdf):
         self._set_rvs(rv, None)
 
     def shape(self):
-        return self.particles.shape[0]
+        return self.particles.shape[1]
 
     def mean(self, cond = None):
         ret = zeros(self.particles.shape[1])
