@@ -13,6 +13,12 @@ from scipy.io import loadmat, savemat
 import pybayes as pb
 
 
+def stress_kalman(options, timer):
+    input_file = options.datadir + "/stress_kalman_data.mat"
+    output_file = "stress_kalman_res.mat"
+
+    run_kalman_on_mat_data(input_file, output_file, timer)
+
 def run_kalman_on_mat_data(input_file, output_file, timer):
     d = loadmat(input_file, struct_as_record=True, mat_dtype=True)
 
@@ -59,9 +65,3 @@ def stress_pf_1(options, timer):
     for i in range(N):
         pf.bayes(np.random.uniform(0.5, 3., (1,)))
     timer.stop()
-
-def stress_kalman(options, timer):
-    input_file = options.datadir + "/stress_kalman_data.mat"
-    output_file = "stress_kalman_res.mat"
-
-    run_kalman_on_mat_data(input_file, output_file, timer)

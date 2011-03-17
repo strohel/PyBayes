@@ -502,7 +502,10 @@ class EmpPdf(Pdf):
         r"""Initialise empirical pdf.
 
         :param init_particles: 2D array of initial particles; shape (*n*, *m*)
-           determines that *n* *m*-dimensioned particles will be used
+           determines that *n* *m*-dimensioned particles will be used. *Warning:
+           EmpPdf does not copy the particles - it rather uses passed array
+           through its lifetime, so it is not safe to reuse it for other
+           purposes.*
         :type init_particles: :class:`numpy.ndarray`
         """
         self.particles = init_particles
