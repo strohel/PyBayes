@@ -631,7 +631,7 @@ class TestLinGaussCPdf(PbTestCase):
                 self.assertApproxEqual(ret, gauss.eval_log(x))
 
     def test_sample(self):
-        n = 3.3
+        n = 4
         # test that 10 samples are within mean +- n*sigma (>99.9% probability for n=3.3)
         for i in range(self.test_conds.shape[0]):
             cond = self.test_conds[i]
