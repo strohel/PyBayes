@@ -1,0 +1,404 @@
+#LyX 1.6.7 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+Mejme system 
+\begin_inset Formula \begin{eqnarray*}
+p(x_{t}|x_{t})\\
+p(y_{t}|x_{t})\end{eqnarray*}
+
+\end_inset
+
+jedna z odhadovacich metod, ktera se pouziva je particle filter.
+\end_layout
+
+\begin_layout Subsection*
+Particle filter
+\end_layout
+
+\begin_layout Standard
+Ten pracuje tak, ze jeho aposteriorno je ve tvaru empiricke hustoty
+\begin_inset Formula \begin{equation}
+p(x_{t}|y_{1:t})=\sum_{i=1}^{n}w_{i}\delta(x_{t}-x_{t}^{(i)})\label{eq:emp}\end{equation}
+
+\end_inset
+
+tedy v podstate uchovava dve pole 
+\begin_inset Formula $n$
+\end_inset
+
+ cisel 
+\begin_inset Formula $w=[w_{1}\ldots w_{n}]$
+\end_inset
+
+, 
+\begin_inset Formula $x_{t}^{(1:n)}=[x_{t}^{(1)}\ldots x_{t}^{(n)}]$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Momenty distribuce (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:emp"
+
+\end_inset
+
+) jsou
+\begin_inset Formula \[
+\hat{x}_{t}=\sum_{i=1}^{n}w_{i}x_{t}^{(i)},\,\,\, var(x_{t})=\sum_{i=1}^{n}w_{i}\left(x_{t}^{(i)}-\hat{x}_{t}\right)^{2}.\]
+
+\end_inset
+
+Metoda bayes funguje nasledovne:
+\end_layout
+
+\begin_layout Enumerate
+nageneruj pocatecni 
+\begin_inset Formula $x_{0}^{(1:n)}$
+\end_inset
+
+, a nastav 
+\begin_inset Formula $w_{i}=1/n,\forall i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+pro kazde nove mereni 
+\begin_inset Formula $y_{t}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+vygeneruj nove 
+\begin_inset Formula $x_{t}$
+\end_inset
+
+=sample from 
+\begin_inset Formula $p(x_{t}|x_{t-1})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+prepocti 
+\begin_inset Formula $w_{i}=p(y_{t}|x_{t}^{(i)})w_{i},\forall i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+normalizuj 
+\begin_inset Formula $w=\frac{w}{\sum w}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+resample 
+\begin_inset Formula $w$
+\end_inset
+
+,
+\begin_inset Formula $x_{t}$
+\end_inset
+
+ (viz.
+ BDM::eEmp::resample)
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+To je cele.
+ Aposteriorno je typu empiricka hustota, bayes je dan, vic neni potreba.
+\end_layout
+
+\begin_layout Standard
+Snadne pouziti:
+\end_layout
+
+\begin_layout Itemize
+zadame prechodove hustoty 
+\begin_inset Formula $p(\cdot|\cdot)$
+\end_inset
+
+ ve forme CPdf.
+\end_layout
+
+\begin_layout Itemize
+zadame 
+\begin_inset Formula $n$
+\end_inset
+
+ a Pdf ze ktere se generuji prvni vzorky.
+\end_layout
+
+\begin_layout Standard
+Vse uz samo bezi.
+\end_layout
+
+\begin_layout Standard
+Komplikovanejsi pouziti:
+\end_layout
+
+\begin_layout Standard
+Mame system 
+\begin_inset Formula $x_{t}=[a_{t},b_{t}]$
+\end_inset
+
+
+\begin_inset Formula \begin{eqnarray}
+p(x_{t}|x_{t-1}) & = & p(a_{t}|a_{t-1},b_{t})p(b_{t}|b_{t-1})\nonumber \\
+p(y_{t}|x_{t}) & = & p(y_{t}|b_{t})=N(a_{t},b_{t})\nonumber \\
+p(a_{t}|a_{t-1},b_{t}) & = & N(a_{t-1},b_{t})\label{eq:sys1}\\
+p(b_{t}|b_{t-1}) & = & \log N(\log b_{t-1}-\frac{1}{2}\sigma_{b}^{2},\,\,\sigma_{b}^{2}),\sigma_{b}=0.01.\nonumber \end{eqnarray}
+
+\end_inset
+
+a jeho modifikaci 
+\begin_inset Formula \begin{eqnarray*}
+p(x_{t}|x_{t-1}) & = & p(a_{t}|a_{t-1})p(b_{t}|b_{t-1},a_{t-1})\\
+p(y_{t}|x_{t}) & = & p(y_{t}|b_{t})=N(a_{t},b_{t})\\
+p(a_{t}|a_{t-1}) & = & N(a_{t-1},1)\\
+p(b_{t}|b_{t-1},a_{t-1}) & = & \log N(\log b_{t-1}-\frac{1}{2}a_{t-1},a_{t-1}).\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Exercise
+Jak zadat hustotu 
+\begin_inset Formula $p(x_{t}|x_{t-1})$
+\end_inset
+
+ pomoci CProdPdf.
+ Jak bude vypadat vnitrek bayes(yt,[])?
+\end_layout
+
+\begin_layout Subsection*
+Marginalizovany PF
+\end_layout
+
+\begin_layout Standard
+Prvni system z predchozi casti lze odhadnout 
+\begin_inset Quotes eld
+\end_inset
+
+chytreji
+\begin_inset Quotes erd
+\end_inset
+
+.
+ V pripade, kdy bychom znali 
+\begin_inset Formula $b_{t}$
+\end_inset
+
+, jsou rovnice (
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:sys1"
+
+\end_inset
+
+) specialnim pripadem Kalmanova filtru pro 
+\begin_inset Formula $A=1,B=0,C=1,D=0,Q=b_{t},R=b_{t}$
+\end_inset
+
+.
+ Aposteriorno na 
+\begin_inset Formula $a$
+\end_inset
+
+, 
+\begin_inset Formula $p(a_{t}|b_{1:t},y_{1:t})$
+\end_inset
+
+ je tedy gausovka.
+ 
+\end_layout
+
+\begin_layout Standard
+To je zakladnim predpokladme marginalizovaneho particle filtru, ktery aproximuje
+ aposteriorni hustotu 
+\begin_inset Formula $p(a_{t},b_{t}|y_{1:t})$
+\end_inset
+
+ jako 
+\begin_inset Formula \begin{eqnarray}
+p(a_{t},b_{t}|y_{1:t}) & = & \sum_{i=1}^{n}w_{i}p(a_{t}|b_{1:t},y_{1:t})\delta(b_{t}-b_{t}^{(i)})\label{eq:emp-1}\\
+ & = & \sum_{i=1}^{n}w_{i}N(\hat{a}_{t}^{(i)},P_{t}^{(i)})\delta(b_{t}-b_{t}^{(i)}),\end{eqnarray}
+
+\end_inset
+
+kde 
+\begin_inset Formula $\hat{a}_{t}^{(i)},P_{t}^{(i)}$
+\end_inset
+
+ jsou statistiky Kalmanova filtru pro hodnoty 
+\begin_inset Formula $b_{1:t}^{(i)}$
+\end_inset
+
+ 
+\begin_inset Formula $i$
+\end_inset
+
+-teho partiklu.
+\end_layout
+
+\begin_layout Standard
+Metoda bayes funguje nasledovne:
+\end_layout
+
+\begin_layout Enumerate
+nageneruj pocatecni 
+\begin_inset Formula $b_{0}^{(1:n)}$
+\end_inset
+
+, a nastav 
+\begin_inset Formula $w_{i}=1/n,\forall i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+pro kazde nove mereni 
+\begin_inset Formula $y_{t}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+vygeneruj nove 
+\begin_inset Formula $b_{t}^{(i)}$
+\end_inset
+
+=sample from 
+\begin_inset Formula $p(b_{t}^{(i)}|b_{t-1}^{(i)})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+dosad nove 
+\begin_inset Formula $b_{t}^{(i)}$
+\end_inset
+
+ do KF a proved KF.bayes(yt,[]).
+\end_layout
+
+\begin_layout Enumerate
+spocti marginalni verohodnost KF 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\noun off
+\color none
+
+\begin_inset Formula $p(y_{t}|y_{1:t},b_{1:t}^{(i)})=R_{y}^{-1/2}\exp(-\frac{1}{2}(\hat{a}_{t,t-1}-y_{t})R_{y}^{-1}(\hat{a}_{t,t-1}-y_{t}))$
+\end_inset
+
+, 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $\hat{a}_{t,t-1}$
+\end_inset
+
+=KF[i].S.mu, 
+\begin_inset Formula $R_{y}$
+\end_inset
+
+= KF[i].S.R (pro kalmana - obecne bych rad, aby bayes() toto cislo vracel)
+\end_layout
+
+\begin_layout Enumerate
+prepocti 
+\begin_inset Formula $w_{i}=p(y_{t}|y_{1:t},b_{t}^{(i)})w_{i},\forall i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+normalizuj 
+\begin_inset Formula $w=\frac{w}{\sum w}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+resample 
+\begin_inset Formula $w$
+\end_inset
+
+,
+\begin_inset Formula $b_{t}$
+\end_inset
+
+,KF (viz.
+ BDM::eEmp::resample)
+\end_layout
+
+\end_deeper
+\end_body
+\end_document
