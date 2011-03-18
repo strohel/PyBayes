@@ -47,7 +47,7 @@ if not os.path.isdir(options.datadir):
     exit(1)
 
 # define stress tests
-stresses = [stress_kalman, stress_pf_1]
+stresses = [stress_kalman, stress_pf_1, stress_pf_2]
 
 timer = Timer()
 
