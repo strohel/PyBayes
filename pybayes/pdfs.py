@@ -409,7 +409,7 @@ class UniPdf(Pdf):
         return -log(prod(self.b-self.a))
 
     def sample(self, cond = None):
-        return uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
+        return random.uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
 
 
 class GaussPdf(Pdf):
@@ -475,7 +475,8 @@ class GaussPdf(Pdf):
         return log_norm + log_val  # = log(norm*val)
 
     def sample(self, cond = None):
-        z = normal(size=self.mu.shape[0]);
+        # TODO: in univariate case, random.normal() can be used directly
+        z = random.normal(size=self.mu.shape[0]);
         # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
         return self.mu + dot(cholesky(self.R), z);
 
@@ -556,7 +557,7 @@ class EmpPdf(Pdf):
         n = self.particles.shape[0]
         cum_weights = cumsum(self.weights)
 
-        u = (arange(n, dtype=float) + uniform()) / n
+        u = (arange(n, dtype=float) + random.uniform()) / n
         # u[i] = (i + fuzz) / n
 
         # calculate number of babies for each particle

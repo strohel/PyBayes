@@ -8,7 +8,7 @@
 
 from numpy import any as np_any, arange, array, asarray, cumsum, diag, dot, dot as dotvv, empty, ndarray, ones, prod, sum, zeros
 from numpy.linalg import cholesky, inv
-from numpy.random import normal, uniform
+import numpy.random as random
 
 # support NumPy before 1.5.0 by emulating its slogdet
 try:
