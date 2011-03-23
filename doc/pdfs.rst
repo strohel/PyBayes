@@ -30,6 +30,8 @@ Unconditional Probability Density Functions (pdfs)
 
    .. automethod:: __init__
 
+.. autoclass:: AbstractGaussPdf
+
 .. autoclass:: GaussPdf
 
    .. automethod:: __init__

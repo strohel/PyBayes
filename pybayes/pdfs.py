@@ -77,14 +77,14 @@ class RV(object):
     """
 
     def __init__(self, *components):
-        """Initialise new random variable.
+        """Initialise random variable meta-representation.
 
-        :param \*components: components that should form the random vector. You may
+        :param \*components: components that should form the random variable. You may
             also pass another RVs which is a shotrcut for adding all their components.
         :type \*components: :class:`RV`, :class:`RVComp` or a sequence of :class:`RVComp` items
         :raises TypeError: invalid object passed (neither a :class:`RV` or a :class:`RVComp`)
 
-        Usual way of creating RV could be:
+        Usual way of creating a RV could be:
 
         >>> x = RV(RVComp(1, 'x_1'), RVComp(1, 'x_2'))
         >>> x.name
@@ -360,7 +360,8 @@ class Pdf(CPdf):
 
 
 class UniPdf(Pdf):
-    r"""Simple uniform multivariate probability density function.
+    r"""Simple uniform multivariate probability density function. Extends
+    :class:`Pdf`.
 
     .. math:: f(x) = \Theta(x - a) \Theta(b - x) \prod_{i=1}^n \frac{1}{b_i-a_i}
 
@@ -414,7 +415,7 @@ class UniPdf(Pdf):
 
 class AbstractGaussPdf(Pdf):
     r"""Abstract base for all Gaussian-like pdfs - the ones that take vector mean
-    and matrix covariance parameters.
+    and matrix covariance parameters. Extends :class:`Pdf`.
 
     :var mu: mean value
     :type mu: 1-D :class:`numpy.ndarray`
@@ -428,7 +429,8 @@ class AbstractGaussPdf(Pdf):
 
 
 class GaussPdf(AbstractGaussPdf):
-    r"""Unconditional Gaussian (normal) probability density function.
+    r"""Unconditional Gaussian (normal) probability density function. Extends
+    :class:`AbstractGaussPdf`.
 
     .. math:: f(x) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
     """
@@ -493,18 +495,19 @@ class GaussPdf(AbstractGaussPdf):
 
 
 class LogNormPdf(AbstractGaussPdf):
-    r"""Unconditional log-normal probability density function.
+    r"""Unconditional log-normal probability density function. Extends
+    :class:`AbstractGaussPdf`.
 
     More precisely, the density of random variable :math:`Y` where
     :math:`Y = exp(X); ~ X \sim \mathcal{N}(\mu, R)`
     """
 
     def __init__(self, mean, cov, rv = None):
-        """Initialise log-normal pdf.
+        r"""Initialise log-normal pdf.
 
-        :param mean: mean value of the **logarithm** of associated random variable
+        :param mean: mean value of the **logarithm** of the associated random variable
         :type mean: 1-D :class:`numpy.ndarray`
-        :param cov: covariance matrix of **logarithm** of associated random variable
+        :param cov: covariance matrix of the **logarithm** of the associated random variable
         :type cov: 2-D :class:`numpy.ndarray`
 
         A current limitation is that LogNormPdf is only univariate. To create
@@ -555,7 +558,7 @@ class LogNormPdf(AbstractGaussPdf):
 
 
 class EmpPdf(Pdf):
-    r"""Weighted empirical probability density function.
+    r"""Weighted empirical probability density function. Extends :class:`Pdf`.
 
     .. math::
 
@@ -653,7 +656,7 @@ class ProdPdf(Pdf):
     You can for example create a pdf that has uniform distribution with regards
     to x-axis and normal distribution along y-axis. The caller (you) must ensure
     that individial random variables are independent, otherwise their product may
-    have no mathematical sense.
+    have no mathematical sense. Extends :class:`Pdf`.
 
     .. math:: f(x_1 x_2 x_3) = f_1(x_1) f_2(x_2) f_3(x_3)
     """
@@ -737,6 +740,7 @@ class ProdPdf(Pdf):
 
 class MLinGaussCPdf(CPdf):
     r"""Conditional Gaussian pdf whose mean is a linear function of condition.
+    Extends :class:`CPdf`.
 
     .. math::
 
@@ -791,7 +795,7 @@ class MLinGaussCPdf(CPdf):
 
 class LinGaussCPdf(CPdf):
     r"""Conditional one-dimensional Gaussian pdf whose mean and covariance are
-    linear functions of condition.
+    linear functions of condition. Extends :class:`CPdf`.
 
     .. math::
 
@@ -853,7 +857,7 @@ class LinGaussCPdf(CPdf):
 class GaussCPdf(CPdf):
     r"""The most general normal conditional pdf. Use it only if you cannot use
     :class:`MLinGaussCPdf` or :class:`LinGaussCPdf` as this cpdf is least
-    optimised.
+    optimised. Extends :class:`CPdf`.
 
     .. math::
 
@@ -908,7 +912,8 @@ class GaussCPdf(CPdf):
 
 
 class ProdCPdf(CPdf):
-    r"""Pdf that is formed as a chain rule of multiple conditional pdfs. In a
+    r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
+    Extends :class:`CPdf`. In a
     simple textbook case denoted below it isn't needed to specify random variables
     at all. In this case when no random variable associations are passed,
     ProdCPdf ignores rv associations of its factors and everything is determined
