@@ -412,10 +412,9 @@ class UniPdf(Pdf):
         return random.uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
 
 
-class GaussPdf(Pdf):
-    r"""Unconditional Gaussian (normal) probability density function.
-
-    .. math:: f(x) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
+class AbstractGaussPdf(Pdf):
+    r"""Abstract base for all Gaussian-like pdfs - the ones that take vector mean
+    and matrix covariance parameters.
 
     :var mu: mean value
     :type mu: 1-D :class:`numpy.ndarray`
@@ -423,34 +422,46 @@ class GaussPdf(Pdf):
     :type R: 2-D :class:`numpy.ndarray`
 
     You can modify object parameters only if you are absolutely sure that you
-    pass allowable values, because parameters are only checked once in constructor.
+    pass allowable values - parameters are only checked once in constructor.
+    """
+    pass
+
+
+class GaussPdf(AbstractGaussPdf):
+    r"""Unconditional Gaussian (normal) probability density function.
+
+    .. math:: f(x) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
     """
 
-    def __init__(self, mean, covariance, rv = None):
+    def __init__(self, mean, cov, rv = None):
         """Initialise Gaussian pdf.
 
         :param mean: mean value
         :type mean: 1-D :class:`numpy.ndarray`
-        :param covariance: covariance matrix
-        :type covariance: 2-D :class:`numpy.ndarray`
+        :param cov: covariance matrix
+        :type cov: 2-D :class:`numpy.ndarray`
 
         To create standard normal distribution:
 
         >>> norm = GaussPdf(np.array([0.]), np.array([[1.]]))  # note the shape of covariance
         """
-        mean = asarray(mean)
-        covariance = asarray(covariance)
+        if not isinstance(mean, ndarray):
+            raise TypeError("mean must be numpy.ndarray")
+        if not isinstance(cov, ndarray):
+            raise TypeError("cov must be numpy.ndarray")
         if mean.ndim != 1:
             raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
         n = mean.shape[0]
-        if covariance.shape != (n, n):
-            raise ValueError("covariance must have shape (" + str(n) + ", " + str(n) + "), " +
-                             str(covariance.shape) + " given")
-        if np_any(covariance != covariance.T):
-            raise ValueError("covariance must be symmetric (complex covariance not supported)")
+        if cov.ndim != 2:
+            raise ValueError("cov must be two-dimensional")
+        if cov.shape[0] != n or cov.shape[1] != n:
+            raise ValueError("cov must have shape (" + str(n) + ", " + str(n) + "), " +
+                             str(cov.shape) + " given")
+        if np_any(cov != cov.T):
+            raise ValueError("cov must be symmetric (complex covariance not supported)")
         # TODO: covariance must be positive definite
         self.mu = mean
-        self.R = covariance
+        self.R = cov
         self._set_rvs(rv, None)
 
     def shape(self):
@@ -465,7 +476,7 @@ class GaussPdf(Pdf):
     def eval_log(self, x, cond = None):
         self._check_x(x)
 
-        # compute logarithm of normalization constant (can be cached in future)
+        # compute logarithm of normalization constant (TODO: can be cached in future)
         # log(2*Pi) = 1.83787706640935
         # we ignore sign (first part of slogdet return value) as it must be positive
         log_norm = -1/2. * (self.mu.shape[0]*1.83787706640935 + slogdet(self.R)[1])

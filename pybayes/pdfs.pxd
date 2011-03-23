@@ -48,8 +48,11 @@ cdef class UniPdf(Pdf):
     cdef public ndarray a, b  # dtype=double
 
 
-cdef class GaussPdf(Pdf):
+cdef class AbstractGaussPdf(Pdf):
     cdef public ndarray mu, R  # dtype=double
+
+
+cdef class GaussPdf(AbstractGaussPdf):
 
     @cython.locals(log_norm = double, log_val = double)
     cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
