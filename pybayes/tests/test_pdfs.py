@@ -306,11 +306,6 @@ class TestGaussPdf(PbTestCase):
         self.assertEqual(x.ndim, 1)
         self.assertEqual(x.shape[0], self.mean.shape[0])
 
-        # following test is interactive. Tester must create and check histogram:
-        #norm = pb.pdfs.GaussPdf(np.array([0.]), np.array([[1.]]))
-        #for i in xrange(0, 1000):
-        #    print norm.sample()[0]
-
 
 class TestEmpPdf(PbTestCase):
     """Test empirical pdf"""
@@ -671,16 +666,13 @@ class TestGaussCPdf(PbTestCase):
         samples = self.cgauss.samples(N, self.cond)
         emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us
 
-        mean = self.cgauss.mean(self.cond)
         fuzz = np.array([0.2, 0.2])
-        #print "mean", emp.mean()
-        self.assertTrue(np.all(mean - fuzz <= emp.mean()))
-        self.assertTrue(np.all(emp.mean() <= mean + fuzz))
 
-        #print "variance", emp.variance()
-        var = self.cgauss.mean(self.cond)
-        self.assertTrue(np.all(var - fuzz <= emp.variance()))
-        self.assertTrue(np.all(emp.variance() <= var + fuzz))
+        mean = self.cgauss.mean(self.cond)
+        self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
+
+        var = self.cgauss.variance(self.cond)
+        self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
 
 
 class TestProdCPdf(PbTestCase):
