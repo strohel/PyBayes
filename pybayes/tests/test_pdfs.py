@@ -307,6 +307,72 @@ class TestGaussPdf(PbTestCase):
         self.assertEqual(x.shape[0], self.mean.shape[0])
 
 
+class LogNormPdf(PbTestCase):
+    """Test log-normal pdf assuming that GaussPdf is correct"""
+
+    def setUp(self):
+        self.lognorm = pb.LogNormPdf(np.array([2.]), np.array([[0.3]]))
+
+    def test_init(self):
+        self.assertEqual(type(self.lognorm), pb.LogNormPdf)
+
+    def test_invalid_init(self):
+        constructor = pb.LogNormPdf
+
+        # bad cov shape:
+        self.assertRaises(ValueError, constructor, np.array([0.]), np.array([1.]))
+        # non-positive cov:
+        self.assertRaises(ValueError, constructor, np.array([0.]), np.array([[0.]]))
+        # negative cov:
+        self.assertRaises(ValueError, constructor, np.array([0.]), np.array([[-1.]]))
+
+    def test_shape(self):
+        self.assertEqual(self.lognorm.shape(), 1)
+
+    def test_mean(self):
+        self.assertApproxEqual(self.lognorm.mean(), np.array([8.5848583971779]))
+
+    def test_variance(self):
+        self.assertApproxEqual(self.lognorm.variance(), np.array([25.784521942338]))
+
+    def test_eval_log(self):
+        exp_results = np.array([
+            [0.          ],  # eval in -1
+            [0.          ],  # in 0
+            [0.0009269427],  # in 1
+            [0.0211410253],  # in 2
+            [0.0626788779],  # ...
+            [0.0972013339],
+            [0.1129713216],
+            [0.1129302247],
+            [0.1035460884],
+            [0.0900930786],
+            [0.0758493660],
+            [0.0625284607],
+            [0.0508581369],
+            [0.0410177842],
+            [0.0329143093],
+            [0.0263400001],
+            [0.0210561877]
+        ])
+
+        x = np.zeros(1.)
+        for i in range(17):
+            x[0] = i - 1.
+            self.assertApproxEqual(exp(self.lognorm.eval_log(x)), exp_results[i])
+
+    def test_sample(self):
+        N = 500  # number of samples
+        samples = np.log(self.lognorm.samples(N))  # note the logarithm
+        emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us
+
+        mean, fuzz = 2., 0.1
+        self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
+
+        var, fuzz = 0.3, 0.03
+        self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
+
+
 class TestEmpPdf(PbTestCase):
     """Test empirical pdf"""
 

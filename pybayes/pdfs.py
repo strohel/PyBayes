@@ -11,7 +11,7 @@ so instead of ``from pybayes.pdfs import Pdf`` you can type ``from pybayes impor
 Pdf``.
 """
 
-from math import log
+from math import log, sqrt  # TODO: use numpy versions?
 
 from numpywrap import *
 
@@ -490,6 +490,68 @@ class GaussPdf(AbstractGaussPdf):
         z = random.normal(size=self.mu.shape[0]);
         # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
         return self.mu + dot(cholesky(self.R), z);
+
+
+class LogNormPdf(AbstractGaussPdf):
+    r"""Unconditional log-normal probability density function.
+
+    More precisely, the density of random variable :math:`Y` where
+    :math:`Y = exp(X); ~ X \sim \mathcal{N}(\mu, R)`
+    """
+
+    def __init__(self, mean, cov, rv = None):
+        """Initialise log-normal pdf.
+
+        :param mean: mean value of the **logarithm** of associated random variable
+        :type mean: 1-D :class:`numpy.ndarray`
+        :param cov: covariance matrix of **logarithm** of associated random variable
+        :type cov: 2-D :class:`numpy.ndarray`
+
+        A current limitation is that LogNormPdf is only univariate. To create
+        standard log-normal distribution:
+
+        >>> lognorm = LogNormPdf(np.array([0.]), np.array([[1.]]))  # note the shape of covariance
+        """
+        if not isinstance(mean, ndarray):
+            raise TypeError("mean must be numpy.ndarray")
+        if not isinstance(cov, ndarray):
+            raise TypeError("cov must be numpy.ndarray")
+        if mean.ndim != 1:
+            raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
+        n = mean.shape[0]
+        if n != 1:
+            raise ValueError("LogNormPdf is currently limited to univariate random variables")
+        if cov.ndim != 2:
+            raise ValueError("cov must be two-dimensional")
+        if cov.shape[0] != n or cov.shape[1] != n:
+            raise ValueError("cov must have shape (" + str(n) + ", " + str(n) + "), " +
+                             str(cov.shape) + " given")
+        if cov[0][0] <= 0.:
+            raise ValueError("cov must be positive")
+        self.mu = mean
+        self.R = cov
+        self._set_rvs(rv, None)
+
+    def shape(self):
+        return 1
+
+    def mean(self, cond = None):
+        return exp(self.mu + self.R[0]/2.)
+
+    def variance(self, cond = None):
+        return (exp(self.R[0])[0] - 1.)*exp(2*self.mu + self.R[0])
+
+    def eval_log(self, x, cond = None):
+        self._check_x(x)
+        if x[0] <= 0:  # log-normal pdf support = (0, +inf)
+            return float('-inf')
+
+        # 1/2.*log(2*pi) = 0.91893853320467
+        return -((log(x[0]) - self.mu[0])**2)/(2.*self.R[0][0]) - log(x[0]*sqrt(self.R[0][0])) - 0.91893853320467
+
+    def sample(self, cond = None):
+        # size parameter ( = 1) makes lognormal() return a ndarray
+        return random.lognormal(self.mu[0], sqrt(self.R[0][0]), 1)
 
 
 class EmpPdf(Pdf):

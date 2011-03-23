@@ -9,7 +9,7 @@
 # not callable from python etc.
 
 from numpy cimport import_array, int, npy_intp, NPY_DOUBLE, PyArray_EMPTY, PyArray_ISCARRAY_RO, PyArray_ISFARRAY_RO
-from numpy import any as np_any, arange, array, asarray, cumsum, diag, empty, ones, prod, sum, zeros
+from numpy import any as np_any, arange, array, asarray, cumsum, diag, empty, exp, ones, prod, sum, zeros
 from numpy.linalg import cholesky, slogdet
 import numpy.random as random
 

@@ -61,6 +61,10 @@ cdef class GaussPdf(AbstractGaussPdf):
     cpdef ndarray sample(self, ndarray cond = *)
 
 
+cdef class LogNormPdf(AbstractGaussPdf):
+    pass
+
+
 cdef class EmpPdf(Pdf):
     cdef public ndarray particles  # dtype=double, ndims=2
     cdef public ndarray weights  # dtype=double, ndims=1
