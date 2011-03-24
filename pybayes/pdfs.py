@@ -140,13 +140,24 @@ class RV(object):
         """Return True if this RV contains all RVComps from sequence
         **components**.
 
-        :param components: list of components whose presence is checked
-        :type components: sequence of :class:`RVComp` items
+        :param test_components: list of components whose presence is checked
+        :type test_components: sequence of :class:`RVComp` items
         """
         for test_comp in test_components:
             if not self.contains(test_comp):
                 return False
         return True;
+
+    def contains_any(self, test_components):
+        """Return True if this RV contains any of **test_components**.
+
+        :param test_components: sequence of components whose presence is tested
+        :type test_components: sequence of :class:`RVComp` items
+        """
+        for test_comp in test_components:
+            if self.contains(test_comp):
+                return True
+        return False
 
     def contained_in(self, test_components):
         """Return True if sequence **components** contains all all components

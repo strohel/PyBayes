@@ -19,7 +19,8 @@ cdef class RV(object):
     cdef readonly list components
 
     cpdef bint contains(self, RVComp component) except? False
-    cpdef bint contains_all(self, components) except? False
+    cpdef bint contains_all(self, test_components) except? False
+    cpdef bint contains_any(self, test_components) except? False
 
     cdef bint _add_component(self, RVComp component) except False
 

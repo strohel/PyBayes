@@ -55,6 +55,14 @@ class TestRV(PbTestCase):
     def test_invalid_init(self):
         self.assertRaises(TypeError, pb.RV, 0.46)
 
+    def test_contains_any(self):
+        a, b, c, d = pb.RVComp(1, "a"), pb.RVComp(1, "b"), pb.RVComp(1, "c"), pb.RVComp(1, "d")
+        rv = pb.RV(a, b, c)
+        self.assertTrue(rv.contains_any([a, d]))
+        self.assertTrue(rv.contains_any([b, d]))
+        self.assertTrue(rv.contains_any([d, c]))
+        self.assertFalse(rv.contains_any([d]))
+
 
 class TestCpdf(PbTestCase):
     """Test abstract class CPdf"""
