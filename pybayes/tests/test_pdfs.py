@@ -34,6 +34,9 @@ class TestRVComp(PbTestCase):
 class TestRV(PbTestCase):
     """Test random variable representation"""
 
+    def setUp(self):
+        self.test_comps = pb.RVComp(1, "a"), pb.RVComp(1, "b"), pb.RVComp(1, "c"), pb.RVComp(1, "d")
+
     def test_init(self):
         comp_a = pb.RVComp(1, "a")
         comp_b = pb.RVComp(2, "b")
@@ -55,8 +58,26 @@ class TestRV(PbTestCase):
     def test_invalid_init(self):
         self.assertRaises(TypeError, pb.RV, 0.46)
 
+    def test_contains(self):
+        a, b, c, d = self.test_comps
+        rv = pb.RV(b, d)
+        self.assertFalse(rv.contains(a))
+        self.assertTrue(rv.contains(b))
+        self.assertFalse(rv.contains(c))
+        self.assertTrue(rv.contains(d))
+
+    def test_contains_all(self):
+        a, b, c, d = self.test_comps
+        rv = pb.RV(a, b, c)
+        self.assertTrue(rv.contains_all([a, b]))
+        self.assertTrue(rv.contains_all([c, b]))
+        self.assertTrue(rv.contains_all([b, a, c]))
+        self.assertFalse(rv.contains_all([b, c, d]))
+        self.assertFalse(rv.contains_all([d]))
+        self.assertFalse(rv.contains_all([a, b, c, d]))
+
     def test_contains_any(self):
-        a, b, c, d = pb.RVComp(1, "a"), pb.RVComp(1, "b"), pb.RVComp(1, "c"), pb.RVComp(1, "d")
+        a, b, c, d = self.test_comps
         rv = pb.RV(a, b, c)
         self.assertTrue(rv.contains_any([a, d]))
         self.assertTrue(rv.contains_any([b, d]))

@@ -138,7 +138,7 @@ class RV(object):
 
     def contains_all(self, test_components):
         """Return True if this RV contains all RVComps from sequence
-        **components**.
+        **test_components**.
 
         :param test_components: list of components whose presence is checked
         :type test_components: sequence of :class:`RVComp` items
