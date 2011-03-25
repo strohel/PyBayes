@@ -555,6 +555,20 @@ class TestMLinGaussCPdf(PbTestCase):
 
         self.gauss = pb.MLinGaussCPdf(self.covariance, self.A, self.b)
 
+    def test_different_base_class(self):
+        cov = np.array([[1.]])
+        mean = np.array([-14.568])
+        condlognorm = pb.MLinGaussCPdf(cov, np.array([[1.]]), np.array([0.]), base_class=pb.LogNormPdf)
+        lognorm = pb.LogNormPdf(mean, cov)
+
+        self.assertEqual(condlognorm.mean(mean), lognorm.mean())
+        self.assertEqual(condlognorm.variance(mean), lognorm.variance())
+        for x in np.array([[-0.4],[2.4],[4.5],[12.5]]):
+            self.assertEqual(condlognorm.eval_log(x, mean), lognorm.eval_log(x))
+        for i in range(30):
+            # only test that samples are positive
+            self.assertTrue(condlognorm.sample(mean)[0] >= 0)
+
     def test_init(self):
         self.assertEqual(type(self.gauss), pb.MLinGaussCPdf)
 

@@ -759,13 +759,26 @@ class MLinGaussCPdf(CPdf):
        \quad \quad \text{where} ~ \mu := A c + b
     """
 
-    def __init__(self, covariance, A, b, rv = None, cond_rv = None):
-        """Initialise Mean-Linear Gaussian conditional pdf.
+    def __init__(self, cov, A, b, rv = None, cond_rv = None, base_class = None):
+        r"""Initialise Mean-Linear Gaussian conditional pdf.
 
-        covariance - covariance of underlying Gaussian pdf
-        A, b: given condition cond, mean = A*cond + b
+        :param cov: covariance of underlying Gaussian pdf
+        :type cov: 2D :class:`numpy.ndarray`
+        :param A: given condition :math:`c`, :math:`\mu = Ac + b`
+        :type A: 2D :class:`numpy.ndarray`
+        :param b: see above
+        :type b: 1D :class:`numpy.ndarray`
+        :param class base_class: class whose instance is created as a base pdf for this
+           cpdf. Must be a subclass of :class:`AbstractGaussPdf` and the default is
+           :class:`GaussPdf`. One alternative is :class:`LogNormPdf` for example.
         """
-        self.gauss = GaussPdf(zeros(covariance.shape[0]), covariance)
+        if base_class is None:
+            self.gauss = GaussPdf(zeros(cov.shape[0]), cov)
+        else:
+            if not issubclass(base_class, AbstractGaussPdf):
+                raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
+            self.gauss = base_class(zeros(cov.shape[0]), cov)
+
         self.A = asarray(A)
         self.b = asarray(b)
         if self.A.ndim != 2:
@@ -785,23 +798,30 @@ class MLinGaussCPdf(CPdf):
         return self.A.shape[1]
 
     def mean(self, cond = None):
-        self._check_cond(cond)
-        return dot(self.A, cond) + self.b
+        # note: it may not be true that gauss.mu == gauss.mean() for all AbstractGaussPdf
+        # classes. One such example is LogNormPdf
+        self._set_mean(cond)
+        return self.gauss.mean()
 
     def variance(self, cond = None):
-        # cond is unused here, so no need to check it
+        # note: for some AbstractGaussPdf variance may depend on mu
+        self._set_mean(cond)
         return self.gauss.variance()
 
     def eval_log(self, x, cond = None):
         # x is checked in self.gauss
-        # cond is checked in mean()
-        self.gauss.mu = self.mean(cond)
+        self._set_mean(cond)
         return self.gauss.eval_log(x)
 
     def sample(self, cond = None):
-        # cond is checked in mean()
-        self.gauss.mu = self.mean(cond)
+        self._set_mean(cond)
         return self.gauss.sample()
+
+    def _set_mean(self, cond):
+        self._check_cond(cond)
+        self.gauss.mu = dot(self.A, cond)
+        self.gauss.mu += self.b
+        return True
 
 
 class LinGaussCPdf(CPdf):

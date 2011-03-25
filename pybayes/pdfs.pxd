@@ -97,7 +97,9 @@ cdef class ProdPdf(Pdf):
 
 cdef class MLinGaussCPdf(CPdf):
     cdef public ndarray A, b  # dtype=double
-    cdef readonly GaussPdf gauss
+    cdef AbstractGaussPdf gauss
+
+    cdef bint _set_mean(self, ndarray cond) except False
 
 
 cdef class LinGaussCPdf(CPdf):
