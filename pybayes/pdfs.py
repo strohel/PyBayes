@@ -924,7 +924,11 @@ class GaussCPdf(CPdf):
 
 class ProdCPdf(CPdf):
     r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
-    Extends :class:`CPdf`. In a
+    Extends :class:`CPdf`.
+
+    TODO: make aggreate [cond\_]rv construction automatic and drop old constuctor.
+
+    In a
     simple textbook case denoted below it isn't needed to specify random variables
     at all. In this case when no random variable associations are passed,
     ProdCPdf ignores rv associations of its factors and everything is determined
