@@ -337,7 +337,7 @@ class CPdf(object):
             self.rv = RV(RVComp(self.shape()))  # create RV with one anonymous component
         else:
             if not isinstance(rv, RV):
-                raise TypeError("rv (is specified) must be (a subclass of) RV")
+                raise TypeError("rv (if specified) must be (a subclass of) RV")
             if rv.dimension != self.shape():
                 raise ValueError("rv has wrong dimension " + str(rv.dimension) + ", " + str(self.shape()) + " expected")
             self.rv = rv
@@ -908,13 +908,16 @@ class GaussCPdf(CPdf):
        R &:= g(c) \text{ (interpreted as n*n matrix)}
     """
 
-    def __init__(self, shape, cond_shape, f, g, rv = None, cond_rv = None):
+    def __init__(self, shape, cond_shape, f, g, rv = None, cond_rv = None, base_class = None):
         r"""Initialise general gauss cpdf.
 
         :param int shape: dimension of random vector
         :param int cond_shape: dimension of condition
         :param callable f: :math:`\mu := f(c)` where c = condition
         :param callable g: :math:`R := g(c)` where c = condition
+        :param class base_class: class whose instance is created as a base pdf for this
+           cpdf. Must be a subclass of :class:`AbstractGaussPdf` and the default is
+           :class:`GaussPdf`. One alternative is :class:`LogNormPdf` for example.
 
         TODO: better specification of callback functions
         """
@@ -922,7 +925,13 @@ class GaussCPdf(CPdf):
         self._cond_shape = cond_shape
         self.f = f
         self.g = g
-        self.gauss = GaussPdf(zeros(shape), zeros((shape, shape)))
+        if base_class is None:
+            # TODO: to be correct, np.eye would be needed
+            self.gauss = GaussPdf(zeros(self._shape), ones((self._shape, self._shape)))
+        else:
+            if not issubclass(base_class, AbstractGaussPdf):
+                raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
+            self.gauss = base_class(zeros(self._shape), ones((self._shape, self._shape)))
         self._set_rvs(rv, cond_rv)
 
     def shape(self):
@@ -932,25 +941,27 @@ class GaussCPdf(CPdf):
         return self._cond_shape
 
     def mean(self, cond = None):
-        self._check_cond(cond)
-        return self.f(cond).reshape(self._shape)
+        self._set_gauss_params(cond)
+        return self.gauss.mean()
 
     def variance(self, cond = None):
-        self._check_cond(cond)
-        return self.g(cond).reshape((self._shape, self._shape)).diagonal()
+        self._set_gauss_params(cond)
+        return self.gauss.variance()
 
     def eval_log(self, x, cond = None):
+        self._set_gauss_params(cond)
         # x is checked in self.gauss
-        self._check_cond(cond)
-        self.gauss.mu = self.f(cond).reshape(self._shape)
-        self.gauss.R = self.g(cond).reshape((self._shape, self._shape))
         return self.gauss.eval_log(x)
 
     def sample(self, cond = None):
+        self._set_gauss_params(cond)
+        return self.gauss.sample()
+
+    def _set_gauss_params(self, cond):
         self._check_cond(cond)
         self.gauss.mu = self.f(cond).reshape(self._shape)
         self.gauss.R = self.g(cond).reshape((self._shape, self._shape))
-        return self.gauss.sample()
+        return True
 
 
 class ProdCPdf(CPdf):

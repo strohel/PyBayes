@@ -768,11 +768,26 @@ class TestGaussCPdf(PbTestCase):
     def setUp(self):
         def f(x):
             return -x
+        self.f = f
         def g(x):
             return np.diag(-x)
+        self.g = g
         self.cgauss = pb.GaussCPdf(2, 2, f, g)
         self.gauss = pb.GaussPdf(np.array([1., 2.]), np.array([[1., 0.], [0., 2.]]))
         self.cond = np.array([-1., -2.])  # condition that makes cgauss behave as gauss
+
+    def test_different_base_class(self):
+        condlognorm = pb.GaussCPdf(1, 1, self.f, self.g, base_class=pb.LogNormPdf)
+        lognorm = pb.LogNormPdf(np.array([1.]), np.array([[1.]]))
+        cond = np.array([-1.])  # makes condlognorm behave as lognorm
+
+        self.assertEqual(condlognorm.mean(cond), lognorm.mean())
+        self.assertEqual(condlognorm.variance(cond), lognorm.variance())
+        for x in np.array([[-0.4],[2.4],[4.5],[12.5]]):
+            self.assertEqual(condlognorm.eval_log(x, cond), lognorm.eval_log(x))
+        for i in range(30):
+            # only test that samples are positive
+            self.assertTrue(np.all(condlognorm.sample(cond) >= 0))
 
     def test_mean(self):
         self.assertApproxEqual(self.cgauss.mean(self.cond), self.gauss.mean())

@@ -113,7 +113,9 @@ cdef class LinGaussCPdf(CPdf):
 cdef class GaussCPdf(CPdf):
     cdef int _shape, _cond_shape
     cdef public object f, g  # callables
-    cdef GaussPdf gauss
+    cdef AbstractGaussPdf gauss
+
+    cdef bint _set_gauss_params(self, ndarray cond) except False
 
 
 cdef class ProdCPdf(CPdf):
