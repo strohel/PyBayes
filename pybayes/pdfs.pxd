@@ -104,7 +104,10 @@ cdef class MLinGaussCPdf(CPdf):
 
 cdef class LinGaussCPdf(CPdf):
     cdef public double a, b, c, d
-    cdef GaussPdf gauss
+    cdef AbstractGaussPdf gauss
+
+    @cython.locals(c0 = double, c1 = double)
+    cdef bint _set_gauss_params(self, ndarray cond) except False
 
 
 cdef class GaussCPdf(CPdf):

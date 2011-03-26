@@ -690,6 +690,21 @@ class TestLinGaussCPdf(PbTestCase):
 
         self.assertRaises(TypeError, constructor, 1, 2, 3, 4)
 
+    def test_different_base_class(self):
+        cov = np.array([[1.]])
+        mean = np.array([-14.568])
+        cond = np.array([mean[0], cov[0,0]])
+        condlognorm = pb.LinGaussCPdf(1., 0., 1., 0., base_class=pb.LogNormPdf)
+        lognorm = pb.LogNormPdf(mean, cov)
+
+        self.assertEqual(condlognorm.mean(cond), lognorm.mean())
+        self.assertEqual(condlognorm.variance(cond), lognorm.variance())
+        for x in np.array([[-0.4],[2.4],[4.5],[12.5]]):
+            self.assertEqual(condlognorm.eval_log(x, cond), lognorm.eval_log(x))
+        for i in range(30):
+            # only test that samples are positive
+            self.assertTrue(condlognorm.sample(cond)[0] >= 0)
+
     def test_rvs(self):
         self.assertEqual(self.gauss.rv.dimension, 1)
         self.assertEqual(self.gauss.cond_rv.dimension, 2)

@@ -835,11 +835,14 @@ class LinGaussCPdf(CPdf):
        \quad \sigma^2 := c c_2 + d
     """
 
-    def __init__(self, a, b, c, d, rv = None, cond_rv = None):
-        """Initialise Linear Gaussian conditional pdf.
+    def __init__(self, a, b, c, d, rv = None, cond_rv = None, base_class = None):
+        r"""Initialise Linear Gaussian conditional pdf.
 
         :param double a, b: mean = a*cond_1 + b
         :param double c, d: covariance = c*cond_2 + d
+        :param class base_class: class whose instance is created as a base pdf for this
+           cpdf. Must be a subclass of :class:`AbstractGaussPdf` and the default is
+           :class:`GaussPdf`. One alternative is :class:`LogNormPdf` for example.
         """
         if not isinstance(a, float):
             raise TypeError("all parameters must be floats")
@@ -853,7 +856,12 @@ class LinGaussCPdf(CPdf):
         if not isinstance(d, float):
             raise TypeError("all parameters must be floats")
         self.d = d
-        self.gauss = GaussPdf(zeros(1), array([[1.]]))
+        if base_class is None:
+            self.gauss = GaussPdf(zeros(1), array([[1.]]))
+        else:
+            if not issubclass(base_class, AbstractGaussPdf):
+                raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
+            self.gauss = base_class(zeros(1), array([[1.]]))
         self._set_rvs(rv, cond_rv)
 
     def shape(self):
@@ -863,26 +871,29 @@ class LinGaussCPdf(CPdf):
         return 2
 
     def mean(self, cond = None):
-        self._check_cond(cond)
-        self.gauss.mu[0] = self.a*cond[0] + self.b  # gauss.mu is used just as a holder
-        return self.gauss.mu
+        self._set_gauss_params(cond)
+        return self.gauss.mean()
 
     def variance(self, cond = None):
-        self._check_cond(cond)
-        return array([self.c*cond[1] + self.d])
+        self._set_gauss_params(cond)
+        return self.gauss.variance()
 
     def eval_log(self, x, cond = None):
-        # x is checked in self.gauss
-        self._check_cond(cond)
-        self.gauss.mu[0] = self.a*cond[0] + self.b
-        self.gauss.R[0,0] = self.c*cond[1] + self.d
+        self._set_gauss_params(cond)
+        # x is checked in self.gauss.eval_log()
         return self.gauss.eval_log(x)
 
     def sample(self, cond = None):
-        self._check_cond(cond)
-        self.gauss.mu[0] = self.a*cond[0] + self.b
-        self.gauss.R[0,0] = self.c*cond[1] + self.d
+        self._set_gauss_params(cond)
         return self.gauss.sample()
+
+    def _set_gauss_params(self, cond):
+        self._check_cond(cond)
+        c0 = cond[0]  # workaround for cython limitation: no buffer type in pure python mode
+        c1 = cond[1]
+        self.gauss.mu[0] = self.a*c0 + self.b
+        self.gauss.R[0,0] = self.c*c1 + self.d
+        return True
 
 
 class GaussCPdf(CPdf):
