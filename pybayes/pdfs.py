@@ -540,7 +540,7 @@ class LogNormPdf(AbstractGaussPdf):
         if cov.shape[0] != n or cov.shape[1] != n:
             raise ValueError("cov must have shape (" + str(n) + ", " + str(n) + "), " +
                              str(cov.shape) + " given")
-        if cov[0][0] <= 0.:
+        if cov[0,0] <= 0.:
             raise ValueError("cov must be positive")
         self.mu = mean
         self.R = cov
@@ -561,11 +561,11 @@ class LogNormPdf(AbstractGaussPdf):
             return float('-inf')
 
         # 1/2.*log(2*pi) = 0.91893853320467
-        return -((log(x[0]) - self.mu[0])**2)/(2.*self.R[0][0]) - log(x[0]*sqrt(self.R[0][0])) - 0.91893853320467
+        return -((log(x[0]) - self.mu[0])**2)/(2.*self.R[0,0]) - log(x[0]*sqrt(self.R[0,0])) - 0.91893853320467
 
     def sample(self, cond = None):
         # size parameter ( = 1) makes lognormal() return a ndarray
-        return random.lognormal(self.mu[0], sqrt(self.R[0][0]), 1)
+        return random.lognormal(self.mu[0], sqrt(self.R[0,0]), 1)
 
 
 class EmpPdf(Pdf):

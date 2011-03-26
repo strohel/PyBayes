@@ -209,7 +209,7 @@ class TestUniPdf(PbTestCase):
         samples = self.uni.samples(n)
         self.assertEqual(samples.shape[0], n)
         for i in range(n):
-            self.assertTrue(-10. <= samples[i][0] <= 20.)
+            self.assertTrue(-10. <= samples[i,0] <= 20.)
 
 
 class TestGaussPdf(PbTestCase):
@@ -739,8 +739,8 @@ class TestLinGaussCPdf(PbTestCase):
         # test that 10 samples are within mean +- n*sigma (>99.9% probability for n=3.3)
         for i in range(self.test_conds.shape[0]):
             cond = self.test_conds[i]
-            mean = self.cond_means[i][0]
-            sigma = sqrt(self.cond_vars[i][0])
+            mean = self.cond_means[i,0]
+            sigma = sqrt(self.cond_vars[i,0])
             for j in range (10):
                 sample = self.gauss.sample(cond)[0] - mean
                 self.assertTrue(-n*sigma < sample < n*sigma)
@@ -831,7 +831,7 @@ class TestProdCPdf(PbTestCase):
 
         for i in range(test_points.shape[0]):
             val = exp(self.prod.eval_log(test_points[i], np.array([])))
-            expected = exp(self.gauss.eval_log(test_points[i][:1], test_points[i][1:])) * exp(self.uni.eval_log(test_points[i][1:]))
+            expected = exp(self.gauss.eval_log(test_points[i,:1], test_points[i,1:])) * exp(self.uni.eval_log(test_points[i,1:]))
             self.assertApproxEqual(val, expected)
 
     def test_sample(self):
