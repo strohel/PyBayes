@@ -178,7 +178,7 @@ class RV(object):
 
         :param super_rv: returned indices apply to this rv
         :type super_rv: :class:`RV`
-        :rtype: 1-D :class:`numpy.ndarray` of ints with dimension = self.dimension
+        :rtype: 1D :class:`numpy.ndarray` of ints with dimension = self.dimension
         """
         ret = empty(self.dimension, dtype=int)
         ret_ind = 0  # current index in returned index array
@@ -429,9 +429,9 @@ class AbstractGaussPdf(Pdf):
     and matrix covariance parameters. Extends :class:`Pdf`.
 
     :var mu: mean value
-    :type mu: 1-D :class:`numpy.ndarray`
+    :type mu: 1D :class:`numpy.ndarray`
     :var R: covariance matrix
-    :type R: 2-D :class:`numpy.ndarray`
+    :type R: 2D :class:`numpy.ndarray`
 
     You can modify object parameters only if you are absolutely sure that you
     pass allowable values - parameters are only checked once in constructor.
@@ -447,12 +447,12 @@ class GaussPdf(AbstractGaussPdf):
     """
 
     def __init__(self, mean, cov, rv = None):
-        """Initialise Gaussian pdf.
+        r"""Initialise Gaussian pdf.
 
         :param mean: mean value
-        :type mean: 1-D :class:`numpy.ndarray`
+        :type mean: 1D :class:`numpy.ndarray`
         :param cov: covariance matrix
-        :type cov: 2-D :class:`numpy.ndarray`
+        :type cov: 2D :class:`numpy.ndarray`
 
         To create standard normal distribution:
 
@@ -517,9 +517,9 @@ class LogNormPdf(AbstractGaussPdf):
         r"""Initialise log-normal pdf.
 
         :param mean: mean value of the **logarithm** of the associated random variable
-        :type mean: 1-D :class:`numpy.ndarray`
+        :type mean: 1D :class:`numpy.ndarray`
         :param cov: covariance matrix of the **logarithm** of the associated random variable
-        :type cov: 2-D :class:`numpy.ndarray`
+        :type cov: 2D :class:`numpy.ndarray`
 
         A current limitation is that LogNormPdf is only univariate. To create
         standard log-normal distribution:
