@@ -46,8 +46,26 @@ if not os.path.isdir(options.datadir):
     parser.print_help()
     exit(1)
 
-# define stress tests
-stresses = [stress_kalman, stress_pf_1, stress_pf_2]
+def a_function():
+    pass
+
+def scan_for_stresses():
+    ret = []
+    globs = globals()
+    functype = type(a_function)
+    builtinfunctype = type(dir)  # needed for compiled cython code
+    for key in globs:
+        if not key.startswith("stress_"):
+            continue
+        value = globs[key]
+        if type(value) in (functype, builtinfunctype):
+            ret.append(value)
+    def keyfunc(obj):
+        return obj.__name__
+    ret.sort(key=keyfunc)
+    return ret
+
+stresses = scan_for_stresses()
 
 timer = Timer()
 
