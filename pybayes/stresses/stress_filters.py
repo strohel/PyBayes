@@ -90,16 +90,13 @@ pf_nr_steps = 200  # number of steps for particle filter
 pf_opts = PfOptions(pf_nr_steps)
 
 def stress_pf_1(options, timer):
-    run_pf(options, timer, pf_opts, 16)
+    run_pf(options, timer, pf_opts, 15)
 
 def stress_pf_2(options, timer):
-    run_pf(options, timer, pf_opts, 32)
+    run_pf(options, timer, pf_opts, 45)
 
 def stress_pf_3(options, timer):
-    run_pf(options, timer, pf_opts, 64)
-
-def stress_pf_4(options, timer):
-    run_pf(options, timer, pf_opts, 128)
+    run_pf(options, timer, pf_opts, 135)
 
 def run_pf(options, timer, pf_opts, nr_particles):
     nr_steps = pf_opts.nr_steps # number of time steps
