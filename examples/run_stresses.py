@@ -5,10 +5,12 @@
 
 """Run PyBayes' stress-suite"""
 
+import traceback as tb
 import cProfile
 import pstats
 from optparse import OptionParser
 import os
+import sys
 
 import numpy as np
 
@@ -71,6 +73,7 @@ timer = Timer()
 
 # run stress tests
 count = 0
+skipped = 0
 failed = 0
 for stress in stresses:
     name = stress.__name__
@@ -85,13 +88,16 @@ for stress in stresses:
     else:
         try:
             stress(options, timer)
-        except Exception, e:
-            print "  Exception occured:", e
+        except StopIteration, e:
+            print " ", e
+            skipped += 1
+        except Exception:
+            tb.print_exception(*sys.exc_info(), limit=5)
             failed += 1
         else:
             print "  {0}".format(timer)
     count += 1
 
-print "Ran {0} stresses in {1}s, {2} of them failed.".format(
-      count, timer.cumtime, failed)
+print "Ran {0} stresses in {1}s. {2} of them were skipped, {2} of them failed.".format(
+      count, timer.cumtime, skipped, failed)
 print
