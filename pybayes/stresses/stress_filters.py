@@ -42,11 +42,11 @@ def run_kalman_on_mat_data(input_file, output_file, timer):
     Mu_py = Mu_py.T
     savemat(output_file, {"Mu_py":Mu_py, "exec_time_pybayes":timer.spent[0]}, oned_as='row')
 
-class PfOptions(object):
+class PfOptionsA(object):
     """Class that represents options for a particle filter"""
 
     def __init__(self, nr_steps):
-        print "Preparing data for particle filter stresses..."
+        print "Preparing data for particle filter stress A..."
         self.nr_steps = nr_steps
 
         # prepare random vector components:
@@ -86,17 +86,71 @@ class PfOptions(object):
         self.x_t = x_t
         self.y_t = y_t
 
-pf_nr_steps = 200  # number of steps for particle filter
-pf_opts = PfOptions(pf_nr_steps)
+class PfOptionsB(object):
+    """Class that represents options for a particle filter"""
 
-def stress_pf_1(options, timer):
-    run_pf(options, timer, pf_opts, 15)
+    def __init__(self, nr_steps):
+        print "Preparing data for particle filter stress B..."
+        self.nr_steps = nr_steps
 
-def stress_pf_2(options, timer):
-    run_pf(options, timer, pf_opts, 45)
+        # prepare random vector components:
+        a_t, b_t = pb.RVComp(1, 'a_t'), pb.RVComp(1, 'b_t')  # state in t
+        a_tp, b_tp = pb.RVComp(1, 'a_{t-1}'), pb.RVComp(1, 'b_{t-1}')  # state in t-1
 
-def stress_pf_3(options, timer):
-    run_pf(options, timer, pf_opts, 135)
+        # prepare callback functions
+        def f(cond):  # log(b_{t-1}) - 1/2 a_{t-1}
+            ret = np.log(cond[1:2]) # - cond[0:1]/2.
+            return ret
+        def g(cond):  # a_{t-1}
+            return cond[0:1]
+
+        # prepare p(x_t | x_{t-1}) density:
+        id1 = np.array([[1.]])  # 1x1 identity matrix  # ???
+        p1 = pb.MLinGaussCPdf(id1, id1, np.array([0.]), rv=pb.RV(a_t), cond_rv=pb.RV(a_tp))
+        p2 = pb.GaussCPdf(1, 2, f, g, rv=pb.RV(b_t), cond_rv=pb.RV(a_tp, b_tp), base_class=pb.LogNormPdf)
+        self.p_xt_xtp = pb.ProdCPdf((p1, p2), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
+
+        # prepare p(y_t | x_t) density:
+        self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
+
+        # initial setup: affect particles and initially set state
+        self.init_range = np.array([[1.8, 7.], [2.2, 8.]]) # from .. to
+        init_mean = (self.init_range[0] + self.init_range[1])/2.
+
+        x_t = np.zeros((nr_steps, 2))
+        x_t[-1] = init_mean.copy()  # just wrap aroud to temporarily store initial state
+        y_t = np.empty((nr_steps, 1))
+        for i in range(nr_steps):
+            # simulate random process:
+            x_t[i,1:2] = p2.sample(x_t[i-1])  # p (b_t | b_{t-1}, a_{t-1})
+            # set a_t:
+            x_t[i,0] = i/1000. + init_mean[0]
+            # DEBUG: 
+            print "simulated x_{0} = {1}".format(i, x_t[i])
+
+            y_t[i] = self.p_yt_xt.sample(x_t[i])
+            # DEBUG: 
+            print "simulated y_{0} = {1}".format(i, y_t[i])
+        self.x_t = x_t
+        self.y_t = y_t
+
+
+pf_nr_steps = 100  # number of steps for particle filter
+pf_opts_a = PfOptionsA(pf_nr_steps)
+#pf_opts_b = PfOptionsB(pf_nr_steps)
+
+def stress_pf_a_1(options, timer):
+    run_pf(options, timer, pf_opts_a, 15)
+
+def stress_pf_a_2(options, timer):
+    run_pf(options, timer, pf_opts_a, 45)
+
+def stress_pf_a_3(options, timer):
+    run_pf(options, timer, pf_opts_a, 135)
+
+def stress_pf_b_1(options, timer):
+    raise StopIteration("Stress skipped due to unstable system")
+    #run_pf(options, timer, pf_opts_b, 15)
 
 def run_pf(options, timer, pf_opts, nr_particles):
     nr_steps = pf_opts.nr_steps # number of time steps
@@ -117,51 +171,3 @@ def run_pf(options, timer, pf_opts, nr_particles):
     timer.stop()
     print "  {0}-particle filter cummulative error for {1} steps: {2}".format(
         nr_particles, nr_steps, np.sqrt(cumerror))
-
-def stress_pf_old(options, timer):
-    raise Exception("Stress skipped")
-    nr_particles = 100  # number of particles
-    nr_steps = 50 # number of time steps
-
-    # prepare random vector components:
-    a_t, b_t = pb.RVComp(1, 'a_t'), pb.RVComp(1, 'b_t')  # state in t
-    a_tp, b_tp = pb.RVComp(1, 'a_{t-1}'), pb.RVComp(1, 'b_{t-1}')  # state in t-1
-
-    # prepare callback functions
-    def f(x):  # take a_t out of [a_t, b_t]
-        return x[0:1]
-    def g(x):  # exponential of b_t out of [a_t, b_t]
-        return np.exp(x[1:2])
-    #def g(x):  # take b_t out of [a_t, b_t]
-        #return x[1:2]
-
-    # prepare p(x_t | x_{t-1}) density:
-    cov, A, b = np.array([[1.]]), np.array([[1.]]), np.array([0.])  # params for p1
-    p1 = pb.MLinGaussCPdf(cov, A, b, pb.RV(a_t), pb.RV(a_tp))
-    p2 = pb.LinGaussCPdf(1., 0., 1., 0., pb.RV(b_t), pb.RV(b_tp, a_tp))
-    p_xt_xtp = pb.ProdCPdf((p1, p2), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
-
-    # prepare p(y_t | x_t) density:
-    p_yt_xt = pb.GaussCPdf(1, 2, f, g)
-
-    # construct initial particle density and particle filter:
-    init_pdf = pb.UniPdf(np.array([2., -10.]), np.array([3., -3.]))
-    pf = pb.ParticleFilter(nr_particles, init_pdf, p_xt_xtp, p_yt_xt)
-
-    x_t = np.array([0., -10.])
-    y_t = np.empty(1)
-    timer.start()
-    for i in range(nr_steps):
-        x_t[0] = 2.5 + i/50.  # set a_t
-
-        # simulate random process:
-        x_t[1:2] = p2.sample(x_t[np.array([1, 0])])  # this is effectively b_t = sample from p [b_{t-1}, a_{t-1}]
-        print "simulated x_{0} = {1}".format(i, x_t)
-        y_t = p_yt_xt.sample(x_t)
-        print "simulated y_{0} = {1}".format(i, y_t)
-
-        #print pf.emp.particles
-        apost = pf.bayes(y_t)
-        print "returned mean = {0}".format(apost.mean())
-        print
-    timer.stop()
