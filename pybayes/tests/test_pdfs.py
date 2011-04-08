@@ -330,7 +330,7 @@ class TestGaussPdf(PbTestCase):
             self.assertApproxEqual(res, expected[i])
 
     def test_sample(self):
-        # we cannost test values, just test right dimension and shape
+        # sample means and variances are tested in various CPdfs that use GaussPdf internally
         x = self.gauss.sample()
         self.assertEqual(x.ndim, 1)
         self.assertEqual(x.shape[0], self.mean.shape[0])
@@ -391,14 +391,15 @@ class LogNormPdf(PbTestCase):
             self.assertApproxEqual(exp(self.lognorm.eval_log(x)), exp_results[i])
 
     def test_sample(self):
+        """Test LogNormPdf.sample() mean and variance. This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
         N = 500  # number of samples
         samples = np.log(self.lognorm.samples(N))  # note the logarithm
         emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us
 
-        mean, fuzz = 2., 0.1
+        mean, fuzz = 2., 0.2
         self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
 
-        var, fuzz = 0.3, 0.03
+        var, fuzz = 0.3, 0.1
         self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
 
 
@@ -647,7 +648,7 @@ class TestMLinGaussCPdf(PbTestCase):
             self.assertApproxEqual(res, expected[i])
 
     def test_sample(self):
-        # we cannost test values, just test right dimension and shape
+        # Just test right dimension and shape for now
         for i in range(self.test_conds.shape[0]):
             x = self.gauss.sample(self.test_conds[i])
             self.assertEqual(x.ndim, 1)
@@ -801,11 +802,12 @@ class TestGaussCPdf(PbTestCase):
             self.assertApproxEqual(self.cgauss.eval_log(x, self.cond), self.gauss.eval_log(x))
 
     def test_sample(self):
+        """Test GaussCPdf.sample() mean and variance. This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
         N = 500  # number of samples
         samples = self.cgauss.samples(N, self.cond)
         emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us
 
-        fuzz = np.array([0.2, 0.2])
+        fuzz = np.array([0.3, 0.3])
 
         mean = self.cgauss.mean(self.cond)
         self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
