@@ -11,6 +11,7 @@ so instead of ``from pybayes.pdfs import Pdf`` you can type ``from pybayes impor
 Pdf``.
 """
 
+from copy import deepcopy
 from math import log, sqrt  # TODO: use numpy versions?
 
 from numpywrap import *
@@ -114,6 +115,21 @@ class RV(object):
                     raise TypeError('component ' + str(component) + ' is neither an instance '
                                 + 'of RVComp or RV and is not iterable of RVComps')
         self.name = self.name[:-2] + ']'
+
+    def __copy__(self):
+        ret = type(self).__new__(type(self))
+        ret.name = self.name
+        ret.dimension = self.dimension
+        ret.components = self.components
+        return ret
+
+    def __deepcopy__(self, memo):
+        ret = type(self).__new__(type(self))
+        ret.name = self.name  # no need to deepcopy - string is immutable
+        ret.dimension = self.dimension  # ditto
+        # Following shallow copy is special behaviour of RV:
+        ret.components = self.components[:]
+        return ret
 
     def _add_component(self, component):
         """Add new component to this random variable.
@@ -436,7 +452,30 @@ class AbstractGaussPdf(Pdf):
     You can modify object parameters only if you are absolutely sure that you
     pass allowable values - parameters are only checked once in constructor.
     """
-    pass
+
+    def __copy__(self):
+        """Make a shallow copy of AbstractGaussPdf (or its derivative provided
+        that is doesn't add class variables)"""
+        # we cannont use AbstractGaussPdf statically - this method may be called
+        # by derived class
+        ret = type(self).__new__(type(self))  # TODO: currently slower than PY_NEW()
+        ret.mu = self.mu
+        ret.R = self.R
+        ret.rv = self.rv
+        ret.cond_rv = self.cond_rv
+        return ret
+
+    def __deepcopy__(self, memo):
+        """Make a deep copy of AbstractGaussPdf (or its derivative provided
+        that is doesn't add class variables)"""
+        # we cannont use AbstractGaussPdf statically - this method may be called
+        # by derived class
+        ret = type(self).__new__(type(self))  # TODO: currently slower than PY_NEW()
+        ret.mu = deepcopy(self.mu, memo)
+        ret.R = deepcopy(self.R, memo)
+        ret.rv = deepcopy(self.rv, memo)
+        ret.cond_rv = deepcopy(self.cond_rv, memo)
+        return ret
 
 
 class GaussPdf(AbstractGaussPdf):

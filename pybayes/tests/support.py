@@ -23,3 +23,23 @@ class PbTestCase(ut.TestCase):
             return
         else:
             self.fail("NumPy arrays {0} and {1} are not fuzzy equal (+- {2})".format(X, Y, fuzz))
+
+    def assertArraysEqualNotSame(self, a, b):
+        """Assert that numpy arrays a and b are equal, but are not the same instances"""
+        self.assertTrue(id(a) != id(b))
+        self.assertTrue(a.ndim == b.ndim)
+        self.assertTrue(np.all(a == b))
+
+    def assertRVsEqualNotSame(self, a, b):
+        """Assert that :class:`~pybayes.pdfs.RV` objects a and b are equal, but
+        are not the same instances neither shallow copies of themselves.
+
+        RVs are special case during deepcopy - the RVComps should be referenced,
+        not copied."""
+        self.assertTrue(id(a) != id(b))
+        self.assertTrue(id(a.components) != id(b.components))
+        self.assertEqual(a.name, b.name)  # no need to test for id inequality - strings are immutable
+        self.assertEqual(a.dimension, b.dimension)  # ditto
+        for (a_comp, b_comp) in zip(a.components, b.components):
+            # equality for rv comps is defined as object instance identity
+            self.assertEqual(a_comp, b_comp)

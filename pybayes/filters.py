@@ -10,6 +10,7 @@ so instead of ``from pybayes.filters import KalmanFilter`` you can type ``from
 pybayes import KalmanFilter``.
 """
 
+from copy import deepcopy
 from math import exp
 
 from numpywrap import *
@@ -81,6 +82,38 @@ class KalmanFilter(Filter):
 
         self.P = state_pdf
         self.S = GaussPdf(array([0.]), array([[1.]]))  # observation probability density function
+
+    def __copy__(self):
+        # type(self) is used because this method may be called for a derived class
+        ret = type(self).__new__(type(self))
+        ret.A = self.A
+        ret.B = self.B
+        ret.C = self.C
+        ret.D = self.D
+        ret.Q = self.Q
+        ret.R = self.R
+        ret.n = self.n
+        ret.k = self.k
+        ret.j = self.j
+        ret.P = self.P
+        ret.S = self.S
+        return ret
+
+    def __deepcopy__(self, memo):
+        # type(self) is used because this method may be called for a derived class
+        ret = type(self).__new__(type(self))
+        ret.A = deepcopy(self.A, memo)  # numpy arrays
+        ret.B = deepcopy(self.B, memo)
+        ret.C = deepcopy(self.C, memo)
+        ret.D = deepcopy(self.D, memo)
+        ret.Q = deepcopy(self.Q, memo)
+        ret.R = deepcopy(self.R, memo)
+        ret.n = self.n  # no need to copy integers
+        ret.k = self.k
+        ret.j = self.j
+        ret.P = deepcopy(self.P, memo)  # GaussPdf
+        ret.S = deepcopy(self.S, memo)
+        return ret
 
     def bayes(self, yt, ut = None):
         if not isinstance(yt, ndarray) or not isinstance(ut, ndarray):

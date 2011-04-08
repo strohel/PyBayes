@@ -19,6 +19,12 @@ cdef class KalmanFilter(Filter):
     cdef readonly int n, k, j
     cdef readonly GaussPdf P, S
 
+    @cython.locals(ret = KalmanFilter)
+    cpdef KalmanFilter __copy__(self)
+
+    @cython.locals(ret = KalmanFilter)
+    cpdef KalmanFilter __deepcopy__(self, memo)
+
     @cython.locals(K = ndarray)
     cpdef CPdf bayes(self, ndarray yt, ndarray ut = *)
 

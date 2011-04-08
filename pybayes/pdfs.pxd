@@ -18,6 +18,12 @@ cdef class RV(object):
     cdef public str name
     cdef readonly list components
 
+    @cython.locals(ret = RV)
+    cpdef RV __copy__(self)
+
+    @cython.locals(ret = RV)
+    cpdef RV __deepcopy__(self, memo)
+
     cpdef bint contains(self, RVComp component) except? False
     cpdef bint contains_all(self, test_components) except? False
     cpdef bint contains_any(self, test_components) except? False
@@ -51,6 +57,12 @@ cdef class UniPdf(Pdf):
 
 cdef class AbstractGaussPdf(Pdf):
     cdef public ndarray mu, R  # dtype=double
+
+    @cython.locals(ret = AbstractGaussPdf)
+    cpdef AbstractGaussPdf __copy__(self)
+
+    @cython.locals(ret = AbstractGaussPdf)
+    cpdef AbstractGaussPdf __deepcopy__(self, memo)
 
 
 cdef class GaussPdf(AbstractGaussPdf):

@@ -4,6 +4,7 @@
 
 """Tests for pdfs"""
 
+from copy import copy, deepcopy
 from math import exp, log, sqrt
 
 import numpy as np
@@ -57,6 +58,21 @@ class TestRV(PbTestCase):
 
     def test_invalid_init(self):
         self.assertRaises(TypeError, pb.RV, 0.46)
+
+    def test_copy(self):
+        """Test that shallow copying RV works as expected"""
+        o = pb.RV(*self.test_comps)
+        c = copy(o)
+        self.assertTrue(id(o) != id(c))
+        self.assertTrue(id(o.name) == id(c.name))
+        self.assertTrue(id(o.dimension) == id(c.dimension))
+        self.assertTrue(id(o.components) == id(c.components))
+
+    def test_deepcopy(self):
+        """Test that deep copying RV works as expected"""
+        o = pb.RV(*self.test_comps)
+        c = deepcopy(o)
+        self.assertRVsEqualNotSame(o, c)
 
     def test_contains(self):
         a, b, c, d = self.test_comps
@@ -256,6 +272,26 @@ class TestGaussPdf(PbTestCase):
         ]))
 
         # TODO: non positive-definite variance
+
+    def test_copy(self):
+        """Test that copying GaussPdf works as expected"""
+        o = self.gauss  # original
+        c = copy(o)  # copy
+        self.assertTrue(id(o) != id(c))
+        self.assertTrue(id(o.mu) == id(c.mu))
+        self.assertTrue(id(o.R) == id(c.R))
+        self.assertTrue(id(o.rv) == id(c.rv))
+        self.assertTrue(id(o.cond_rv) == id(c.cond_rv))
+
+    def test_deepcopy(self):
+        """Test that deep copying GaussPdf works as expected"""
+        o = self.gauss  # original
+        c = deepcopy(o)  # copy
+        self.assertTrue(id(o) != id(c))
+        self.assertArraysEqualNotSame(o.mu, c.mu)
+        self.assertArraysEqualNotSame(o.R, c.R)
+        self.assertRVsEqualNotSame(o.rv, c.rv)
+        self.assertRVsEqualNotSame(o.cond_rv, c.cond_rv)
 
     def test_rvs(self):
         self.assertEqual(self.gauss.rv.dimension, 3)

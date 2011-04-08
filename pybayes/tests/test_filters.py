@@ -4,6 +4,8 @@
 
 """Tests for kalman"""
 
+from copy import copy, deepcopy
+
 import numpy as np
 
 import pybayes as pb
@@ -73,6 +75,38 @@ class TestKalmanFilter(PbTestCase):
         for i in xrange(4):
             mu = k.bayes(y[i], u[i]).mu
             self.assertApproxEqual(mu, exp_mu[i])
+
+    def test_copy(self):
+        """Test that copying KF works as expected"""
+        o = pb.KalmanFilter(**self.setup_1)  # original
+        c = copy(o)  # copy
+
+        self.assertTrue(id(o) != id(c))
+        self.assertTrue(id(o.A) == id(c.A))
+        self.assertTrue(id(o.B) == id(c.B))
+        self.assertTrue(id(o.C) == id(c.C))
+        self.assertTrue(id(o.D) == id(c.D))
+        self.assertTrue(id(o.Q) == id(c.Q))
+        self.assertTrue(id(o.R) == id(c.R))
+        self.assertTrue(id(o.n) == id(c.n))
+        self.assertTrue(id(o.k) == id(c.k))
+        self.assertTrue(id(o.j) == id(c.j))
+        self.assertTrue(id(o.P) == id(c.P))
+        self.assertTrue(id(o.S) == id(c.S))
+
+    def test_deepcopy(self):
+        """Test that deep copying KF works as expected"""
+        o = pb.KalmanFilter(**self.setup_2)  # original
+        c = deepcopy(o)  # copy
+
+        self.assertTrue(id(o) != id(c))
+        for (a, b) in [(o.A, c.A), (o.B, c.B), (o.C, c.C), (o.D, c.D), (o.Q, c.Q), (o.R, c.R)]:
+            self.assertArraysEqualNotSame(a, b)
+        # n, j, n do not need to be different as they are immutable
+        self.assertTrue(id(o.P) != id(c.P))
+        self.assertArraysEqualNotSame(o.P.mu, c.P.mu)  # this is better tested in
+        self.assertArraysEqualNotSame(o.P.R, c.P.R)  # GaussPdf deepcopy test, but wont hurt here
+        self.assertTrue(id(o.S) != id(c.S))
 
 
 class testParticleFilter(PbTestCase):
