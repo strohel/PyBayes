@@ -607,8 +607,58 @@ class LogNormPdf(AbstractGaussPdf):
         return random.lognormal(self.mu[0], sqrt(self.R[0,0]), 1)
 
 
-class EmpPdf(Pdf):
-    r"""Weighted empirical probability density function. Extends :class:`Pdf`.
+class AbstractEmpPdf(Pdf):
+    r"""An abstraction of empirical probability density functions that provides common methods such
+    as weight normalisation.
+
+    :var numpy.ndarray weights: 1D array of particle weights
+       :math:`\omega_i >= 0 \forall i; \quad \sum \omega_i = 1`
+    """
+
+    def normalise_weights(self):
+        r"""Multiply weights by appropriate constant so that :math:`\sum \omega_i = 1`
+
+        :raise AttributeError: when :math:`\exists i: \omega_i < 0` or
+           :math:`\forall i: \omega_i = 0`
+        """
+        if np_any(self.weights < 0.):
+            raise AttributeError("Weights must not be negative")
+        wsum = sum(self.weights)
+        if wsum == 0:
+            raise AttributeError("Sum of weights == 0: weights cannot be normalised")
+        self.weights *= 1./wsum
+        return True
+
+    def get_resample_indices(self):
+        r"""Calculate first step of resampling process (dropping low-weight particles and replacing
+        them with more weighted ones.
+
+        :return: integer array of length n: :math:`(a_1, a_2 \dots a_n)` where :math:`a_i` means
+           that particle at ith place should be replaced with particle number :math:`a_i`
+        :rtype: :class:`numpy.ndarray` of ints
+
+        *This method doesnt modify underlying pdf in any way - it merely calculates how particles
+        should be replaced.*
+        """
+        n = self.weights.shape[0]
+        cum_weights = cumsum(self.weights)
+
+        u = (arange(n, dtype=float) + random.uniform()) / n
+        # u[i] = (i + fuzz) / n
+
+        # calculate number of babies for each particle
+        baby_indeces = zeros(n, dtype=int)  # index array: a[i] contains index of
+        # original particle that should be at i-th place in new particle array
+        j = 0
+        for i in range(n):
+            while u[i] > cum_weights[j]:
+                j += 1
+            baby_indeces[i] = j
+        return baby_indeces
+
+
+class EmpPdf(AbstractEmpPdf):
+    r"""Weighted empirical probability density function. Extends :class:`AbstractEmpPdf`.
 
     .. math::
 
@@ -618,7 +668,6 @@ class EmpPdf(Pdf):
 
     :var numpy.ndarray particles: 2D array of particles; shape: (n, m) where n
        is the number of particles, m dimension of this pdf
-    :var numpy.ndarray weights: 1D array of particle weights
 
     You may alter particles and weights, but you must ensure that their shapes
     match and that weight constraints still hold. You can use
@@ -635,6 +684,8 @@ class EmpPdf(Pdf):
            purposes.*
         :type init_particles: :class:`numpy.ndarray`
         """
+        if not isinstance(init_particles, ndarray) or init_particles.ndim != 2:
+            raise TypeError("init_particles must be 2D numpy.ndarray")
         self.particles = init_particles
         # set n weights to 1/n
         self.weights = ones(self.particles.shape[0]) / self.particles.shape[0]
@@ -662,42 +713,15 @@ class EmpPdf(Pdf):
     def sample(self, cond = None):
         raise NotImplementedError("Sample for empirical pdf not (yet?) implemented")
 
-    def normalise_weights(self):
-        r"""Multiply weights by appropriate constant so that
-        :math:`\sum \omega_i = 1`
-
-        :raise AttributeError: when :math:`\exists i: \omega_i < 0` or
-           :math:`\forall i: \omega_i = 0`
-        """
-        if np_any(self.weights < 0.):
-            raise AttributeError("Weights must not be negative")
-        wsum = sum(self.weights)
-        if wsum == 0:
-            raise AttributeError("Sum of weights == 0: weights cannot be normalised")
-        self.weights *= 1./wsum
-        return True
-
     def resample(self):
         """Drop low-weight particles, replace them with copies of more weighted
         ones. Also reset weights to uniform."""
-        n = self.particles.shape[0]
-        cum_weights = cumsum(self.weights)
-
-        u = (arange(n, dtype=float) + random.uniform()) / n
-        # u[i] = (i + fuzz) / n
-
-        # calculate number of babies for each particle
-        baby_indeces = zeros(n, dtype=int)  # index array: a[i] contains index of
-        # original particle that should be at i-th place in new particle array
-        j = 0
-        for i in range(n):
-            while u[i] > cum_weights[j]:
-                j += 1
-            baby_indeces[i] = j
-
-        self.particles = self.particles[baby_indeces]
-        self.weights[:] = 1./n
+        self.particles = self.particles[self.get_resample_indices()]
+        self.weights[:] = 1./self.weights.shape[0]
         return True
+
+
+
 
 
 class ProdPdf(Pdf):
