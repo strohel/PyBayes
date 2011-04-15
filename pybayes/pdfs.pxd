@@ -94,6 +94,12 @@ cdef class EmpPdf(AbstractEmpPdf):
     cpdef bint resample(self) except False
 
 
+cdef class MarginalizedEmpPdf(AbstractEmpPdf):
+    cdef public ndarray gausses  # dtype=GaussPdf, ndims=1
+    cdef public ndarray particles  # dtype=double, ndims=2
+    cdef public int _gauss_shape, _part_shape
+
+
 cdef class ProdPdf(Pdf):
     cdef readonly ndarray factors  # dtype=Pdf
     cdef readonly ndarray shapes  # dtype=int

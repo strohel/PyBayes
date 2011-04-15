@@ -482,6 +482,46 @@ class TestEmpPdf(PbTestCase):
         self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.]))
 
 
+class TestMarginalizedEmpPdf(PbTestCase):
+    """Test marginalized empirical pdf"""
+
+    def setUp(self):
+        gausses = np.array([
+            pb.GaussPdf(np.array([1., 2.]), np.array([[1., 0.], [0., 2.]])),
+            pb.GaussPdf(np.array([-2., -1.]), np.array([[9., 0.], [0., 3.]])),
+            pb.GaussPdf(np.array([-8., 5.]), np.array([[1., 0.5], [0.5, 1.]])),
+        ], dtype=pb.GaussPdf)
+        particles = np.array([
+            [1., 2.],
+            [2., 4.],
+            [3., 6.],
+        ])
+        self.emp = pb.MarginalizedEmpPdf(gausses, particles)
+
+    def test_shape(self):
+        self.assertEqual(self.emp.shape(), 4)
+
+    def test_mean(self):
+        self.assertApproxEqual(self.emp.mean(), np.array([-3., 2., 2., 4.]))
+        # set different weights:
+        self.emp.weights = np.array([0., 0.5, 0.5])
+        self.assertApproxEqual(self.emp.mean(), np.array([-5., 2., 2.5, 5.]))
+        # test also normalisation:
+        self.emp.weights = np.array([0., 14.7, 14.7])
+        self.emp.normalise_weights()
+        self.assertApproxEqual(self.emp.mean(), np.array([-5., 2., 2.5, 5.]))
+
+    def test_variance(self):
+        self.assertApproxEqual(self.emp.variance(), np.array([11./3., 2., 2./3., 8./3.]))
+        return
+        self.emp.weights = np.array([0., 0.5, 0.5, 0])  # set different weights
+        self.assertApproxEqual(self.emp.variance(), np.array([0.25, 1., 0., 1.]))
+        # test also normalisation:
+        self.emp.weights = np.array([0., 0.255, 0.255, 0])
+        self.emp.normalise_weights()
+        self.assertApproxEqual(self.emp.mean(), np.array([2.5, 5., 23.67, 2.]))
+
+
 class TestProdPdf(PbTestCase):
     """Test unconditional product of unconditional pdfs"""
 
@@ -787,8 +827,8 @@ class TestLinGaussCPdf(PbTestCase):
                 self.assertApproxEqual(ret, gauss.eval_log(x))
 
     def test_sample(self):
+        """Test that 10 LinGaussCPdf samples are within mean +- n*sigma (>99.9% probability for n=3.3)"""
         n = 4
-        # test that 10 samples are within mean +- n*sigma (>99.9% probability for n=3.3)
         for i in range(self.test_conds.shape[0]):
             cond = self.test_conds[i]
             mean = self.cond_means[i,0]

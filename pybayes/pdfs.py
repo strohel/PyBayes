@@ -609,7 +609,7 @@ class LogNormPdf(AbstractGaussPdf):
 
 class AbstractEmpPdf(Pdf):
     r"""An abstraction of empirical probability density functions that provides common methods such
-    as weight normalisation.
+    as weight normalisation. Extends :class:`Pdf`.
 
     :var numpy.ndarray weights: 1D array of particle weights
        :math:`\omega_i >= 0 \forall i; \quad \sum \omega_i = 1`
@@ -721,7 +721,110 @@ class EmpPdf(AbstractEmpPdf):
         return True
 
 
+class MarginalizedEmpPdf(AbstractEmpPdf):
+    r"""An extension to empirical pdf (:class:`EmpPdf`) used as aposteriori density by
+    :class:`~pybayes.filters.MarginalizedParticleFilter`. Extends :class:`AbstractEmpPdf`.
 
+    Assume that random variable :math:`x` can be divided into 2 independent
+    parts :math:`x = [a, b]`, then probability density function can be written as
+
+    .. math::
+
+       p &= \sum_{i=1}^n \omega_i \Big[ \mathcal{N}\left(\hat{a}^{(i)}, P^{(i)}\right) \Big]_a
+       \delta(b - b^{(i)}) \\
+       \text{where } \quad \hat{a}^{(i)} &\text{ and } P^{(i)} \text{ is mean and
+       covariance of i}^{th} \text{ gauss pdf} \\
+       b^{(i)} &\text{ is value of the (second part of the) i}^{th} \text{ particle} \\
+       \omega_i \geq 0 &\text{ is weight of the i}^{th} \text{ particle} \quad \sum \omega_i = 1
+
+    :var numpy.ndarray gausses: 1D array that holds :class:`GaussPdf`
+       for each particle; shape: (n) where n is the number of particles
+    :var numpy.ndarray particles: 2D array of particles; shape: (n, m) where n
+       is the number of particles, m dimension of the "empirical" part of random variable
+    :var numpy.ndarray weights: 1D array of particle weights
+
+    You may alter particles and weights, but you must ensure that their shapes
+    match and that weight constraints still hold. You can use
+    :meth:`normalise_weights` to do some work for you.
+
+    *Note: this pdf could have been coded as ProdPdf of EmpPdf and a mixture of GaussPdfs. However
+    it is implemented excplicitly for simplicity and speed reasons.*
+    """
+
+    def __init__(self, init_gausses, init_particles, rv = None):
+        r"""Initialise marginalized empirical pdf.
+
+        :param init_gausses: 1D array of :class:`GaussPdf` objects, all must have
+           the dimension
+        :type init_gausses: :class:`numpy.ndarray`
+        :param init_particles: 2D array of initial particles; shape (*n*, *m*)
+           determines that *n* particles whose *empirical* part will have dimension *m*
+        :type init_particles: :class:`numpy.ndarray`
+
+        *Warning: MarginalizedEmpPdf does not copy the particles - it rather uses
+        both passed arrays through its lifetime, so it is not safe to reuse them
+        for other purposes.*
+        """
+        if not isinstance(init_gausses, ndarray) or init_gausses.ndim != 1:
+            raise TypeError("init_gausses must be 1D numpy.ndarray")
+        if not isinstance(init_particles, ndarray) or init_particles.ndim != 2:
+            raise TypeError("init_particles must be 2D numpy.ndarray")
+        if init_gausses.shape[0] != init_particles.shape[0] or init_gausses.shape[0] < 1:
+            raise ValueError("init_gausses count must be same as init_particles count and both must be positive")
+        gauss_shape = 0
+        for gauss in init_gausses:
+            if not isinstance(gauss, GaussPdf):
+                raise TypeError("all init_gausses items must be (subclasses of) GaussPdf")
+            if gauss_shape == 0:
+                gauss_shape = gauss.shape()  # guaranteed to be non-zero
+            elif gauss.shape() != gauss_shape:
+                raise ValueError("all init_gausses items must have same shape")
+
+        self.gausses = init_gausses
+        self.particles = init_particles
+        # set n weights to 1/n
+        self.weights = ones(self.particles.shape[0]) / self.particles.shape[0]
+        self._gauss_shape = self.gausses[0].shape()  # shape of the gaussian component
+        self._part_shape = self.particles.shape[1]  # shape of the empirical component
+
+        self._set_rvs(rv, None)
+
+    def shape(self):
+        return self._gauss_shape + self._part_shape
+
+    def mean(self, cond = None):
+        ret = zeros(self.shape())
+        temp = empty(self.shape())
+        for i in range(self.particles.shape[0]):
+            temp[0:self._gauss_shape] = self.gausses[i].mean()
+            temp[self._gauss_shape:] = self.particles[i]
+            ret += self.weights[i] * temp
+        return ret
+
+    def variance(self, cond = None):
+        var = zeros(self.shape())
+        # we calculate mean for particle part here, we don't want to uselessly call gausses[i].mean()
+        mean = zeros(self._part_shape)
+        temp = empty(self.shape())
+
+        for i in range(self.particles.shape[0]):
+            # compute mean of particle part:
+            mean += self.weights[i] * self.particles[i]
+            # gauss part of variance is computed easily:
+            temp[0:self._gauss_shape] = self.gausses[i].variance()
+            # for particle part we are calculating 2nd non-central moment here:
+            temp[self._gauss_shape:] = self.particles[i]**2
+            var += self.weights[i] * temp  # cython limitation: cannot compile: array_a[0:n] += array_b
+
+        # make 2nd moment of particle part central:
+        var[self._gauss_shape:] = var[self._gauss_shape:] - mean**2  # ditto cython limitation
+        return var
+
+    def eval_log(self, x, cond = None):
+        raise NotImplementedError("eval_log doesn't make sense for (partially) discrete distribution")
+
+    def sample(self, cond = None):
+        raise NotImplementedError("Drawing samples from MarginalizesEmpPdf is not supported")
 
 
 class ProdPdf(Pdf):

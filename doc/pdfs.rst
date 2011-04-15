@@ -46,6 +46,10 @@ Unconditional Probability Density Functions (pdfs)
 
    .. automethod:: __init__
 
+.. autoclass:: MarginalizedEmpPdf
+
+   .. automethod:: __init__
+
 .. autoclass:: ProdPdf
 
    .. automethod:: __init__

@@ -8,5 +8,6 @@ Bayesian statistics... TODO
 """
 
 from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
-from pdfs import AbstractEmpPdf, EmpPdf, ProdPdf, MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
+from pdfs import AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
+from pdfs import MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
 from filters import Filter, KalmanFilter, ParticleFilter
