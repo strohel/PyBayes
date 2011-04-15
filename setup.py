@@ -149,7 +149,7 @@ if options.use_cython is True:
     ext_options['extra_compile_args'] = ["-O2"]
     ext_options['extra_link_args'] = ["-Wl,-O1"]
     ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
-    ext_options['pyrex_directives'] = {'profile':options.profile}
+    ext_options['pyrex_directives'] = {'profile':options.profile, 'infer_types':True}
     ext_options['pyrex_include_dirs'] = ["tokyo"]  # find tokyo.pxd from bundled tokyo
     for extension in extensions:
         module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
