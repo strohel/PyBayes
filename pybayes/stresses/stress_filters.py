@@ -36,7 +36,8 @@ def run_kalman_on_mat_data(input_file, output_file, timer):
 
     timer.start()
     for t in xrange(1, N):  # the 1 start offset is intentional
-        Mu_py[t] = kalman.bayes(y[t], u[t]).mu
+        kalman.bayes(y[t], u[t])
+        Mu_py[t] = kalman.posterior().mu
     timer.stop()
 
     Mu_py = Mu_py.T
@@ -164,8 +165,8 @@ def run_pf(options, timer, pf_opts, nr_particles):
     cumerror = np.zeros(2)  # vector of cummulative square error
     timer.start()
     for i in range(nr_steps):
-        apost = pf.bayes(y_t[i])
-        cumerror += (apost.mean() - x_t[i])**2
+        pf.bayes(y_t[i])
+        cumerror += (pf.posterior().mean() - x_t[i])**2
         # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
         # DEBUG: print "returned mean  = {0}".format(apost.mean())
     timer.stop()

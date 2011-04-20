@@ -18,21 +18,44 @@ from pybayes.pdfs import GaussPdf, EmpPdf
 
 
 class Filter(object):
-    """Abstract prototype of a bayesian filter"""
+    """Abstract prototype of a bayesian filter."""
 
     def bayes(self, yt, ut = None):
-        """Approximate or exact bayes rule (one iteration)
+        """Perform approximate or exact bayes rule.
 
         :param yt: observation at time t
         :type yt: :class:`numpy.ndarray`
         :param ut: intervence at time t (appliciable only to some filters)
         :type ut: :class:`numpy.ndarray`
-        :return: aposteriori pdf. *Warning: filters are allowed to return a
-           reference to their working pdf => it is not safe to modify returned
-           pdf in any way.*
-        :rtype: :class:`~pybayes.pdfs.Pdf`
+        :return: always returns True (see :meth:`posterior` to get aposteriori density)
         """
         raise NotImplementedError("Derived classes must implement this method")
+
+    def posterior(self):
+        """Return aposteriori probability density funcion (:class:`~pybayes.pdfs.Pdf`).
+
+        :return: aposteriori density
+        :rtype: :class:`~pybayes.pdfs.Pdf`
+
+        *Filter implementations may decide to return a reference to their work pdf - it is not safe
+        to modify it in any way, doing so may leave the filter in undefined state.*
+        """
+        raise NotImplementedError("Derived classes must implement this method")
+
+    def evidence_log(self, yt):  # TODO: sometimes also ut/cond?
+        """Return the logarithm of *evidence* function (also known as *marginal likehood*) evaluated
+        in point yt.
+
+        :param yt: point which to evaluate the evidence in
+        :type yt: :class:`numpy.ndarray`
+        :rtype: double
+
+        This is typically computed after :meth:`bayes` with the same observation:
+
+        >>> filter.bayes(yt)
+        >>> log_likehood = filter.evidence_log(yt)
+        """
+        raise NotImplementedError("Derived classes should implement this method, if feasible")
 
 
 class KalmanFilter(Filter):
@@ -139,7 +162,9 @@ class KalmanFilter(Filter):
 
         self.P.mu += dot(K, (yt - self.S.mu))  # a posteriori estimate
         self.P.R -= dot(dot(K, self.C), self.P.R)  # a posteriori variance
+        return True
 
+    def posterior(self):
         return self.P
 
 
@@ -193,8 +218,9 @@ class ParticleFilter(Filter):
 
         # assure that weights are normalised
         self.emp.normalise_weights()
-
         # resample
         self.emp.resample()
+        return True
 
+    def posterior(self):
         return self.emp

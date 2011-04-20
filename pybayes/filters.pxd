@@ -7,11 +7,13 @@
 cimport cython
 from numpywrap cimport *
 
-from pdfs cimport CPdf, GaussPdf, EmpPdf
+from pdfs cimport CPdf, Pdf, GaussPdf, EmpPdf
 
 
 cdef class Filter(object):
-    cpdef CPdf bayes(self, ndarray yt, ndarray ut = *)
+    cpdef bint bayes(self, ndarray yt, ndarray ut = *) except False
+    cpdef Pdf posterior(self)
+    cpdef double evidence_log(self, ndarray yt) except? -1
 
 
 cdef class KalmanFilter(Filter):
@@ -26,7 +28,7 @@ cdef class KalmanFilter(Filter):
     cpdef KalmanFilter __deepcopy__(self, memo)
 
     @cython.locals(K = ndarray)
-    cpdef CPdf bayes(self, ndarray yt, ndarray ut = *)
+    cpdef bint bayes(self, ndarray yt, ndarray ut = *) except False
 
 
 cdef class ParticleFilter(Filter):

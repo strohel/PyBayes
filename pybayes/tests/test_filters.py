@@ -73,7 +73,8 @@ class TestKalmanFilter(PbTestCase):
             [-1.87141692,  0.98517451]
         ])
         for i in xrange(4):
-            mu = k.bayes(y[i], u[i]).mu
+            k.bayes(y[i], u[i])
+            mu = k.posterior().mu
             self.assertApproxEqual(mu, exp_mu[i])
 
     def test_copy(self):
@@ -123,8 +124,10 @@ class testParticleFilter(PbTestCase):
         self.assertEqual(type(self.pf), pb.ParticleFilter)
 
     def test_bayes(self):
+        # TODO: this test runs, but accepts anything
         np.set_printoptions(linewidth=120, precision=2, suppress=True)
         for i in range(20):
-            pdf = self.pf.bayes(np.array([i], dtype=float))
+            self.pf.bayes(np.array([i], dtype=float))
+            pdf = self.pf.posterior()
             #print "observation, mean:", i, pdf.mean()[0]
             #print "particles, mean:", pdf.particles.view().squeeze()
