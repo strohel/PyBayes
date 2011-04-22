@@ -6,6 +6,12 @@
 \usepackage{amsmath}
 \usepackage{epsfig}
 \usepackage{graphicx}
+\usepackage[pagebackref=true]{hyperref} % tento balicek by mel byt na konci baliku!
+
+\hypersetup{
+	pdfauthor={Matej Laitl},
+	pdftitle={Implementation environment for Bayesian filtering algorithms}
+}
 
 %% Nastavení zrcadla sazby
 \usepackage{calc}
@@ -20,14 +26,24 @@
 %\parskip=7pt   % mezera mezi odstavci
 
 \newif\ifrelease % define new boolean variable release
-\releasetrue % and set it
+\releasefalse % and set it
 
+\ifrelease
+	\hypersetup{pdfborder={0 0 0}} % no borders around links
+\else
+	\hypersetup{colorlinks=true} % colour links instead of borders
+\fi
 
 \begin{document}
 
 \ifrelease
-	\input{startpages.tex}
+	\input{startpages.tex} % include some fancy start pages
 \fi
+
+
+% obsah
+\newpage
+\tableofcontents
 
 
 \newcommand{\introduction}{Introduction}
@@ -90,9 +106,8 @@ NumPy.... parallelisation - GIL.. Py3k
 
 
 % použitá literatura
-\addcontentsline{toc}{chapter}{\bibname}
-
 \begin{thebibliography}{9}
+	\addcontentsline{toc}{chapter}{\bibname}
 
 	\bibitem{lamport94}
 		Leslie Lamport,
