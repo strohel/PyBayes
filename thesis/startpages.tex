@@ -1,0 +1,141 @@
+\newcommand{\cvut}{České vysoké učení technické v~Praze}
+\newcommand{\fjfi}{Fakulta jaderná a fyziklná inženýrská}
+\newcommand{\km}{Katedra matematiky}
+\newcommand{\obor}{Inženýrská Informatika}
+\newcommand{\zamereni}{Softwarové inženýrství a matematická informatika}
+
+\newcommand{\nazevcz}{Prostředí pro implementaci algoritmů Bayesovské filtrace}
+\newcommand{\nazeven}{Implementation environment for Bayesian filtering algorithms}
+\newcommand{\autor}{Matěj Laitl}
+\newcommand{\rok}{2011}
+\newcommand{\vedouci}{Ing. Václav Šmídl, Ph.D.}
+
+\newcommand{\pracovisteVed}{Oddělení adaptivních systémů \\
+	Ústav teorie informace a automatizace \\
+	Akademie věd České republiky}
+\newcommand{\konzultant}{---}
+\newcommand{\pracovisteKonz}{}
+
+\newcommand{\klicova}{TODO, klíčová slova, max. 5}
+\newcommand{\keyword}{TODO, key, words}
+\newcommand{\abstrCZ}{TODO Abstrakt práce (cca 7 vět, min. 80 slov)}
+\newcommand{\abstrEN}{TODO English abstract}
+
+%%% zde zacina kresleni dokumentu
+
+% titulní strana
+\thispagestyle{empty}
+
+\begin{center}
+	{\Large  \bf  \cvut\\[2mm] \fjfi }
+	\vspace{10mm}
+
+	\begin{tabular}{c}
+	{\bf \km}\\
+	{\bf Obor: \obor}\\
+	{\bf Zaměření: \zamereni}
+	\end{tabular}
+
+	\vspace{10mm} \epsfysize=20mm  \epsffile{cvut-logo-bw-600} \vspace{15mm}
+
+	{\LARGE
+	\textbf{\nazevcz}
+	\par}
+
+	\vspace{5mm}
+
+	{\LARGE
+	\textbf{\nazeven}
+	\par}
+
+	\vspace{30mm}
+	{\Large BAKALÁŘSKÁ PRÁCE}
+
+\end{center}
+
+\vfill
+{\large
+\begin{tabular}{rl}
+Vypracoval: & \autor\\
+Vedoucí práce: & \vedouci\\
+Rok: & \rok
+\end{tabular}
+}
+
+% zadání bakalářské práce
+\newpage
+\thispagestyle{empty} Před svázáním místo téhle stránky \fbox{vložíte zadání práce} s podpisem
+děkana (bude to jediný oboustranný list ve Vaší práci) !!!!
+
+% prohlášení
+\newpage
+\thispagestyle{empty}
+~
+\vfill
+
+
+{\bf Prohlášení}
+
+\vspace{0.5cm}
+Prohlašuji, že jsem svou bakalářskou práci vypracoval samostatně a použil jsem pouze podklady
+(literaturu, projekty, SW atd.) uvedené v přiloženém seznamu.
+
+\vspace{5mm}V Praze dne ....................\hfill
+    \begin{tabular}{c}
+    ........................................\\
+    \autor
+    \end{tabular}
+
+% poděkování
+\newpage
+\thispagestyle{empty}
+~
+\vfill
+
+{\bf Poděkování}
+
+\vspace{5mm}
+Děkuji Ing. Václavu Šmídlovi, Ph.D. za vedení mé bakalářské práce a za podnětné návrhy, které ji
+obohatily.
+
+\begin{flushright}
+\autor
+\end{flushright}
+
+% strana s abstraktem
+\newpage
+\thispagestyle{empty}
+
+\newbox\odstavecbox
+\newlength\vyskaodstavce
+\newcommand\odstavec[2]{%
+    \setbox\odstavecbox=\hbox{%
+         \parbox[t]{#1}{#2\vrule width 0pt depth 4pt}}%
+    \global\vyskaodstavce=\dp\odstavecbox
+    \box\odstavecbox}
+\newcommand{\delka}{120mm}
+
+\begin{tabular}{ll}
+  {\em Název práce:} & ~ \\
+  \multicolumn{2}{l}{\odstavec{\textwidth}{\bf \nazevcz}} \\[5mm]
+  {\em Autor:} & \autor \\[5mm]
+  {\em Obor:} & \obor \\
+  {\em Druh práce:} & Bakalářská práce \\[5mm]
+  {\em Vedoucí práce:} & \odstavec{\delka}{\vedouci \\ \pracovisteVed} \\[5mm]
+  {\em Konzultant:} & \odstavec{\delka}{\konzultant \\ \pracovisteKonz} \\[5mm]
+  \multicolumn{2}{l}{\odstavec{\textwidth}{{\em Abstrakt:} ~ \abstrCZ \\ }} \\[5mm]
+  {\em Klíčová slova:} & \odstavec{\delka}{\klicova} \\[20mm]
+
+  {\em Title:} & ~\\
+  \multicolumn{2}{l}{\odstavec{\textwidth}{\bf \nazeven}}\\[5mm]
+  {\em Author:} & \autor \\[5mm]
+  \multicolumn{2}{l}{\odstavec{\textwidth}{{\em Abstract:} ~ \abstrEN \\ }} \\[5mm]
+  {\em Key words:} & \odstavec{\delka}{\keyword}
+\end{tabular}
+
+% obsah
+\newpage
+\tableofcontents
+
+% zde bude zacinat samotna prace
+\newpage

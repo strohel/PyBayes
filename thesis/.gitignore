@@ -1,0 +1,6 @@
+*.kilepr
+*.log
+*.backup
+*.aux
+*.toc
+*.pdf

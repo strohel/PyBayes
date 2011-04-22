@@ -1,0 +1,111 @@
+\documentclass[a4paper,12pt,oneside]{report}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{epsfig}
+\usepackage{graphicx}
+
+%% Nastavení zrcadla sazby
+\usepackage{calc}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6in}
+\setlength\oddsidemargin{(\paperwidth-\textwidth)/2 - 1in}
+\setlength\evensidemargin{(\paperwidth-\textwidth)/2 - 1in}
+\setlength\topmargin{(\paperheight-\textheight-\headheight-\headsep-\footskip)/2 - 1in}
+
+% TODO: je toto potreba?
+%\parindent=0pt % odsazení 1. řádku odstavce
+%\parskip=7pt   % mezera mezi odstavci
+
+\newif\ifrelease % define new boolean variable release
+\releasetrue % and set it
+
+
+\begin{document}
+
+\ifrelease
+	\input{startpages.tex}
+\fi
+
+
+\newcommand{\introduction}{Introduction}
+\chapter*{\introduction} \addcontentsline{toc}{chapter}{\introduction}
+
+TODO motivatin for bayes filtration + a need for a convenient library (rapid prototyping vs. speed)
+
+
+\chapter{Basics of Bayesian estimation}
+
+\section{Kalman Filter}
+
+\section{Particle Filter}
+
+\section{Marginalized Particle Filter}
+
+
+\chapter{Software analysis}
+
+\section{Requirements}
+
+Ideal library for Bayesian filtering would posses following properties...:
+
+\section{Programming paradigms}
+
+Interpreted vs. Compiled
+
+Object-oriented, procedural and Functional
+
+pass-by reference vs. copy-on-write (Matlab)
+
+\section{C++}
+
+\section{Matlab}
+
+\section{Python}
+
+NumPy.... parallelisation - GIL.. Py3k
+
+\section{Cython}
+
+
+\chapter{The PyBayes library}
+
+\section{Interpreted and Compiled}
+
+\section{Library Layout}
+
+\subsection{Random Variable Meta-representation}
+
+\subsection{Probability Density Functions}
+
+\subsection{Bayesian Filters}
+
+\section{Documentation, Testing and Profiling}
+
+
+\newcommand{\conclusion}{Conclusion}
+\chapter*{\conclusion} \addcontentsline{toc}{chapter}{\conclusion}
+
+
+% použitá literatura
+\addcontentsline{toc}{chapter}{\bibname}
+
+\begin{thebibliography}{9}
+
+	\bibitem{lamport94}
+		Leslie Lamport,
+		\emph{\LaTeX: A Document Preparation System}.
+		Addison Wesley, Massachusetts,
+		2nd Edition,
+		1994.
+
+\end{thebibliography}
+
+% přílohy
+\appendix % aby LaTeX cisloval jinak
+
+\part*{\appendixname} \addcontentsline{toc}{chapter}{\appendixname}
+
+\end{document}
