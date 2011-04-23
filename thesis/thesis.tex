@@ -194,21 +194,21 @@ Profiling python/cython - how, existing support in PyBayes
 
 
 % použitá literatura
-\begin{thebibliography}{9}
-	\addcontentsline{toc}{chapter}{\bibname}
+\nocite{*} % TODO: jen docasne pro to, aby se zobrazily vsechny veci z BibTex databaze
 
-	\bibitem{lamport94}
-		Leslie Lamport,
-		\emph{\LaTeX: A Document Preparation System}.
-		Addison Wesley, Massachusetts,
-		2nd Edition,
-		1994.
+\clearpage % so that the contents link mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{\bibname}
+\bibliographystyle{plain}
+\bibliography{bibliography}
 
-\end{thebibliography}
 
 % přílohy
 \appendix % aby LaTeX cisloval jinak
+\clearpage % so that the contents link mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{\appendixname}
 
-\part*{\appendixname} \addcontentsline{toc}{chapter}{\appendixname}
+\part*{\appendixname}
 
 \end{document}

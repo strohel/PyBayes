@@ -6,3 +6,5 @@
 *.pdf
 *.out
 *.brf
+*.bbl
+*.blg
