@@ -704,7 +704,7 @@ class EmpPdf(AbstractEmpPdf):
     def variance(self, cond = None):
         ret = zeros(self.particles.shape[1])
         for i in range(self.particles.shape[0]):
-            ret += self.weights[i] * (self.particles[i])**2
+            ret += self.weights[i] * self.particles[i]**2
         return ret - self.mean()**2
 
     def eval_log(self, x, cond = None):
@@ -802,23 +802,21 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
         return ret
 
     def variance(self, cond = None):
-        var = zeros(self.shape())
-        # we calculate mean for particle part here, we don't want to uselessly call gausses[i].mean()
-        mean = zeros(self._part_shape)
+        # first, compute 2nd non-central moment
+        mom2 = zeros(self.shape())
         temp = empty(self.shape())
 
         for i in range(self.particles.shape[0]):
-            # compute mean of particle part:
-            mean += self.weights[i] * self.particles[i]
-            # gauss part of variance is computed easily:
-            temp[0:self._gauss_shape] = self.gausses[i].variance()
-            # for particle part we are calculating 2nd non-central moment here:
+            # set gauss part of temp to \mu_i^2 + \sigma_i^2
+            temp[0:self._gauss_shape] = self.gausses[i].mean()**2 + self.gausses[i].variance()**2
+            # set empirical part of temp to x_i^2
             temp[self._gauss_shape:] = self.particles[i]**2
-            var += self.weights[i] * temp  # cython limitation: cannot compile: array_a[0:n] += array_b
 
-        # make 2nd moment of particle part central:
-        var[self._gauss_shape:] = var[self._gauss_shape:] - mean**2  # ditto cython limitation
-        return var
+            # finaly scale by \omega_i and add to 2nd non-central moment we are computing
+            mom2 += self.weights[i] * temp  # cython limitation: cannot compile: array_a[0:n] += array_b
+
+        # return 2nd central moment by subtracting square of mean value
+        return mom2 - self.mean()**2
 
     def eval_log(self, x, cond = None):
         raise NotImplementedError("eval_log doesn't make sense for (partially) discrete distribution")

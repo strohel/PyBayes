@@ -512,14 +512,14 @@ class TestMarginalizedEmpPdf(PbTestCase):
         self.assertApproxEqual(self.emp.mean(), np.array([-5., 2., 2.5, 5.]))
 
     def test_variance(self):
-        self.assertApproxEqual(self.emp.variance(), np.array([11./3., 2., 2./3., 8./3.]))
+        self.assertApproxEqual(self.emp.variance(), np.array([125./3., 32./3., 2./3., 8./3.]))
         # test different weights
         self.emp.weights = np.array([0., 0.5, 0.5])
-        self.assertApproxEqual(self.emp.variance(), np.array([5., 2., 0.25, 1.]))
+        self.assertApproxEqual(self.emp.variance(), np.array([50., 14., 0.25, 1.]))
         # test also normalisation:
         self.emp.weights = np.array([0., 0.255, 0.255])
         self.emp.normalise_weights()
-        self.assertApproxEqual(self.emp.variance(), np.array([5., 2., 0.25, 1.]))
+        self.assertApproxEqual(self.emp.variance(), np.array([50., 14., 0.25, 1.]))
 
 
 class TestProdPdf(PbTestCase):
