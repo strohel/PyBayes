@@ -46,10 +46,11 @@
 \tableofcontents
 
 
-\newcommand{\introduction}{Introduction}
-\chapter*{\introduction} \addcontentsline{toc}{chapter}{\introduction}
+\chapter*{Introduction} \addcontentsline{toc}{chapter}{Introduction}
 
 TODO motivatin for bayes filtration + a need for a convenient library (rapid prototyping vs. speed)
+
+Decision-making being a logical and natural ``next step''...
 
 
 \chapter{Basics of Bayesian estimation}
@@ -77,16 +78,79 @@ pass-by reference vs. copy-on-write (Matlab)
 
 \section{C++}
 
+BDM
+
+ - advantages of C (speed, C prevalence (many optimised libraries, BLAS, LAPACK.., OpenMP)
+
+ - disadvantages of C in our ``situation'' (steep learning curve, coplexity because of low-levelness
+   high initial barriers (need to have compiler, libraries...), inconveniently long edit/build/test
+   process)
+
 \section{Matlab}
+
+BDM (partially?)
+
+ - advantages (popularity, existing toolboxes, rapid development (high-level)
+
+ - disadv: strict copy-on-write, problematic object model (not in original design), difficulties
+           interfacing existing C (F) code
 
 \section{Python}
 
-NumPy.... parallelisation - GIL.. Py3k
+NumPy.... parallelisation (approaches, improvements in Py 3.2) - GIL.. Py3k
 
 \section{Cython}
 
+general info etc... extension types, building, ease of interfacing C (and F) code, .pxd files,
+NumPy support
 
-\chapter{The PyBayes library}
+\subsection{Gradual Optimisation and Parallelisation}
+
+how can optimisaion be approached (gradually) and why this approach is superior
+
+integrate\_python\_cython example (``100x'' speedup for a special (very simple) case)
+
+\subsection{Parallelisation}
+
+integrate\_python\_cython patched with OpenMP (13x speedup in 16-core system)
+
+prange CEP
+
+\subsection{Pure Python mode}
+
+About it and why it should be used in a hypothetical bayesian python library
+
+\subsection{Limitations}
+
+2 types:
+
+	not-supported code (few, but bad, ongoing work)
+
+	not-optimised code (much more work needed, but not hard to fix in most cases)
+
+		- exception handling (functions returning void etc)
+
+		- limitations of pure python mode in regards to traditional .pyx files
+
+
+\chapter{Finding a Way to a Suitable Bayesian Library}
+
+TODO: maybe not a chapter, but a section in another one (also better name for chapter)
+
+\section{The choice of Python/Cython}
+
+\section{Existing Python Libraries for Bayesian estimation/decision making}
+
+Survey of existing libraries ... not suitable
+
+The need to implement a new one :-)
+
+
+\chapter{The PyBayes Library}
+
+Introduction, general directions, future considerations
+
++ open development on github, open-source
 
 \section{Interpreted and Compiled}
 
@@ -94,15 +158,39 @@ NumPy.... parallelisation - GIL.. Py3k
 
 \subsection{Random Variable Meta-representation}
 
+Why it is needed (ref to ProdCPdf)
+
 \subsection{Probability Density Functions}
+
+Nice UML diagrams! (better more smaller UMLs than one big) One for general pdf layut, one for
+AbstractGaussPdf family, one for AbstractEmpPdf family
 
 \subsection{Bayesian Filters}
 
+Nice graph of a run of a particle filter (Mirda has the plotting code)
+
+similar of marginalized particle filter? (gausses would be plotted vertically)
+
 \section{Documentation, Testing and Profiling}
 
+TODO: move above Library Layout?
 
-\newcommand{\conclusion}{Conclusion}
-\chapter*{\conclusion} \addcontentsline{toc}{chapter}{\conclusion}
+Documenting using Sphinx, approach to documentation (mathematician-oriented), math in documentation
+
+Testing - the separation of
+
+	- tests: test one class in isolation, quick, determinism (would be good, not achievable)
+
+	- stresses: test a great portion of code at once, run longer, non-determinism..
+
+Profiling python/cython - how, existing support in PyBayes
+
+	- how to correct profiling-induced overhead
+
+\section{Comparison with BDM}
+
+
+\chapter*{Conclusion} \addcontentsline{toc}{chapter}{Conclusion}
 
 
 % použitá literatura
