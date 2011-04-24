@@ -674,7 +674,7 @@ class EmpPdf(AbstractEmpPdf):
 
     You may alter particles and weights, but you must ensure that their shapes
     match and that weight constraints still hold. You can use
-    :meth:`normalise_weights` to do some work for you.
+    :meth:`~AbstractEmpPdf.normalise_weights` to do some work for you.
     """
 
     def __init__(self, init_particles, rv = None):
@@ -748,10 +748,10 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
 
     You may alter particles and weights, but you must ensure that their shapes
     match and that weight constraints still hold. You can use
-    :meth:`normalise_weights` to do some work for you.
+    :meth:`~AbstractEmpPdf.normalise_weights` to do some work for you.
 
     *Note: this pdf could have been coded as ProdPdf of EmpPdf and a mixture of GaussPdfs. However
-    it is implemented excplicitly for simplicity and speed reasons.*
+    it is implemented explicitly for simplicity and speed reasons.*
     """
 
     def __init__(self, init_gausses, init_particles, rv = None):
