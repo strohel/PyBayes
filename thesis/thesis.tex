@@ -1,11 +1,17 @@
 \documentclass[a4paper,11pt,oneside]{report}
 
+\newif\ifrelease % new boolean variable release. True = include some fancy content
+\releasetrue % and set it
+
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
 \usepackage{epsfig}
 \usepackage{graphicx}
+\ifrelease
+	\usepackage{pdfpages}
+\fi
 \usepackage[pagebackref=true]{hyperref} % tento balicek by mel byt na konci baliku!
 
 \hypersetup{
@@ -24,9 +30,6 @@
 % TODO: je toto potreba?
 %\parindent=0pt % odsazení 1. řádku odstavce
 %\parskip=7pt   % mezera mezi odstavci
-
-\newif\ifrelease % define new boolean variable release
-\releasefalse % and set it
 
 \ifrelease
 	\hypersetup{pdfborder={0 0 0}} % no borders around links
@@ -202,13 +205,16 @@ Profiling python/cython - how, existing support in PyBayes
 \bibliographystyle{plain}
 \bibliography{bibliography}
 
+\ifrelease
+	% přílohy
+	\appendix % aby LaTeX cisloval jinak
+	\clearpage % so that the contents link mentions correct page
+	\phantomsection % so that hyperref makes correct reference
+	\addcontentsline{toc}{chapter}{\appendixname}
 
-% přílohy
-\appendix % aby LaTeX cisloval jinak
-\clearpage % so that the contents link mentions correct page
-\phantomsection % so that hyperref makes correct reference
-\addcontentsline{toc}{chapter}{\appendixname}
+	\part*{\appendixname}
 
-\part*{\appendixname}
+	\includepdf[pages=-]{../doc/_build/latex/PyBayes.pdf}
+\fi
 
 \end{document}
