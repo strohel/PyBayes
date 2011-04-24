@@ -17,7 +17,7 @@ cdef class Filter(object):
 
 
 cdef class KalmanFilter(Filter):
-    cdef public ndarray A, B, C, D, Q, R
+    cdef readonly ndarray A, B, C, D, Q, R
     cdef readonly int n, k, j
     cdef readonly GaussPdf P, S
 

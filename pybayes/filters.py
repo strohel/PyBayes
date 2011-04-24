@@ -139,22 +139,26 @@ class KalmanFilter(Filter):
         return ret
 
     def bayes(self, yt, ut = None):
-        if not isinstance(yt, ndarray) or not isinstance(ut, ndarray):
-            raise TypeError("Both yt and ut must be numpy.ndarray. " +
-                            str(type(yt)) + " and " + str(type(ut)) + " given")
+        if not isinstance(yt, ndarray):
+            raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
         if yt.ndim != 1 or yt.shape[0] != self.j:
-            raise ValueError("yt must have shape " + str((self.j,)) + ". (" +
-                            str(yt.shape[0]) + ",) given")  # TODO
-        if ut.ndim != 1 or ut.shape[0] != self.k:
-            raise ValueError("yt must have shape " + str((self.k,)) + ". (" +
-                            str(ut.shape[0]) + ",) given")  # TODO
+            raise ValueError("yt must have shape {0}. ({1} given)".format((self.j,), (yt.shape[0],)))
+        if self.k > 0:  # only check ut when needed
+            if not isinstance(ut, ndarray):
+                raise TypeError("ut must be and instance of numpy.ndarray ({0} given)".format(type(ut)))
+            if ut.ndim != 1 or ut.shape[0] != self.k:
+                raise ValueError("ut must have shape {0}. ({1} given)".format((self.k,), (ut.shape[0],)))
 
         # predict
-        self.P.mu = dot(self.A, self.P.mu) + dot(self.B, ut)  # a priori estimate
+        self.P.mu = dot(self.A, self.P.mu)  # a priori estimate
+        if self.k > 0:  # only add control portion if needed
+            self.P.mu += dot(self.B, ut)
         self.P.R  = dot(dot(self.A, self.P.R), self.A.T) + self.Q  # a priori variance
 
         # data update
-        self.S.mu = dot(self.C, self.P.mu) + dot(self.D, ut)
+        self.S.mu = dot(self.C, self.P.mu)
+        if self.k > 0:  # only add control portion if needed
+            self.S.mu += dot(self.D, ut)
         self.S.R = dot(dot(self.C, self.P.R), self.C.T) + self.R
 
         # kalman gain
@@ -166,6 +170,9 @@ class KalmanFilter(Filter):
 
     def posterior(self):
         return self.P
+
+    def evidence_log(self, yt):
+        return self.S.eval_log(yt)
 
 
 class ParticleFilter(Filter):
