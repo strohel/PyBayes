@@ -53,8 +53,8 @@ class RVComp(object):
 
 
 class RV(object):
-    """Representation of a random variable made of one or more components. See
-    :class:`RVComp`.
+    """Representation of a random variable made of one or more components. Each component is
+    represented by :class:`RVComp` class.
 
     :var int dimension: cummulative dimension; do not change
     :var str name: pretty name, can be changed but needs to be a string
@@ -144,7 +144,7 @@ class RV(object):
 
     def contains(self, component):
         """Return True if this random variable contains the exact same instance of
-        the component
+        the **component**.
 
         :param component: component whose presence is tested
         :type component: :class:`RVComp`
@@ -176,11 +176,11 @@ class RV(object):
         return False
 
     def contained_in(self, test_components):
-        """Return True if sequence **components** contains all all components
+        """Return True if sequence **test_components** contains all components
         from this RV (and perhaps more).
 
-        :param components: set of components whose presence is checked
-        :type components: sequence of :class:`RVComp` items
+        :param test_components: set of components whose presence is checked
+        :type test_components: sequence of :class:`RVComp` items
         """
         for component in self.components:
             if component not in test_components:
@@ -189,7 +189,7 @@ class RV(object):
 
     def indexed_in(self, super_rv):
         """Return index array such that this rv is indexed in **super_rv**, which
-        must be superset of this rv. Resulting array can be used with :func:`numpy.take`
+        must be a superset of this rv. Resulting array can be used with :func:`numpy.take`
         and :func:`numpy.put`.
 
         :param super_rv: returned indices apply to this rv
@@ -225,8 +225,8 @@ class CPdf(object):
 
     Every CPdf takes (apart from others) 2 optional arguments to constructor:
     **rv** (:class:`RV`) and **cond_rv** (:class:`RV`). When specified, they
-    denote that the CPdf is associated with particular random variable (respectively
-    its condition is associated with particular random variable); when unspecified,
+    denote that the CPdf is associated with a particular random variable (respectively
+    its condition is associated with a particular random variable); when unspecified,
     *anonymous* random variable is assumed (exceptions exist, see :class:`ProdPdf`).
     It is an error to pass RV whose dimension is not same as CPdf's dimension
     (or cond dimension respectively).
@@ -240,7 +240,7 @@ class CPdf(object):
     cautious because sanity checks are only performed in constructor.*
 
     While entire idea of random variable associations may not be needed in simple
-    cases, it allows you to express more complicated situations, assume the state
+    cases, it allows you to express more complicated situations. Assume the state
     variable is composed of 2 components :math:`x_t = [a_t, b_t]` and following
     probability density function has to be modelled:
 
@@ -256,7 +256,8 @@ class CPdf(object):
     >>> a_tp, b_tp = RVComp(1, 'a_{t-1}'), RVComp(1, 'b_{t-1}')  # t-1 case
 
     >>> p1 = LinGaussCPdf(1., 0., 1., 0., RV(a_t), RV(a_tp, b_t))
-    >>> cov, A, b = np.array([[0.0001]]), np.array([[1.]]), np.array([0.])  # params for p2
+    >>> # params for p2:
+    >>> cov, A, b = np.array([[0.0001]]), np.array([[1.]]), np.array([0.])
     >>> p2 = MLinGaussCPdf(cov, A, b, RV(b_t), RV(b_tp))
 
     >>> p = ProdCPdf((p1, p2), RV(a_t, b_t), RV(a_tp, b_tp))
@@ -266,7 +267,8 @@ class CPdf(object):
     """
 
     def shape(self):
-        """Return shape of the random variable (and mean).
+        """Return shape of the random variable. :meth:`mean` and :meth:`variance` methods must
+        return arrays of this shape.
 
         :rtype: int"""
         raise NotImplementedError("Derived classes must implement this function")
@@ -495,7 +497,8 @@ class GaussPdf(AbstractGaussPdf):
 
         To create standard normal distribution:
 
-        >>> norm = GaussPdf(np.array([0.]), np.array([[1.]]))  # note the shape of covariance
+        >>> # note that cov is a matrix because of the double [[ and ]]
+        >>> norm = GaussPdf(np.array([0.]), np.array([[1.]]))
         """
         if not isinstance(mean, ndarray):
             raise TypeError("mean must be numpy.ndarray")

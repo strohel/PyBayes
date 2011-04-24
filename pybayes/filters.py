@@ -125,7 +125,7 @@ class KalmanFilter(Filter):
     def __deepcopy__(self, memo):
         # type(self) is used because this method may be called for a derived class
         ret = type(self).__new__(type(self))
-        ret.A = deepcopy(self.A, memo)  # numpy arrays
+        ret.A = deepcopy(self.A, memo)  # numpy arrays:
         ret.B = deepcopy(self.B, memo)
         ret.C = deepcopy(self.C, memo)
         ret.D = deepcopy(self.D, memo)
@@ -134,7 +134,7 @@ class KalmanFilter(Filter):
         ret.n = self.n  # no need to copy integers
         ret.k = self.k
         ret.j = self.j
-        ret.P = deepcopy(self.P, memo)  # GaussPdf
+        ret.P = deepcopy(self.P, memo)  # GaussPdfs:
         ret.S = deepcopy(self.S, memo)
         return ret
 
@@ -180,9 +180,9 @@ class ParticleFilter(Filter):
         :param int n: number of particles
         :param init_pdf: probability density which initial particles are sampled from
         :type init_pdf: :class:`~pybayes.pdfs.Pdf`
-        :param p_xt_xtp: :math:`p(x_t|x_{t-1})` pdf of state in *t* given state in *t-1*
+        :param p_xt_xtp: :math:`p(x_t|x_{t-1})` cpdf of state in *t* given state in *t-1*
         :type p_xt_xtp: :class:`~pybayes.pdfs.CPdf`
-        :param p_yt_xt: :math:`p(y_t|x_t)` pdf of observation in *t* given state in *t*
+        :param p_yt_xt: :math:`p(y_t|x_t)` cpdf of observation in *t* given state in *t*
         :type p_yt_xt: :class:`~pybayes.pdfs.CPdf`
         """
         dim = init_pdf.shape()  # dimension of state
@@ -200,7 +200,7 @@ class ParticleFilter(Filter):
         self.emp = EmpPdf(init_pdf.samples(n))
 
     def bayes(self, yt, ut = None):
-        r"""Perform next iteration. The algorithm is as follows:
+        r"""Perform Bayes rule for new measurement :math:`y_t`. The algorithm is as follows:
 
         1. generate new particles: :math:`x_t^{(i)} = \text{sample from }
            p(x_t^{(i)}|x_{t-1}^{(i)}) \quad \forall i`

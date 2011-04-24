@@ -125,7 +125,8 @@ Building Documentation
 *There is no need to build documentation yourself, an online version is at*
 http://strohel.github.com/PyBayes-doc/
 
-PyBayes uses Sphinx_ to prepare documentation. The documentation is built separately.
+PyBayes uses Sphinx_ to prepare documentation, version 1.0 or greater is required.
+The documentation is built separately from the python build process.
 In order to build it, change directory to `doc/` under PyBayes source directory
 (``cd [path_to_pybayes]/doc``) and issue ``make`` command. This will present you
 with a list of available documentation formats. To generate html documentation,
