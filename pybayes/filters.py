@@ -14,7 +14,7 @@ from copy import deepcopy
 from math import exp
 
 from numpywrap import *
-from pybayes.pdfs import GaussPdf, EmpPdf
+from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf
 
 
 class Filter(object):
@@ -192,6 +192,13 @@ class ParticleFilter(Filter):
         :param p_yt_xt: :math:`p(y_t|x_t)` cpdf of observation in *t* given state in *t*
         :type p_yt_xt: :class:`~pybayes.pdfs.CPdf`
         """
+        if not isinstance(n, int) or n < 1:
+            raise TypeError("n must be a positive integer")
+        if not isinstance(init_pdf, Pdf):
+            raise TypeError("init_pdf must be an instance ot the Pdf class")
+        if not isinstance(p_xt_xtp, CPdf) or not isinstance(p_yt_xt, CPdf):
+            raise TypeError("both p_xt_xtp and p_yt_xt must be instances of the CPdf class")
+
         dim = init_pdf.shape()  # dimension of state
         if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() != dim:
             raise ValueError("Expected shape() and cond_shape() of p_xt_xtp will "
