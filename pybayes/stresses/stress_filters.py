@@ -61,16 +61,20 @@ class PfOptionsA(object):
         def g(cond):  # \sigma^2
             return sigma_sq
 
-        # prepare p(x_t | x_{t-1}) density:
-        p1 = pb.LinGaussCPdf(1., 0., 1., 0., pb.RV(a_t), pb.RV(a_tp, b_t))
-        p2 = pb.GaussCPdf(1, 1, f, g, rv=pb.RV(b_t), cond_rv=pb.RV(b_tp), base_class=pb.LogNormPdf)
-        self.p_xt_xtp = pb.ProdCPdf((p1, p2), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
+        # p(a_t | a_{t-1} b_t) density:
+        p_at_atpbt = pb.LinGaussCPdf(1., 0., 1., 0., pb.RV(a_t), pb.RV(a_tp, b_t))
+        # p(b_t | b_{t-1}) density:
+        self.p_bt_btp = pb.GaussCPdf(1, 1, f, g, rv=pb.RV(b_t), cond_rv=pb.RV(b_tp), base_class=pb.LogNormPdf)
+        # p(x_t | x_{t-1}) density:
+        self.p_xt_xtp = pb.ProdCPdf((p_at_atpbt, self.p_bt_btp), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
 
         # prepare p(y_t | x_t) density:
         self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
 
         # initial setup: affect particles and initially set state
-        self.init_range = np.array([[11.8, 0.3], [12.2, 0.7]]) # from .. to
+        self.init_b_range = np.array([[0.3], [0.7]])
+        # [a_t, b_t] from .. to:
+        self.init_range = np.array([[11.8, self.init_b_range[0,0]], [12.2, self.init_b_range[1,0]]])
         init_mean = (self.init_range[0] + self.init_range[1])/2.
 
         x_t = np.zeros((nr_steps, 2))
@@ -80,7 +84,7 @@ class PfOptionsA(object):
             # set b_t:
             x_t[i,1] = i/100. + init_mean[1]
             # simulate random process:
-            x_t[i,0:1] = p1.sample(x_t[i])  # this is effectively [a_{t-1}, b_t]
+            x_t[i,0:1] = p_at_atpbt.sample(x_t[i])  # this is effectively [a_{t-1}, b_t]
             y_t[i] = self.p_yt_xt.sample(x_t[i])
             # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
             # DEBUG: print "simulated y_{0} = {1}".format(i, y_t[i])
