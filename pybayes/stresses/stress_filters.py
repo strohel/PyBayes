@@ -145,24 +145,39 @@ pf_opts_a = PfOptionsA(pf_nr_steps)
 #pf_opts_b = PfOptionsB(pf_nr_steps)
 
 def stress_pf_a_1(options, timer):
-    run_pf(options, timer, pf_opts_a, 15)
+    run_pf(options, timer, pf_opts_a, 15, pb.ParticleFilter)
+
+def stress_pf_a_1_marg(options, timer):
+    run_pf(options, timer, pf_opts_a, 15, pb.MarginalizedParticleFilter)
 
 def stress_pf_a_2(options, timer):
-    run_pf(options, timer, pf_opts_a, 45)
+    run_pf(options, timer, pf_opts_a, 45, pb.ParticleFilter)
+
+def stress_pf_a_2_marg(options, timer):
+    run_pf(options, timer, pf_opts_a, 45, pb.MarginalizedParticleFilter)
 
 def stress_pf_a_3(options, timer):
-    run_pf(options, timer, pf_opts_a, 135)
+    run_pf(options, timer, pf_opts_a, 135, pb.ParticleFilter)
 
-def stress_pf_b_1(options, timer):
-    raise StopIteration("Stress skipped due to unstable system")
+def stress_pf_a_3_marg(options, timer):
+    run_pf(options, timer, pf_opts_a, 135, pb.MarginalizedParticleFilter)
+
+# commented out - the system is unstable and pf with this config often fails
+#def stress_pf_b_1(options, timer):
     #run_pf(options, timer, pf_opts_b, 15)
 
-def run_pf(options, timer, pf_opts, nr_particles):
+def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     nr_steps = pf_opts.nr_steps # number of time steps
 
-    # construct initial particle density and particle filter:
-    init_pdf = pb.UniPdf(pf_opts.init_range[0], pf_opts.init_range[1])
-    pf = pb.ParticleFilter(nr_particles, init_pdf, pf_opts.p_xt_xtp, pf_opts.p_yt_xt)
+    if pf_class == pb.ParticleFilter:
+        # construct initial particle density and particle filter:
+        init_pdf = pb.UniPdf(pf_opts.init_range[0], pf_opts.init_range[1])
+        pf = pf_class(nr_particles, init_pdf, pf_opts.p_xt_xtp, pf_opts.p_yt_xt)
+    elif pf_class == pb.MarginalizedParticleFilter:
+        init_pdf = pb.UniPdf(pf_opts.init_b_range[0], pf_opts.init_b_range[1])
+        pf = pf_class(nr_particles, init_pdf, pf_opts.p_bt_btp)
+    else:
+        raise NotImplementedError("This switch case not handled")
 
     x_t = pf_opts.x_t
     y_t = pf_opts.y_t
@@ -174,5 +189,5 @@ def run_pf(options, timer, pf_opts, nr_particles):
         # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
         # DEBUG: print "returned mean  = {0}".format(apost.mean())
     timer.stop()
-    print "  {0}-particle filter cummulative error for {1} steps: {2}".format(
-        nr_particles, nr_steps, np.sqrt(cumerror))
+    print "  {0}-{3} cummulative error for {1} steps: {2}".format(
+        nr_particles, nr_steps, np.sqrt(cumerror), pf_class.__name__)

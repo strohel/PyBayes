@@ -14,7 +14,7 @@ from copy import deepcopy
 from math import exp
 
 from numpywrap import *
-from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf
+from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
 class Filter(object):
@@ -238,3 +238,106 @@ class ParticleFilter(Filter):
 
     def posterior(self):
         return self.emp
+
+
+class MarginalizedParticleFilter(Filter):
+    r"""Standard marginalized particle filter implementation. Assume that state variable :math:`x`
+    can be divided into two (TODO: independent?) parts: :math:`x_t = [a_t, b_t]`, then aposteriori
+    pdf can be denoted as:
+
+    TODO: better description.
+
+    .. math::
+
+       p &= \sum_{i=1}^n \omega_i p^{(i)}(a_t | b_{1:t}, y_{1:t}) \delta(b_t - b_t^{(i)}) \\
+       p^{(i)}(a_t | b_{1:t}, y_{1:t}) &= \mathcal{N} (\hat{a}_t^{(i)}, P_t^{(i)}) \\
+       \text{where } \quad \hat{a}_t^{(i)} &\text{ and } P_t^{(i)} \text{ is mean and
+       covariance of i}^{th} \text{ gauss pdf} \\
+       b_t^{(i)} &\text{ is value of the (b part of the) i}^{th} \text{ particle} \\
+       \omega_i \geq 0 &\text{ is weight of the i}^{th} \text{ particle} \quad \sum \omega_i = 1
+    """
+
+    def __init__(self, n, init_b_pdf, p_bt_btp):
+        r"""Initialise marginalized particle filter.
+
+        :param int n: number of particles
+        :param init_b_pdf: probability density which initial **b** components of particles are
+           sampled from
+        :type init_b_pdf: :class:`~pybayes.pdfs.Pdf`
+        :param p_bt_btp: :math:`p(b_t|b_{t-1})` cpdf of the (b part of the) state in *t* given
+           state in *t-1*
+        :type p_bt_btp: :class:`~pybayes.pdfs.CPdf`
+        """
+        if not isinstance(n, int) or n < 1:
+            raise TypeError("n must be a positive integer")
+        if not isinstance(init_b_pdf, Pdf) or not isinstance(p_bt_btp, CPdf):
+            raise TypeError("init_b_pdf must be a Pdf and p_bt_btp must be a CPdf")
+        b_shape = init_b_pdf.shape()
+        if p_bt_btp.shape() != b_shape or p_bt_btp.cond_shape() != b_shape:
+            raise ValueError("p_bt_btp's shape ({0}) and cond shape ({1}) must both be {2}".format(
+                             p_bt_btp.shape(), p_bt_btp.cond_shape(), b_shape))
+        self.p_bt_btp = p_bt_btp
+        if b_shape != 1:
+            raise NotImplementedError("multivariate b_t not yet implemented (but planned)")
+
+        # create all Kalman filters first
+        self.kalmans = empty(n, dtype=KalmanFilter) # array of references to Kalman filters
+        gausses = empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
+        for i in range(n):
+            gausses[i] = GaussPdf(array([0.]), array([[1.]])) # TODO: dimension and initial values!!!
+            self.kalmans[i] = KalmanFilter(A=array([[1.]]), B=empty((1,0)),
+                                           C=array([[1.]]), D=empty((1,0)),
+                                           Q=array([[123.]]), R=array([[123.]]), # set to b_t in each step
+                                           state_pdf=gausses[i])
+        # construct apost pdf. Important: reference to ith GaussPdf is shared between ith Kalman
+        # filter's state_pdf and ith memp't gauss
+        self.memp = MarginalizedEmpPdf(gausses, init_b_pdf.samples(n))
+
+    def bayes(self, yt, ut = None):
+        r"""Perform Bayes rule for new measurement :math:`y_t`. Uses following algorithm:
+
+        1. generate new b parts of particles: :math:`b_t^{(i)} = \text{sample from }
+           p(b_t^{(i)}|b_{t-1}^{(i)}) \quad \forall i`
+        2. :math:`\text{set } Q_i := b_t^{(i)} \quad R_i := b_t^{(i)}` where :math:`Q_i, R_i` is
+           covariance of process (respectively observation) noise in ith Kalman filter.
+        3. perform Bayes rule for each Kalman filter using passed observation :math:`y_t`
+        4. recompute weights: :math:`\omega_i = p(y_t | y_{1:t}, b_t^{(i)}) \omega_i` where
+           :math:`p(y_t | y_{1:t}, b_t^{(i)})` is *evidence* (*marginal likehood*) pdf of ith Kalman
+           filter.
+        5. normalise weights
+        6. resample particles
+        """
+        for i in range(self.kalmans.shape[0]):
+            # generate new b_t
+            self.memp.particles[i] = self.p_bt_btp.sample(self.memp.particles[i])
+
+            # assign b_t to kalman filter
+            kalman = self.kalmans[i]
+            kalman.Q[0,0] = self.memp.particles[i,0]
+            kalman.R[0,0] = self.memp.particles[i,0]
+
+            kalman.bayes(yt)
+
+            self.memp.weights[i] *= exp(kalman.evidence_log(yt))
+
+        # make sure that weights are normalised
+        self.memp.normalise_weights()
+        # resample particles
+        self._resample()
+        return True
+
+    def _resample(self):
+        indices = self.memp.get_resample_indices()
+        self.kalmans = self.kalmans[indices]  # resample kalman filters (makes references, not hard copies)
+        self.memp.particles = self.memp.particles[indices]  # resample particles
+        for i in range(self.kalmans.shape[0]):
+            if indices[i] == i:  # special case - no copying and reasigning needed
+                continue
+            self.kalmans[i] = deepcopy(self.kalmans[i])  # we need to deep copy ith kalman
+            self.memp.gausses[i] = self.kalmans[i].S  # reassign reference to correct (new) state pdf
+
+        self.memp.weights[:] = 1./self.kalmans.shape[0]  # set weights to 1/n
+        return True
+
+    def posterior(self):
+        return self.memp

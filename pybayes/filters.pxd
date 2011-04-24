@@ -7,7 +7,7 @@
 cimport cython
 from numpywrap cimport *
 
-from pdfs cimport CPdf, Pdf, GaussPdf, EmpPdf
+from pdfs cimport CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
 cdef class Filter(object):
@@ -34,3 +34,14 @@ cdef class KalmanFilter(Filter):
 cdef class ParticleFilter(Filter):
     cdef readonly CPdf p_xt_xtp, p_yt_xt
     cdef readonly EmpPdf emp
+
+
+cdef class MarginalizedParticleFilter(Filter):
+    cdef readonly CPdf p_bt_btp
+    cdef readonly ndarray kalmans  # dtype=KalmanFilter
+    cdef readonly MarginalizedEmpPdf memp
+
+    @cython.locals(kalman = KalmanFilter)
+    cpdef bint bayes(self, ndarray yt, ndarray ut = *) except False
+
+    cpdef bint _resample(self) except False
