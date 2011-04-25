@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""Tests for wrappers.numpy"""
+"""Tests for wrappers._numpy"""
 
 from numpy import array, eye
 
@@ -10,7 +10,7 @@ import pybayes.wrappers._numpy as nw
 from support import PbTestCase
 
 
-class TestNumpywrap(PbTestCase):
+class TestWrappersNumpy(PbTestCase):
 
     def test_dot(self):
         # test data
@@ -76,26 +76,3 @@ class TestNumpywrap(PbTestCase):
         for (left, right, exp) in [(a1, b1, a1b1), (a2, b2, a2b2)]:
             res = nw.dotvv(left, right)
             self.assertApproxEqual(res, exp)
-
-    #def test_inv(self):
-        ## source data
-        #arrays = [
-            #array([[ 2.]]),
-            #array([[ 0.,  2.], [ 3.,  0.]]),
-            #array([[ 1., -2.], [-4.,  9.]]),
-            #array([[10., 11.], [100., 111.]]),  # near singular
-            #array([[1., 2., -3.], [1., -2., 3.], [-1., 2., 3.]])
-        #]
-
-        ## test that A * inv(A) = I within machine precision
-        #for A in arrays:
-            #iA = nw.inv(A)
-            #E = eye(A.shape[0])
-            #E1 = nw.dot(A, iA)
-            #E2 = nw.dot(iA, A)
-            #self.assertApproxEqual(E1, E)
-            #self.assertApproxEqual(E2, E)
-
-    #def test_slogdet(self):
-        #"""Test that we have defined slogdet the correct way for older NumPy versions"""
-        #raise NotImplementedError("TODO")

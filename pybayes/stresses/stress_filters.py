@@ -47,7 +47,7 @@ class PfOptionsA(object):
     """Class that represents options for a particle filter"""
 
     def __init__(self, nr_steps):
-        print "Preparing data for particle filter stress A..."
+        print "Generating random data for particle filter stresses A..."
         self.nr_steps = nr_steps
 
         # prepare random vector components:

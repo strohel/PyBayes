@@ -13,8 +13,7 @@ pybayes import KalmanFilter``.
 from copy import deepcopy
 from math import exp
 
-from numpy import linalg
-
+import wrappers._linalg as linalg
 import wrappers._numpy as np
 from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 

@@ -6,6 +6,7 @@
 
 cimport cython
 
+cimport pybayes.wrappers._linalg as linalg
 cimport pybayes.wrappers._numpy as np
 
 

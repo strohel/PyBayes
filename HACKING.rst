@@ -45,6 +45,7 @@ Imports in \*.py files should adhere to following rules:
   and then pybayes modules.
 * **instead of** importing **numpy** directly use ``import wrappers._numpy as np``. This ensures
   that fast C alternatives are used in compiled mode.
+* **instead of** importing **numpy.linalg** directly use ``import wrappers._linalg as linalg``.
 * use ``import module [as abbrev]`` or, for commonly used symbols ``from module import symbol``.
 * ``from module import *`` shouldn't be used.
 
@@ -54,6 +55,7 @@ Following rules apply to \*.pxd (cython augmentation) files:
 * use same import styles as in associated .py file. (``from module cimport`` vs.
   ``cimport module [as abbrev]``)
 * for numpy use ``cimport pybayes.wrappers._numpy as np``
+* for numpy.linalg use ``cimport pybayes.wrappers._linalg as linalg``
 
 *Above rules do not apply to* ``pybayes/tests``. *These modules are considered
 external and should behave as a client script.*

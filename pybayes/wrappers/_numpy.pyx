@@ -8,6 +8,7 @@
 # this file is special - it is used only in cython build, this can contain code
 # not callable from python etc.
 
+from numpy cimport *
 # cython workaround: cannot import *
 from numpy import any, arange, array, asarray, cumsum, diag, empty, exp, ones, prod, sum, zeros
 
@@ -94,13 +95,3 @@ cdef double dotvv(ndarray a, ndarray b) except? -1:
         raise ValueError("b is not C contiguos (ro)")
 
     return t.ddot_(a.shape[0], <double*> a.data, 1, <double*> b.data, 1)
-
-cdef ndarray inv(ndarray A):
-    p = empty(A.shape[0], dtype=int)
-    R = A.copy()
-
-    if t.dgetrf(R, p) != 0:
-        raise ValueError("A is singular or invalid argument passed (dgetrf)")
-    if t.dgetri(R, p) != 0:
-        raise ValueError("A is singular or invalid argument passed (dgetri)")
-    return R

@@ -128,7 +128,8 @@ if options.use_cython is True:
                 'filters.pxd',
                 'pdfs.pxd',
                 'stresses/stress_filters.pxd',
-                'wrappers/_numpy.pxd'
+                'wrappers/_linalg.pxd',
+                'wrappers/_numpy.pxd',
                 ]
     deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
     deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
@@ -139,7 +140,9 @@ if options.use_cython is True:
                   'tests/support.py',
                   'tests/test_filters.py',
                   'tests/test_wrappers_numpy.py',
+                  'tests/test_wrappers_linalg.py',
                   'tests/test_pdfs.py',
+                  'wrappers/_linalg.pyx',
                   'wrappers/_numpy.pyx',
                  ]
     ext_options = {}  # options common to all extensions
