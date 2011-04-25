@@ -14,7 +14,10 @@ Pdf``.
 from copy import deepcopy
 from math import log, sqrt  # TODO: use numpy versions?
 
-from numpywrap import *
+from numpy import linalg
+from numpy import random
+
+import wrappers._numpy as np
 
 
 class RVComp(object):
@@ -196,7 +199,7 @@ class RV(object):
         :type super_rv: :class:`RV`
         :rtype: 1D :class:`numpy.ndarray` of ints with dimension = self.dimension
         """
-        ret = empty(self.dimension, dtype=int)
+        ret = np.empty(self.dimension, dtype=int)
         ret_ind = 0  # current index in returned index array
         # process each component from target rv
         for comp in self.components:
@@ -204,7 +207,7 @@ class RV(object):
             src_ind = 0  # index in source vector
             for source_comp in super_rv.components:
                 if source_comp is comp:
-                    ret[ret_ind:] = arange(src_ind, src_ind + comp.dimension)
+                    ret[ret_ind:] = np.arange(src_ind, src_ind + comp.dimension)
                     ret_ind += comp.dimension
                     break;
                 src_ind += source_comp.dimension
@@ -312,7 +315,7 @@ class CPdf(object):
         :param int n: number of samples to return
         :rtype: 2D :class:`numpy.ndarray` of shape (*n*, m) where m is pdf
            dimension"""
-        ret = empty((n, self.shape()))
+        ret = np.empty((n, self.shape()))
         for i in range(n):
             ret[i] = self.sample(cond)
         return ret
@@ -413,13 +416,13 @@ class UniPdf(Pdf):
 
         **b** must be greater (in each dimension) than **a**
         """
-        self.a = asarray(a)
-        self.b = asarray(b)
+        self.a = np.asarray(a)
+        self.b = np.asarray(b)
         if a.ndim != 1 or b.ndim != 1:
             raise ValueError("both a and b must be 1D numpy arrays (vectors)")
         if a.shape[0] != b.shape[0]:
             raise ValueError("a must have same shape as b")
-        if np_any(self.b <= self.a):
+        if np.any(self.b <= self.a):
             raise ValueError("b must be greater than a in each dimension")
         self._set_rvs(rv, None)
 
@@ -434,9 +437,9 @@ class UniPdf(Pdf):
 
     def eval_log(self, x, cond = None):
         self._check_x(x)
-        if np_any(x <= self.a) or np_any(x >= self.b):
+        if np.any(x <= self.a) or np.any(x >= self.b):
             return float('-inf')
-        return -log(prod(self.b-self.a))
+        return -log(np.prod(self.b-self.a))
 
     def sample(self, cond = None):
         return random.uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
@@ -500,9 +503,9 @@ class GaussPdf(AbstractGaussPdf):
         >>> # note that cov is a matrix because of the double [[ and ]]
         >>> norm = GaussPdf(np.array([0.]), np.array([[1.]]))
         """
-        if not isinstance(mean, ndarray):
+        if not isinstance(mean, np.ndarray):
             raise TypeError("mean must be numpy.ndarray")
-        if not isinstance(cov, ndarray):
+        if not isinstance(cov, np.ndarray):
             raise TypeError("cov must be numpy.ndarray")
         if mean.ndim != 1:
             raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
@@ -512,7 +515,7 @@ class GaussPdf(AbstractGaussPdf):
         if cov.shape[0] != n or cov.shape[1] != n:
             raise ValueError("cov must have shape (" + str(n) + ", " + str(n) + "), " +
                              str(cov.shape) + " given")
-        if np_any(cov != cov.T):
+        if np.any(cov != cov.T):
             raise ValueError("cov must be symmetric (complex covariance not supported)")
         # TODO: covariance must be positive definite
         self.mu = mean
@@ -526,7 +529,7 @@ class GaussPdf(AbstractGaussPdf):
         return self.mu
 
     def variance(self, cond = None):
-        return diag(self.R)
+        return np.diag(self.R)
 
     def eval_log(self, x, cond = None):
         self._check_x(x)
@@ -534,17 +537,17 @@ class GaussPdf(AbstractGaussPdf):
         # compute logarithm of normalization constant (TODO: can be cached in future)
         # log(2*Pi) = 1.83787706640935
         # we ignore sign (first part of slogdet return value) as it must be positive
-        log_norm = -1/2. * (self.mu.shape[0]*1.83787706640935 + slogdet(self.R)[1])
+        log_norm = -1/2. * (self.mu.shape[0]*1.83787706640935 + linalg.slogdet(self.R)[1])
 
         # part that actually depends on x
-        log_val = -1/2. * dotvv(x - self.mu, dot(inv(self.R), x - self.mu))
+        log_val = -1/2. * np.dotvv(x - self.mu, np.dot(linalg.inv(self.R), x - self.mu))
         return log_norm + log_val  # = log(norm*val)
 
     def sample(self, cond = None):
         # TODO: in univariate case, random.normal() can be used directly
         z = random.normal(size=self.mu.shape[0]);
         # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
-        return self.mu + dot(cholesky(self.R), z);
+        return self.mu + np.dot(linalg.cholesky(self.R), z);
 
 
 class LogNormPdf(AbstractGaussPdf):
@@ -568,9 +571,9 @@ class LogNormPdf(AbstractGaussPdf):
 
         >>> lognorm = LogNormPdf(np.array([0.]), np.array([[1.]]))  # note the shape of covariance
         """
-        if not isinstance(mean, ndarray):
+        if not isinstance(mean, np.ndarray):
             raise TypeError("mean must be numpy.ndarray")
-        if not isinstance(cov, ndarray):
+        if not isinstance(cov, np.ndarray):
             raise TypeError("cov must be numpy.ndarray")
         if mean.ndim != 1:
             raise ValueError("mean must be one-dimensional (" + str(mean.ndim) + " dimensions encountered)")
@@ -592,10 +595,10 @@ class LogNormPdf(AbstractGaussPdf):
         return 1
 
     def mean(self, cond = None):
-        return exp(self.mu + self.R[0]/2.)
+        return np.exp(self.mu + self.R[0]/2.)
 
     def variance(self, cond = None):
-        return (exp(self.R[0])[0] - 1.)*exp(2*self.mu + self.R[0])
+        return (np.exp(self.R[0])[0] - 1.)*np.exp(2*self.mu + self.R[0])
 
     def eval_log(self, x, cond = None):
         self._check_x(x)
@@ -606,7 +609,7 @@ class LogNormPdf(AbstractGaussPdf):
         return -((log(x[0]) - self.mu[0])**2)/(2.*self.R[0,0]) - log(x[0]*sqrt(self.R[0,0])) - 0.91893853320467
 
     def sample(self, cond = None):
-        # size parameter ( = 1) makes lognormal() return a ndarray
+        # size parameter ( = 1) makes lognormal() return a np.ndarray
         return random.lognormal(self.mu[0], sqrt(self.R[0,0]), 1)
 
 
@@ -624,7 +627,7 @@ class AbstractEmpPdf(Pdf):
         :raise AttributeError: when :math:`\exists i: \omega_i < 0` or
            :math:`\forall i: \omega_i = 0`
         """
-        if np_any(self.weights < 0.):
+        if np.any(self.weights < 0.):
             raise AttributeError("Weights must not be negative")
         wsum = sum(self.weights)
         if wsum == 0:
@@ -644,13 +647,13 @@ class AbstractEmpPdf(Pdf):
         should be replaced.*
         """
         n = self.weights.shape[0]
-        cum_weights = cumsum(self.weights)
+        cum_weights = np.cumsum(self.weights)
 
-        u = (arange(n, dtype=float) + random.uniform()) / n
+        u = (np.arange(n, dtype=float) + random.uniform()) / n
         # u[i] = (i + fuzz) / n
 
         # calculate number of babies for each particle
-        baby_indeces = zeros(n, dtype=int)  # index array: a[i] contains index of
+        baby_indeces = np.zeros(n, dtype=int)  # index array: a[i] contains index of
         # original particle that should be at i-th place in new particle array
         j = 0
         for i in range(n):
@@ -687,11 +690,11 @@ class EmpPdf(AbstractEmpPdf):
            purposes.*
         :type init_particles: :class:`numpy.ndarray`
         """
-        if not isinstance(init_particles, ndarray) or init_particles.ndim != 2:
+        if not isinstance(init_particles, np.ndarray) or init_particles.ndim != 2:
             raise TypeError("init_particles must be 2D numpy.ndarray")
         self.particles = init_particles
         # set n weights to 1/n
-        self.weights = ones(self.particles.shape[0]) / self.particles.shape[0]
+        self.weights = np.ones(self.particles.shape[0]) / self.particles.shape[0]
 
         self._set_rvs(rv, None)
 
@@ -699,13 +702,13 @@ class EmpPdf(AbstractEmpPdf):
         return self.particles.shape[1]
 
     def mean(self, cond = None):
-        ret = zeros(self.particles.shape[1])
+        ret = np.zeros(self.particles.shape[1])
         for i in range(self.particles.shape[0]):
             ret += self.weights[i] * self.particles[i]
         return ret
 
     def variance(self, cond = None):
-        ret = zeros(self.particles.shape[1])
+        ret = np.zeros(self.particles.shape[1])
         for i in range(self.particles.shape[0]):
             ret += self.weights[i] * self.particles[i]**2
         return ret - self.mean()**2
@@ -768,9 +771,9 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
         both passed arrays through its lifetime, so it is not safe to reuse them
         for other purposes.*
         """
-        if not isinstance(init_gausses, ndarray) or init_gausses.ndim != 1:
+        if not isinstance(init_gausses, np.ndarray) or init_gausses.ndim != 1:
             raise TypeError("init_gausses must be 1D numpy.ndarray")
-        if not isinstance(init_particles, ndarray) or init_particles.ndim != 2:
+        if not isinstance(init_particles, np.ndarray) or init_particles.ndim != 2:
             raise TypeError("init_particles must be 2D numpy.ndarray")
         if init_gausses.shape[0] != init_particles.shape[0] or init_gausses.shape[0] < 1:
             raise ValueError("init_gausses count must be same as init_particles count and both must be positive")
@@ -786,7 +789,7 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
         self.gausses = init_gausses
         self.particles = init_particles
         # set n weights to 1/n
-        self.weights = ones(self.particles.shape[0]) / self.particles.shape[0]
+        self.weights = np.ones(self.particles.shape[0]) / self.particles.shape[0]
         self._gauss_shape = self.gausses[0].shape()  # shape of the gaussian component
         self._part_shape = self.particles.shape[1]  # shape of the empirical component
 
@@ -796,8 +799,8 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
         return self._gauss_shape + self._part_shape
 
     def mean(self, cond = None):
-        ret = zeros(self.shape())
-        temp = empty(self.shape())
+        ret = np.zeros(self.shape())
+        temp = np.empty(self.shape())
         for i in range(self.particles.shape[0]):
             temp[0:self._gauss_shape] = self.gausses[i].mean()
             temp[self._gauss_shape:] = self.particles[i]
@@ -806,8 +809,8 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
 
     def variance(self, cond = None):
         # first, compute 2nd non-central moment
-        mom2 = zeros(self.shape())
-        temp = empty(self.shape())
+        mom2 = np.zeros(self.shape())
+        temp = np.empty(self.shape())
 
         for i in range(self.particles.shape[0]):
             # set gauss part of temp to \mu_i^2 + \sigma_i^2
@@ -861,8 +864,8 @@ class ProdPdf(Pdf):
 
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")
-        self.factors = array(factors, dtype=Pdf)
-        self.shapes = zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
+        self.factors = np.array(factors, dtype=Pdf)
+        self.shapes = np.zeros(self.factors.shape[0], dtype=int)  # array of factor shapes
         for i in range(self.factors.shape[0]):
             if not isinstance(self.factors[i], Pdf):
                 raise TypeError("all records in factors must be (subclasses of) Pdf")
@@ -883,7 +886,7 @@ class ProdPdf(Pdf):
 
     def mean(self, cond = None):
         curr = 0
-        ret = zeros(self.shape())
+        ret = np.zeros(self.shape())
         for i in range(self.factors.shape[0]):
             ret[curr:curr + self.shapes[i]] = self.factors[i].mean()
             curr += self.shapes[i]
@@ -891,7 +894,7 @@ class ProdPdf(Pdf):
 
     def variance(self, cond = None):
         curr = 0
-        ret = zeros(self.shape())
+        ret = np.zeros(self.shape())
         for i in range(self.factors.shape[0]):
             ret[curr:curr + self.shapes[i]] = self.factors[i].variance()
             curr += self.shapes[i]
@@ -909,7 +912,7 @@ class ProdPdf(Pdf):
 
     def sample(self, cond = None):
         curr = 0
-        ret = zeros(self.shape())
+        ret = np.zeros(self.shape())
         for i in range(self.factors.shape[0]):
             ret[curr:curr + self.shapes[i]] = self.factors[i].sample()
             curr += self.shapes[i]
@@ -940,14 +943,14 @@ class MLinGaussCPdf(CPdf):
            :class:`GaussPdf`. One alternative is :class:`LogNormPdf` for example.
         """
         if base_class is None:
-            self.gauss = GaussPdf(zeros(cov.shape[0]), cov)
+            self.gauss = GaussPdf(np.zeros(cov.shape[0]), cov)
         else:
             if not issubclass(base_class, AbstractGaussPdf):
                 raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
-            self.gauss = base_class(zeros(cov.shape[0]), cov)
+            self.gauss = base_class(np.zeros(cov.shape[0]), cov)
 
-        self.A = asarray(A)
-        self.b = asarray(b)
+        self.A = np.asarray(A)
+        self.b = np.asarray(b)
         if self.A.ndim != 2:
             raise ValueError("A must be 2D numpy.ndarray (matrix)")
         if self.b.ndim != 1:
@@ -986,7 +989,7 @@ class MLinGaussCPdf(CPdf):
 
     def _set_mean(self, cond):
         self._check_cond(cond)
-        self.gauss.mu = dot(self.A, cond)
+        self.gauss.mu = np.dot(self.A, cond)
         self.gauss.mu += self.b
         return True
 
@@ -1024,11 +1027,11 @@ class LinGaussCPdf(CPdf):
             raise TypeError("all parameters must be floats")
         self.d = d
         if base_class is None:
-            self.gauss = GaussPdf(zeros(1), array([[1.]]))
+            self.gauss = GaussPdf(np.zeros(1), np.array([[1.]]))
         else:
             if not issubclass(base_class, AbstractGaussPdf):
                 raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
-            self.gauss = base_class(zeros(1), array([[1.]]))
+            self.gauss = base_class(np.zeros(1), np.array([[1.]]))
         self._set_rvs(rv, cond_rv)
 
     def shape(self):
@@ -1094,11 +1097,11 @@ class GaussCPdf(CPdf):
         self.g = g
         if base_class is None:
             # TODO: to be correct, np.eye would be needed
-            self.gauss = GaussPdf(zeros(self._shape), ones((self._shape, self._shape)))
+            self.gauss = GaussPdf(np.zeros(self._shape), np.ones((self._shape, self._shape)))
         else:
             if not issubclass(base_class, AbstractGaussPdf):
                 raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
-            self.gauss = base_class(zeros(self._shape), ones((self._shape, self._shape)))
+            self.gauss = base_class(np.zeros(self._shape), np.ones((self._shape, self._shape)))
         self._set_rvs(rv, cond_rv)
 
     def shape(self):
@@ -1191,7 +1194,7 @@ class ProdCPdf(CPdf):
         self._set_rvs(rv, cond_rv)
 
     def _init_anonymous(self, factors):
-        self.factors = array(factors, dtype=CPdf)
+        self.factors = np.array(factors, dtype=CPdf)
 
         # overall cond shape equals last factor cond shape:
         self._cond_shape = factors[-1].cond_shape()
@@ -1212,8 +1215,8 @@ class ProdCPdf(CPdf):
                     format(factor, shape) + "cond_shape (={0}) == {1}".
                     format(cond_shape, exp_shape))
 
-            self.in_indeces.append(arange(start_ind + shape, start_ind + shape + cond_shape))
-            self.out_indeces.append(arange(start_ind, start_ind + shape))
+            self.in_indeces.append(np.arange(start_ind + shape, start_ind + shape + cond_shape))
+            self.out_indeces.append(np.arange(start_ind, start_ind + shape))
 
             start_ind += shape
 
@@ -1230,7 +1233,7 @@ class ProdCPdf(CPdf):
         # sample() computation:
         avail_rvcomps = set(cond_rv.components)
 
-        self.factors = empty(len(factors), dtype=CPdf)  # initialise factor array
+        self.factors = np.empty(len(factors), dtype=CPdf)  # initialise factor array
 
         i = self.factors.shape[0] - 1  # factors are filled from right to left
         # iterate until all input pdfs are processed
@@ -1293,7 +1296,7 @@ class ProdCPdf(CPdf):
         self._check_cond(cond)
 
         # combination of evaluation point and condition:
-        data = empty(self._shape + self._cond_shape)
+        data = np.empty(self._shape + self._cond_shape)
         data[0:self._shape] = x
         data[self._shape:] = cond
         ret = 0.
@@ -1306,7 +1309,7 @@ class ProdCPdf(CPdf):
         self._check_cond(cond)
 
         # combination of sampled variables and condition:
-        data = empty(self._shape + self._cond_shape)
+        data = np.empty(self._shape + self._cond_shape)
         data[self._shape:] = cond  # rest is undefined
 
         # process pdfs from right to left (they are arranged so that data flow

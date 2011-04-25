@@ -5,7 +5,8 @@
 """Cython augmentation file for pdfs.py"""
 
 cimport cython
-from numpywrap cimport *
+
+cimport pybayes.wrappers._numpy as np
 
 
 cdef class RVComp(object):
@@ -36,14 +37,14 @@ cdef class CPdf(object):
 
     cpdef int shape(self) except -1
     cpdef int cond_shape(self) except -1
-    cpdef ndarray mean(self, ndarray cond = *)
-    cpdef ndarray variance(self, ndarray cond = *)
-    cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
-    cpdef ndarray sample(self, ndarray cond = *)
-    cpdef ndarray samples(self, int n, ndarray cond = *)
+    cpdef np.ndarray mean(self, np.ndarray cond = *)
+    cpdef np.ndarray variance(self, np.ndarray cond = *)
+    cpdef double eval_log(self, np.ndarray x, np.ndarray cond = *) except? -1
+    cpdef np.ndarray sample(self, np.ndarray cond = *)
+    cpdef np.ndarray samples(self, int n, np.ndarray cond = *)
 
-    cdef bint _check_cond(self, ndarray cond) except False
-    cdef bint _check_x(self, ndarray x) except False
+    cdef bint _check_cond(self, np.ndarray cond) except False
+    cdef bint _check_x(self, np.ndarray x) except False
     cdef bint _set_rvs(self, RV rv, RV cond_rv) except False
 
 
@@ -52,11 +53,11 @@ cdef class Pdf(CPdf):
 
 
 cdef class UniPdf(Pdf):
-    cdef public ndarray a, b  # dtype=double
+    cdef public np.ndarray a, b  # dtype=double
 
 
 cdef class AbstractGaussPdf(Pdf):
-    cdef public ndarray mu, R  # dtype=double
+    cdef public np.ndarray mu, R  # dtype=double
 
     @cython.locals(ret = AbstractGaussPdf)
     cpdef AbstractGaussPdf __copy__(self)
@@ -68,10 +69,10 @@ cdef class AbstractGaussPdf(Pdf):
 cdef class GaussPdf(AbstractGaussPdf):
 
     @cython.locals(log_norm = double, log_val = double)
-    cpdef double eval_log(self, ndarray x, ndarray cond = *) except? -1
+    cpdef double eval_log(self, np.ndarray x, np.ndarray cond = *) except? -1
 
-    @cython.locals(z = ndarray)
-    cpdef ndarray sample(self, ndarray cond = *)
+    @cython.locals(z = np.ndarray)
+    cpdef np.ndarray sample(self, np.ndarray cond = *)
 
 
 cdef class LogNormPdf(AbstractGaussPdf):
@@ -79,50 +80,50 @@ cdef class LogNormPdf(AbstractGaussPdf):
 
 
 cdef class AbstractEmpPdf(Pdf):
-    cdef public ndarray weights  # dtype=double, ndims=1
+    cdef public np.ndarray weights  # dtype=double, ndims=1
 
     @cython.locals(wsum = double)
     cpdef bint normalise_weights(self) except False
 
-    @cython.locals(n = int, cum_weights = ndarray, u = ndarray, baby_indeces = ndarray, j = int)
-    cpdef ndarray get_resample_indices(self)
+    @cython.locals(n = int, cum_weights = np.ndarray, u = np.ndarray, baby_indeces = np.ndarray, j = int)
+    cpdef np.ndarray get_resample_indices(self)
 
 
 cdef class EmpPdf(AbstractEmpPdf):
-    cdef public ndarray particles  # dtype=double, ndims=2
+    cdef public np.ndarray particles  # dtype=double, ndims=2
 
     cpdef bint resample(self) except False
 
 
 cdef class MarginalizedEmpPdf(AbstractEmpPdf):
-    cdef public ndarray gausses  # dtype=GaussPdf, ndims=1
-    cdef public ndarray particles  # dtype=double, ndims=2
+    cdef public np.ndarray gausses  # dtype=GaussPdf, ndims=1
+    cdef public np.ndarray particles  # dtype=double, ndims=2
     cdef public int _gauss_shape, _part_shape
 
 
 cdef class ProdPdf(Pdf):
-    cdef readonly ndarray factors  # dtype=Pdf
-    cdef readonly ndarray shapes  # dtype=int
+    cdef readonly np.ndarray factors  # dtype=Pdf
+    cdef readonly np.ndarray shapes  # dtype=int
     cdef int _shape
 
-    @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray mean(self, ndarray cond = *)
+    @cython.locals(curr = int, i = int, ret = np.ndarray)
+    cpdef np.ndarray mean(self, np.ndarray cond = *)
 
-    @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray variance(self, ndarray cond = *)
+    @cython.locals(curr = int, i = int, ret = np.ndarray)
+    cpdef np.ndarray variance(self, np.ndarray cond = *)
 
     @cython.locals(curr = int, i = int, ret = double)
-    cpdef double eval_log(self, ndarray x, ndarray cond = *)
+    cpdef double eval_log(self, np.ndarray x, np.ndarray cond = *)
 
-    @cython.locals(curr = int, i = int, ret = ndarray)
-    cpdef ndarray sample(self, ndarray cond = *)
+    @cython.locals(curr = int, i = int, ret = np.ndarray)
+    cpdef np.ndarray sample(self, np.ndarray cond = *)
 
 
 cdef class MLinGaussCPdf(CPdf):
-    cdef public ndarray A, b  # dtype=double
+    cdef public np.ndarray A, b  # dtype=double
     cdef AbstractGaussPdf gauss
 
-    cdef bint _set_mean(self, ndarray cond) except False
+    cdef bint _set_mean(self, np.ndarray cond) except False
 
 
 cdef class LinGaussCPdf(CPdf):
@@ -130,7 +131,7 @@ cdef class LinGaussCPdf(CPdf):
     cdef AbstractGaussPdf gauss
 
     @cython.locals(c0 = double, c1 = double)
-    cdef bint _set_gauss_params(self, ndarray cond) except False
+    cdef bint _set_gauss_params(self, np.ndarray cond) except False
 
 
 cdef class GaussCPdf(CPdf):
@@ -138,10 +139,10 @@ cdef class GaussCPdf(CPdf):
     cdef public object f, g  # callables
     cdef AbstractGaussPdf gauss
 
-    cdef bint _set_gauss_params(self, ndarray cond) except False
+    cdef bint _set_gauss_params(self, np.ndarray cond) except False
 
 
 cdef class ProdCPdf(CPdf):
-    cdef readonly ndarray factors  # dtype=CPdf
+    cdef readonly np.ndarray factors  # dtype=CPdf
     cdef readonly list in_indeces, out_indeces  # dtype=ndarray of ints
     cdef int _shape, _cond_shape

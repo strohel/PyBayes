@@ -13,7 +13,9 @@ pybayes import KalmanFilter``.
 from copy import deepcopy
 from math import exp
 
-from numpywrap import *
+from numpy import linalg
+
+import wrappers._numpy as np
 from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
@@ -72,7 +74,7 @@ class KalmanFilter(Filter):
         matrices = {"A":A, "B":B, "C":C, "D":D, "Q":Q, "R":R}
         for name in matrices:
             matrix = matrices[name]
-            if type(matrix) != ndarray:  # TODO: insinstance(), but has different semantics
+            if type(matrix) != np.ndarray:  # TODO: insinstance(), but has different semantics
                 raise TypeError(name + " must be (exactly) numpy.ndarray, " +
                                 str(type(matrix)) + " given")
             if matrix.ndim != 2:
@@ -104,7 +106,7 @@ class KalmanFilter(Filter):
         self.A, self.B, self.C, self.D, self.Q, self.R = A, B, C, D, Q, R
 
         self.P = state_pdf
-        self.S = GaussPdf(array([0.]), array([[1.]]))  # observation probability density function
+        self.S = GaussPdf(np.array([0.]), np.array([[1.]]))  # observation probability density function
 
     def __copy__(self):
         # type(self) is used because this method may be called for a derived class
@@ -139,33 +141,33 @@ class KalmanFilter(Filter):
         return ret
 
     def bayes(self, yt, ut = None):
-        if not isinstance(yt, ndarray):
+        if not isinstance(yt, np.ndarray):
             raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
         if yt.ndim != 1 or yt.shape[0] != self.j:
             raise ValueError("yt must have shape {0}. ({1} given)".format((self.j,), (yt.shape[0],)))
         if self.k > 0:  # only check ut when needed
-            if not isinstance(ut, ndarray):
+            if not isinstance(ut, np.ndarray):
                 raise TypeError("ut must be and instance of numpy.ndarray ({0} given)".format(type(ut)))
             if ut.ndim != 1 or ut.shape[0] != self.k:
                 raise ValueError("ut must have shape {0}. ({1} given)".format((self.k,), (ut.shape[0],)))
 
         # predict
-        self.P.mu = dot(self.A, self.P.mu)  # a priori estimate
+        self.P.mu = np.dot(self.A, self.P.mu)  # a priori estimate
         if self.k > 0:  # only add control portion if needed
-            self.P.mu += dot(self.B, ut)
-        self.P.R  = dot(dot(self.A, self.P.R), self.A.T) + self.Q  # a priori variance
+            self.P.mu += np.dot(self.B, ut)
+        self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # a priori variance
 
         # data update
-        self.S.mu = dot(self.C, self.P.mu)
+        self.S.mu = np.dot(self.C, self.P.mu)
         if self.k > 0:  # only add control portion if needed
-            self.S.mu += dot(self.D, ut)
-        self.S.R = dot(dot(self.C, self.P.R), self.C.T) + self.R
+            self.S.mu += np.dot(self.D, ut)
+        self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R
 
         # kalman gain
-        K = dot(dot(self.P.R, self.C.T), inv(self.S.R))
+        K = np.dot(np.dot(self.P.R, self.C.T), linalg.inv(self.S.R))
 
-        self.P.mu += dot(K, (yt - self.S.mu))  # a posteriori estimate
-        self.P.R -= dot(dot(K, self.C), self.P.R)  # a posteriori variance
+        self.P.mu += np.dot(K, (yt - self.S.mu))  # a posteriori estimate
+        self.P.R -= np.dot(np.dot(K, self.C), self.P.R)  # a posteriori variance
         return True
 
     def posterior(self):
@@ -281,13 +283,13 @@ class MarginalizedParticleFilter(Filter):
             raise NotImplementedError("multivariate b_t not yet implemented (but planned)")
 
         # create all Kalman filters first
-        self.kalmans = empty(n, dtype=KalmanFilter) # array of references to Kalman filters
-        gausses = empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
+        self.kalmans = np.empty(n, dtype=KalmanFilter) # array of references to Kalman filters
+        gausses = np.empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
         for i in range(n):
-            gausses[i] = GaussPdf(array([0.]), array([[1.]])) # TODO: dimension and initial values!!!
-            self.kalmans[i] = KalmanFilter(A=array([[1.]]), B=empty((1,0)),
-                                           C=array([[1.]]), D=empty((1,0)),
-                                           Q=array([[123.]]), R=array([[123.]]), # set to b_t in each step
+            gausses[i] = GaussPdf(np.array([0.]), np.array([[1.]])) # TODO: dimension and initial values!!!
+            self.kalmans[i] = KalmanFilter(A=np.array([[1.]]), B=np.empty((1,0)),
+                                           C=np.array([[1.]]), D=np.empty((1,0)),
+                                           Q=np.array([[123.]]), R=np.array([[123.]]), # set to b_t in each step
                                            state_pdf=gausses[i])
         # construct apost pdf. Important: reference to ith GaussPdf is shared between ith Kalman
         # filter's state_pdf and ith memp't gauss

@@ -2,8 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-"""PyBayes' tests"""
+# wrappers.numpy test needs this file, because in cython wrappers.numpy, there are only
+# cdefs, not cpdefs
 
-from test_filters import *
-from test_wrappers_numpy import *
-from test_pdfs import *
+cimport pybayes.wrappers._numpy as nw

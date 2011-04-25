@@ -120,29 +120,27 @@ params = {'name':'PyBayes',
 
 if options.use_cython is True:
     params['cmdclass'] = {'build_ext': options.build_ext}
-    params['py_modules'] = ['pybayes.__init__', 'pybayes.stresses.__init__', 'pybayes.tests.__init__']
+    params['py_modules'] = ['pybayes.__init__', 'pybayes.stresses.__init__',
+                            'pybayes.tests.__init__', 'pybayes.wrappers.__init__']
     params['ext_modules'] = []
 
     pxd_deps = ['__init__.pxd',
                 'filters.pxd',
                 'pdfs.pxd',
-                'numpywrap.pxd',
-
                 'stresses/stress_filters.pxd',
+                'wrappers/_numpy.pxd'
                 ]
     deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
     deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
     # TODO: add cython's numpy.pxd as a dependency
     extensions = ['filters.py',
                   'pdfs.py',
-                  'numpywrap.pyx',
-
                   'stresses/stress_filters.py',
-
                   'tests/support.py',
                   'tests/test_filters.py',
-                  'tests/test_numpywrap.py',
+                  'tests/test_wrappers_numpy.py',
                   'tests/test_pdfs.py',
+                  'wrappers/_numpy.pyx',
                  ]
     ext_options = {}  # options common to all extensions
     ext_options['include_dirs'] = [options.numpy_include_dir]
@@ -166,6 +164,6 @@ if options.use_cython is True:
     ))
 
 else:  # options.use_cython is False
-    params['packages'] = ['pybayes', 'pybayes.stresses', 'pybayes.tests']
+    params['packages'] = ['pybayes', 'pybayes.stresses', 'pybayes.tests', 'pybayes.wrappers']
 
 setup(**params)

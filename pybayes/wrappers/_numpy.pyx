@@ -4,14 +4,12 @@
 
 """Wrapper around numpy - cython version"""
 
-# import and flatten numpy types and functions, override some as needed.
+# import numpy types and functions, override some as needed.
 # this file is special - it is used only in cython build, this can contain code
 # not callable from python etc.
 
-from numpy cimport import_array, int, npy_intp, NPY_DOUBLE, PyArray_EMPTY, PyArray_ISCARRAY_RO, PyArray_ISFARRAY_RO
-from numpy import any as np_any, arange, array, asarray, cumsum, diag, empty, exp, ones, prod, sum, zeros
-from numpy.linalg import cholesky, slogdet
-import numpy.random as random
+# cython workaround: cannot import *
+from numpy import any, arange, array, asarray, cumsum, diag, empty, exp, ones, prod, sum, zeros
 
 cimport tokyo as t
 

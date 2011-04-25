@@ -35,24 +35,25 @@ Imports and cimports
 **No internal module** can ``import pybayes``! That would result in an infinite
 recursion. External PyBayes clients can and should, however, only ``import pybayes``
 (and in future also ``import pybayes.subpackage``). From insibe PyBayes just
-import relevant pybayes modules, e.g. ``import pdfs``.
+import relevant pybayes modules, e.g. ``import pdfs``. Notable exception from this rule is cimport,
+where (presumable due to a cython bug) ``from a.b cimport c`` sometimes doesn't work and one has
+to type ``from pybayes.a.b cimport c``.
 
 Imports in \*.py files should adhere to following rules:
 
 * import first system modules (sys, io..), then external modules (matplotlib..)
-  and then pybayes modules
-* **never import numpy directly**, import numpywrap instead (and perhaps extend
-  symbols that numpywrap.{py,pyx} imports) [TODO: numpywrap handling should be
-  refactored a bit]
-* ``from module import symbol1, symbol2`` syntax is the preferred one
-* ``from module import *`` is prohibited
+  and then pybayes modules.
+* **instead of** importing **numpy** directly use ``import wrappers._numpy as np``. This ensures
+  that fast C alternatives are used in compiled mode.
+* use ``import module [as abbrev]`` or, for commonly used symbols ``from module import symbol``.
+* ``from module import *`` shouldn't be used.
 
 Following rules apply to \*.pxd (cython augmentation) files:
 
 * no imports, just cimports.
-* use ``from module cimport symbol1, symbol2`` syntax
-* ``from module cimport *`` is forbidden, only exception is ``from numpywrap
-  cimport *``, which is mandatory
+* use same import styles as in associated .py file. (``from module cimport`` vs.
+  ``cimport module [as abbrev]``)
+* for numpy use ``cimport pybayes.wrappers._numpy as np``
 
 *Above rules do not apply to* ``pybayes/tests``. *These modules are considered
 external and should behave as a client script.*
