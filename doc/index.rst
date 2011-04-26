@@ -1,6 +1,6 @@
-=====================
-PyBayes Documentation
-=====================
+=========================
+PyBayes API Documentation
+=========================
 
 .. automodule:: pybayes
 

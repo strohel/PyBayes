@@ -177,7 +177,7 @@ htmlhelp_basename = 'PyBayesdoc'
 latex_documents = [
   ('index',  # startdocname
    'PyBayes.tex',  # targetname
-   u'PyBayes Documentation',  # title
+   u'PyBayes API Documentation',  # title
    u'Matěj Laitl',  # author
    'manual',  # documentclass: manual | howto
    True  # toctree_only
@@ -228,7 +228,8 @@ man_pages = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'http://docs.python.org/': None,
-    'http://docs.scipy.org/doc/numpy/': None}  # TODO
+    'http://docs.scipy.org/doc/numpy/': None,
+}
 
 
 # Options for autodoc
