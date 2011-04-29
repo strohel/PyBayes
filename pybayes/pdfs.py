@@ -134,6 +134,9 @@ class RV(object):
         ret.components = self.components[:]
         return ret
 
+    def __str__(self):
+        return "<pybayes.pdfs.RV '{0}' dim={1} {2}>".format(self.name, self.dimension, self.components)
+
     def _add_component(self, component):
         """Add new component to this random variable.
 
@@ -214,9 +217,6 @@ class RV(object):
             else:
                 raise AttributeError("Cannont find component "+str(comp)+" in source_rv.components.")
         return ret
-
-    def __str__(self):
-        return "<pybayes.pdfs.RV '{0}' dim={1} {2}>".format(self.name, self.dimension, self.components)
 
 
 class CPdf(object):
@@ -521,6 +521,9 @@ class GaussPdf(AbstractGaussPdf):
         self.mu = mean
         self.R = cov
         self._set_rvs(rv, None)
+
+    def __str__(self):
+        return "<pybayes.pdfs.GaussPdf mu={0} R={1}>".format(self.mu, self.R)
 
     def shape(self):
         return self.mu.shape[0]
