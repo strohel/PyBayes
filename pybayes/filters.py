@@ -332,10 +332,10 @@ class MarginalizedParticleFilter(Filter):
         self.kalmans = self.kalmans[indices]  # resample kalman filters (makes references, not hard copies)
         self.memp.particles = self.memp.particles[indices]  # resample particles
         for i in range(self.kalmans.shape[0]):
-            if indices[i] == i:  # special case - no copying and reasigning needed
+            if indices[i] == i:  # copy only when needed
                 continue
             self.kalmans[i] = deepcopy(self.kalmans[i])  # we need to deep copy ith kalman
-            self.memp.gausses[i] = self.kalmans[i].S  # reassign reference to correct (new) state pdf
+            self.memp.gausses[i] = self.kalmans[i].P  # reassign reference to correct (new) state pdf
 
         self.memp.weights[:] = 1./self.kalmans.shape[0]  # set weights to 1/n
         return True
