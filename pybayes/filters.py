@@ -258,41 +258,49 @@ class MarginalizedParticleFilter(Filter):
        \omega_i \geq 0 &\text{ is weight of the i}^{th} \text{ particle} \quad \sum \omega_i = 1
     """
 
-    def __init__(self, n, init_b_pdf, p_bt_btp):
+    def __init__(self, n, init_pdf, p_bt_btp):
         r"""Initialise marginalized particle filter.
 
         :param int n: number of particles
-        :param init_b_pdf: probability density which initial **b** components of particles are
-           sampled from
-        :type init_b_pdf: :class:`~pybayes.pdfs.Pdf`
+        :param init_pdf: probability density which initial particles are sampled from. (both
+           :math:`a_t` and :math:`b_t` parts)
+        :type init_pdf: :class:`~pybayes.pdfs.Pdf`
         :param p_bt_btp: :math:`p(b_t|b_{t-1})` cpdf of the (b part of the) state in *t* given
            state in *t-1*
         :type p_bt_btp: :class:`~pybayes.pdfs.CPdf`
         """
         if not isinstance(n, int) or n < 1:
             raise TypeError("n must be a positive integer")
-        if not isinstance(init_b_pdf, Pdf) or not isinstance(p_bt_btp, CPdf):
-            raise TypeError("init_b_pdf must be a Pdf and p_bt_btp must be a CPdf")
-        b_shape = init_b_pdf.shape()
-        if p_bt_btp.shape() != b_shape or p_bt_btp.cond_shape() != b_shape:
+        if not isinstance(init_pdf, Pdf) or not isinstance(p_bt_btp, CPdf):
+            raise TypeError("init_pdf must be a Pdf and p_bt_btp must be a CPdf")
+        b_shape = p_bt_btp.shape()
+        if p_bt_btp.cond_shape() != b_shape:
             raise ValueError("p_bt_btp's shape ({0}) and cond shape ({1}) must both be {2}".format(
                              p_bt_btp.shape(), p_bt_btp.cond_shape(), b_shape))
         self.p_bt_btp = p_bt_btp
+        a_shape = init_pdf.shape() - b_shape
+
+        # current limitation:
         if b_shape != 1:
             raise NotImplementedError("multivariate b_t not yet implemented (but planned)")
+        if a_shape != 1:
+            raise NotImplementedError("multivariate a_t not yet implemented (but planned)")
+
+        # generate both initial parts of particles
+        init_particles = init_pdf.samples(n)
 
         # create all Kalman filters first
         self.kalmans = np.empty(n, dtype=KalmanFilter) # array of references to Kalman filters
         gausses = np.empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
         for i in range(n):
-            gausses[i] = GaussPdf(np.array([0.]), np.array([[1.]])) # TODO: dimension and initial values!!!
+            gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]])) # TODO: dimension and initial covariance
             self.kalmans[i] = KalmanFilter(A=np.array([[1.]]), B=np.empty((1,0)),
                                            C=np.array([[1.]]), D=np.empty((1,0)),
                                            Q=np.array([[123.]]), R=np.array([[123.]]), # set to b_t in each step
                                            state_pdf=gausses[i])
         # construct apost pdf. Important: reference to ith GaussPdf is shared between ith Kalman
         # filter's state_pdf and ith memp't gauss
-        self.memp = MarginalizedEmpPdf(gausses, init_b_pdf.samples(n))
+        self.memp = MarginalizedEmpPdf(gausses, init_particles[:,a_shape:])
 
     def bayes(self, yt, ut = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`. Uses following algorithm:

@@ -71,10 +71,8 @@ class PfOptionsA(object):
         # prepare p(y_t | x_t) density:
         self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
 
-        # initial setup: affect particles and initially set state
-        self.init_b_range = np.array([[0.3], [0.7]])
-        # [a_t, b_t] from .. to:
-        self.init_range = np.array([[11.8, self.init_b_range[0,0]], [12.2, self.init_b_range[1,0]]])
+        # Initial [a_t, b_t] from .. to:
+        self.init_range = np.array([[11.8, 0.3], [12.2, 0.7]])
         init_mean = (self.init_range[0] + self.init_range[1])/2.
 
         x_t = np.zeros((nr_steps, 2))
@@ -169,12 +167,13 @@ def stress_pf_a_3_marg(options, timer):
 def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     nr_steps = pf_opts.nr_steps # number of time steps
 
-    if pf_class == pb.ParticleFilter:
-        # construct initial particle density and particle filter:
-        init_pdf = pb.UniPdf(pf_opts.init_range[0], pf_opts.init_range[1])
+    # prepare initial particle density:
+    init_pdf = pb.UniPdf(pf_opts.init_range[0], pf_opts.init_range[1])
+
+    # construct particle filter
+    if pf_class is pb.ParticleFilter:
         pf = pf_class(nr_particles, init_pdf, pf_opts.p_xt_xtp, pf_opts.p_yt_xt)
-    elif pf_class == pb.MarginalizedParticleFilter:
-        init_pdf = pb.UniPdf(pf_opts.init_b_range[0], pf_opts.init_b_range[1])
+    elif pf_class is pb.MarginalizedParticleFilter:
         pf = pf_class(nr_particles, init_pdf, pf_opts.p_bt_btp)
     else:
         raise NotImplementedError("This switch case not handled")
@@ -185,9 +184,10 @@ def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     timer.start()
     for i in range(nr_steps):
         pf.bayes(y_t[i])
-        cumerror += (pf.posterior().mean() - x_t[i])**2
+        apost = pf.posterior()
+        cumerror += (apost.mean() - x_t[i])**2
         # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
-        # DEBUG: print "returned mean  = {0}".format(apost.mean())
+        # DEBUG: print "returned mu_{0} = {1}".format(i, apost.mean())
     timer.stop()
     print "  {0}-{3} cummulative error for {1} steps: {2}".format(
         nr_particles, nr_steps, np.sqrt(cumerror), pf_class.__name__)
