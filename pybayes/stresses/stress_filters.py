@@ -72,7 +72,7 @@ class PfOptionsA(object):
         self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
 
         # Initial [a_t, b_t] from .. to:
-        self.init_range = np.array([[11.8, 0.3], [12.2, 0.7]])
+        self.init_range = np.array([[3., 0.3], [7., 0.7]])
         init_mean = (self.init_range[0] + self.init_range[1])/2.
 
         x_t = np.zeros((nr_steps, 2))
@@ -183,11 +183,13 @@ def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     cumerror = np.zeros(2)  # vector of cummulative square error
     timer.start()
     for i in range(nr_steps):
+        # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
+        # DEBUG: print "simulated y_{0} = {1}".format(i, y_t[i])
         pf.bayes(y_t[i])
         apost = pf.posterior()
         cumerror += (apost.mean() - x_t[i])**2
-        # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
         # DEBUG: print "returned mu_{0} = {1}".format(i, apost.mean())
+        # DEBUG: print
     timer.stop()
     print "  {0}-{3} cummulative error for {1} steps: {2}".format(
         nr_particles, nr_steps, np.sqrt(cumerror), pf_class.__name__)
