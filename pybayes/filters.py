@@ -18,6 +18,8 @@ import wrappers._numpy as np
 from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
+DEBUG = False
+
 class Filter(object):
     """Abstract prototype of a bayesian filter."""
 
@@ -302,6 +304,13 @@ class MarginalizedParticleFilter(Filter):
         # filter's state_pdf and ith memp't gauss
         self.memp = MarginalizedEmpPdf(gausses, init_particles[:,a_shape:])
 
+    def __str__(self):
+        ret = ""
+        for i in range(self.kalmans.shape[0]):
+            ret += "  {0}: {1:0<5.3f} * {2} {3}    kf.S: {4}\n".format(i, self.memp.weights[i],
+                  self.memp.gausses[i], self.memp.particles[i], self.kalmans[i].S)
+        return ret[:-1]  # trim the last newline
+
     def bayes(self, yt, ut = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`. Uses following algorithm:
 
@@ -316,6 +325,9 @@ class MarginalizedParticleFilter(Filter):
         5. normalise weights
         6. resample particles
         """
+        if DEBUG:
+            print "MPF particles before bayes():"
+            print self
         for i in range(self.kalmans.shape[0]):
             # generate new b_t
             self.memp.particles[i] = self.p_bt_btp.sample(self.memp.particles[i])
@@ -337,6 +349,12 @@ class MarginalizedParticleFilter(Filter):
 
     def _resample(self):
         indices = self.memp.get_resample_indices()
+
+        if DEBUG:
+            print "MPF particles after bayes() before resampling:"
+            print self
+            print "resample indices of new particles:", indices
+
         self.kalmans = self.kalmans[indices]  # resample kalman filters (makes references, not hard copies)
         self.memp.particles = self.memp.particles[indices]  # resample particles
         for i in range(self.kalmans.shape[0]):

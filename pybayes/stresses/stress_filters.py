@@ -13,6 +13,8 @@ from scipy.io import loadmat, savemat
 import pybayes as pb
 
 
+DEBUG = False
+
 def stress_kalman(options, timer):
     input_file = options.datadir + "/stress_kalman_data.mat"
     output_file = "stress_kalman_res.mat"
@@ -72,7 +74,7 @@ class PfOptionsA(object):
         self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
 
         # Initial [a_t, b_t] from .. to:
-        self.init_range = np.array([[3., 0.3], [7., 0.7]])
+        self.init_range = np.array([[-18., 0.3], [-14., 0.7]])
         init_mean = (self.init_range[0] + self.init_range[1])/2.
 
         x_t = np.zeros((nr_steps, 2))
@@ -93,22 +95,22 @@ pf_nr_steps = 100  # number of steps for particle filter
 pf_opts_a = PfOptionsA(pf_nr_steps)
 
 def stress_pf_a_1(options, timer):
-    run_pf(options, timer, pf_opts_a, 15, pb.ParticleFilter)
+    run_pf(options, timer, pf_opts_a, 10, pb.ParticleFilter)
 
 def stress_pf_a_1_marg(options, timer):
-    run_pf(options, timer, pf_opts_a, 15, pb.MarginalizedParticleFilter)
+    run_pf(options, timer, pf_opts_a, 10, pb.MarginalizedParticleFilter)
 
 def stress_pf_a_2(options, timer):
-    run_pf(options, timer, pf_opts_a, 45, pb.ParticleFilter)
+    run_pf(options, timer, pf_opts_a, 30, pb.ParticleFilter)
 
 def stress_pf_a_2_marg(options, timer):
-    run_pf(options, timer, pf_opts_a, 45, pb.MarginalizedParticleFilter)
+    run_pf(options, timer, pf_opts_a, 30, pb.MarginalizedParticleFilter)
 
 def stress_pf_a_3(options, timer):
-    run_pf(options, timer, pf_opts_a, 135, pb.ParticleFilter)
+    run_pf(options, timer, pf_opts_a, 90, pb.ParticleFilter)
 
 def stress_pf_a_3_marg(options, timer):
-    run_pf(options, timer, pf_opts_a, 135, pb.MarginalizedParticleFilter)
+    run_pf(options, timer, pf_opts_a, 90, pb.MarginalizedParticleFilter)
 
 def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     nr_steps = pf_opts.nr_steps # number of time steps
@@ -129,13 +131,15 @@ def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     cumerror = np.zeros(2)  # vector of cummulative square error
     timer.start()
     for i in range(nr_steps):
-        # DEBUG: print "simulated x_{0} = {1}".format(i, x_t[i])
-        # DEBUG: print "simulated y_{0} = {1}".format(i, y_t[i])
+        if DEBUG:
+            print "simulated x_{0} = {1}".format(i, x_t[i])
+            print "simulated y_{0} = {1}".format(i, y_t[i])
         pf.bayes(y_t[i])
         apost = pf.posterior()
         cumerror += (apost.mean() - x_t[i])**2
-        # DEBUG: print "returned mu_{0} = {1}".format(i, apost.mean())
-        # DEBUG: print
+        if DEBUG:
+            print "returned mu_{0} = {1}".format(i, apost.mean())
+            print
     timer.stop()
     print "  {0}-{3} cummulative error for {1} steps: {2}".format(
         nr_particles, nr_steps, np.sqrt(cumerror), pf_class.__name__)
