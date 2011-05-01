@@ -89,58 +89,8 @@ class PfOptionsA(object):
         self.x_t = x_t
         self.y_t = y_t
 
-class PfOptionsB(object):
-    """Class that represents options for a particle filter"""
-
-    def __init__(self, nr_steps):
-        print "Preparing data for particle filter stress B..."
-        self.nr_steps = nr_steps
-
-        # prepare random vector components:
-        a_t, b_t = pb.RVComp(1, 'a_t'), pb.RVComp(1, 'b_t')  # state in t
-        a_tp, b_tp = pb.RVComp(1, 'a_{t-1}'), pb.RVComp(1, 'b_{t-1}')  # state in t-1
-
-        # prepare callback functions
-        def f(cond):  # log(b_{t-1}) - 1/2 a_{t-1}
-            ret = np.log(cond[1:2]) # - cond[0:1]/2.
-            return ret
-        def g(cond):  # a_{t-1}
-            return cond[0:1]
-
-        # prepare p(x_t | x_{t-1}) density:
-        id1 = np.array([[1.]])  # 1x1 identity matrix  # ???
-        p1 = pb.MLinGaussCPdf(id1, id1, np.array([0.]), rv=pb.RV(a_t), cond_rv=pb.RV(a_tp))
-        p2 = pb.GaussCPdf(1, 2, f, g, rv=pb.RV(b_t), cond_rv=pb.RV(a_tp, b_tp), base_class=pb.LogNormPdf)
-        self.p_xt_xtp = pb.ProdCPdf((p1, p2), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
-
-        # prepare p(y_t | x_t) density:
-        self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
-
-        # initial setup: affect particles and initially set state
-        self.init_range = np.array([[1.8, 7.], [2.2, 8.]]) # from .. to
-        init_mean = (self.init_range[0] + self.init_range[1])/2.
-
-        x_t = np.zeros((nr_steps, 2))
-        x_t[-1] = init_mean.copy()  # just wrap aroud to temporarily store initial state
-        y_t = np.empty((nr_steps, 1))
-        for i in range(nr_steps):
-            # simulate random process:
-            x_t[i,1:2] = p2.sample(x_t[i-1])  # p (b_t | b_{t-1}, a_{t-1})
-            # set a_t:
-            x_t[i,0] = i/1000. + init_mean[0]
-            # DEBUG: 
-            print "simulated x_{0} = {1}".format(i, x_t[i])
-
-            y_t[i] = self.p_yt_xt.sample(x_t[i])
-            # DEBUG: 
-            print "simulated y_{0} = {1}".format(i, y_t[i])
-        self.x_t = x_t
-        self.y_t = y_t
-
-
 pf_nr_steps = 100  # number of steps for particle filter
 pf_opts_a = PfOptionsA(pf_nr_steps)
-#pf_opts_b = PfOptionsB(pf_nr_steps)
 
 def stress_pf_a_1(options, timer):
     run_pf(options, timer, pf_opts_a, 15, pb.ParticleFilter)
@@ -159,10 +109,6 @@ def stress_pf_a_3(options, timer):
 
 def stress_pf_a_3_marg(options, timer):
     run_pf(options, timer, pf_opts_a, 135, pb.MarginalizedParticleFilter)
-
-# commented out - the system is unstable and pf with this config often fails
-#def stress_pf_b_1(options, timer):
-    #run_pf(options, timer, pf_opts_b, 15)
 
 def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     nr_steps = pf_opts.nr_steps # number of time steps
