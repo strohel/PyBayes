@@ -12,7 +12,7 @@ Pdf``.
 """
 
 from copy import deepcopy
-from math import log, sqrt  # TODO: use numpy versions?
+import math
 
 from numpy import random
 
@@ -439,7 +439,7 @@ class UniPdf(Pdf):
         self._check_x(x)
         if np.any(x <= self.a) or np.any(x >= self.b):
             return float('-inf')
-        return -log(np.prod(self.b-self.a))
+        return -math.log(np.prod(self.b-self.a))
 
     def sample(self, cond = None):
         return random.uniform(-0.5, 0.5, self.shape()) * (self.b-self.a) + self.mean()
@@ -537,7 +537,7 @@ class GaussPdf(AbstractGaussPdf):
     def eval_log(self, x, cond = None):
         self._check_x(x)
 
-        # compute logarithm of normalization constant (TODO: can be cached in future)
+        # compute logarithm of normalization constant (can be cached somehow in future)
         # log(2*Pi) = 1.83787706640935
         # we ignore sign (first part of slogdet return value) as it must be positive
         log_norm = -1/2. * (self.mu.shape[0]*1.83787706640935 + linalg.slogdet(self.R)[1])
@@ -547,7 +547,10 @@ class GaussPdf(AbstractGaussPdf):
         return log_norm + log_val  # = log(norm*val)
 
     def sample(self, cond = None):
-        # TODO: in univariate case, random.normal() can be used directly
+        # in univariate case, random.normal() can be used directly:
+        if self.mu.shape[0] == 1:
+            return random.normal(loc=self.mu[0], scale=math.sqrt(self.R[0,0]), size=1)
+
         z = random.normal(size=self.mu.shape[0]);
         # NumPy's cholesky(R) is equivalent to Matlab's chol(R).transpose()
         return self.mu + np.dot(linalg.cholesky(self.R), z);
@@ -609,11 +612,11 @@ class LogNormPdf(AbstractGaussPdf):
             return float('-inf')
 
         # 1/2.*log(2*pi) = 0.91893853320467
-        return -((log(x[0]) - self.mu[0])**2)/(2.*self.R[0,0]) - log(x[0]*sqrt(self.R[0,0])) - 0.91893853320467
+        return -((math.log(x[0]) - self.mu[0])**2)/(2.*self.R[0,0]) - math.log(x[0]*math.sqrt(self.R[0,0])) - 0.91893853320467
 
     def sample(self, cond = None):
         # size parameter ( = 1) makes lognormal() return a np.ndarray
-        return random.lognormal(self.mu[0], sqrt(self.R[0,0]), 1)
+        return random.lognormal(self.mu[0], math.sqrt(self.R[0,0]), 1)
 
 
 class AbstractEmpPdf(Pdf):
