@@ -365,11 +365,35 @@ class TestGaussPdf(PbTestCase):
             res = exp(norm.eval_log(x))
             self.assertApproxEqual(res, expected[i])
 
-    def test_sample(self):
-        # sample means and variances are tested in various CPdfs that use GaussPdf internally
-        x = self.gauss.sample()
-        self.assertEqual(x.ndim, 1)
-        self.assertEqual(x.shape[0], self.mean.shape[0])
+    def test_sample_uni(self):
+        """Test GaussPdf.sample() mean and variance (univariate case). This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
+        N = 500
+
+        mean = np.array([124.6])
+        cov = np.array([[0.7953]])
+        samples = pb.GaussPdf(mean, cov).samples(N)
+        emp = pb.EmpPdf(samples)
+
+        fuzz = 0.2
+        self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
+
+        var, fuzz = cov.diagonal(), 0.2
+        self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
+
+    def test_sample_multi(self):
+        """Test GaussPdf.sample() mean and variance (multivariate case). This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
+        N = 500
+
+        mean = np.array([124.6, -1.5])
+        cov = np.array([[0.7953, 0.], [0., 1.7]])
+        samples = pb.GaussPdf(mean, cov).samples(N)
+        emp = pb.EmpPdf(samples)
+
+        fuzz = 0.2
+        self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
+
+        var, fuzz = cov.diagonal(), 0.3
+        self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
 
 
 class LogNormPdf(PbTestCase):
