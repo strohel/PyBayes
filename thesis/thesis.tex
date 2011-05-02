@@ -30,13 +30,16 @@
 
 % TODO: je toto potreba?
 %\parindent=0pt % odsazení 1. řádku odstavce
-%\parskip=7pt   % mezera mezi odstavci
+\parskip=7pt   % mezera mezi odstavci
 
 \ifrelease
 	\hypersetup{pdfborder={0 0 0}} % no borders around links
 \else
 	\hypersetup{colorlinks=true} % colour links instead of borders
 \fi
+
+\newcommand{\pdf}{probability density function }
+\newcommand{\pdfs}{probability density functions }
 
 \begin{document}
 
@@ -80,25 +83,81 @@ Throughout this text, following notation is used
 
 \chapter{Basics of Recursive Bayesian Estimation}
 
+In following sections the problem of recursive Bayesian estimation is stated and its anylitical
+solution is derived. Later on, due to practical intractability of the solution in its general form,
+a few methods that either simplify the problem or approximate the solution are shown.
+
 \section{Problem Statement}
 
-Assume a dynamic system described by a hidden state vector of real numbers,
-denoted in this text as \(x_t\) ... evolves at discrete time steps according to a known, assumed or
-approximated function \(f_t\)
-\[ x_t = f_t(x_{t-1}, v_{t-1}) \]
-where \(v_t\) is unevitable and random process noise, that comes from ... ... .. .
+Assume a dynamic system described by a hidden real-valued \emph{state vector} \(x\) which evolves at
+discrete time steps according to a known function \(f_t\) as described by
+\eqref{eq:DynSysFt}.
 
-also assume that we can obseve the system in each time step through an observation \(y_t\) that relates
-to the state, but may contain less information and adds further noise. 
-\[ y_t = h_t(x_t, w_t) \]
-where \(w_t\) is unevitable and random observation noise.
+\begin{equation} \label{eq:DynSysFt}
+	x_t = f_t(x_{t-1}, v_{t-1})
+\end{equation}
 
-Our goal is to estimate the hidden state \(x_t\) given the observations \(y_{1:t}\) 
+Variable \(v_t\) in \eqref{eq:DynSysFt} denotes random \emph{process noise}, which may come from various
+sources and is often inevitable. Sequence of \(v_t\) is assumed to be identically independently
+distributed random variable sequence.
 
-resursive = we do not need to keep track of all previous observations/state predictions, only
-appropriate \(a_{t-1}\) quantities are needed to estimate \(x_t\).
+The state of the system is hidden and can only be observed though a real-valued \emph{observation vector}
+\(y\) that relates to the state \(x\) as in \eqref{eq:DynSysHt}, but adds further \emph{observation
+noise} \(w\).
+
+\begin{equation} \label{eq:DynSysHt}
+	y_t = h_t(x_t, w_t)
+\end{equation}
+
+In \eqref{eq:DynSysHt} \(h_t\) is known function and \(w_t\) is identically independently
+distributed random variable sequence that denotes observation noise.
+
+The goal of recursive\footnote{by the word recursive we mean that it is not needed to keep track of
+the whole batch of previous observations in practical methods, only appropriate quantities from time
+moments \(t-1\) and \(t\) are needed to estimate \(x_t\). However, this does not apply to the
+derivation of the solution, where the notation of whole batch of observations \(y_{1:t}\) is used.}
+Bayesian estimation is to give an estimate of the state \(x_t\) given the
+observations \(y_{1:t}\) provided the knowledge of the functions \(f_t\) and \(h_t\).
+More formally, the goal is to find the \pdf \(p(x_t | y_{1:t})\).
+Theoretical solution to this problem is known and is presented in next section.
 
 \section{Theoretical solution}
+
+At first, we observe that \pdf \(p(x_t|x_{t-1})\) can be derived from
+\eqref{eq:DynSysFt} (given the distribution of \(v_k\)) and that \(p(y_t|x_t)\) can be derived from
+\eqref{eq:DynSysHt} respectively. (given the distribution of \(w_k\))
+
+Because recursive solution is requested, suppose that \(p(x_{t-1}|y_{1:t-1})\) and
+\(p(x_0 | \{\})\)\footnote{known as the initial \pdf of the state vector} are known in order to be
+able to make the transition \(t-1 \; \rightarrow \; t\).
+
+In the first stage called \emph{prediction}, \emph{a priori} \pdf
+\(p(x_t | y_{1:t-1})\) is calculated without knowledge of \(y_t\). We begin the derivation by
+performing the reverse of the marginalization over \(x_{k-1}\).
+
+\begin{equation*}
+	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t, x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+\end{equation*}
+
+Using chain rule for \pdfs, the element of integration can be splitted.
+
+\begin{equation*}
+	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+\end{equation*}
+
+But \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\) (TODO: why? citation? linked to
+\eqref{eq:DynSysFt}), leaving us with the result \eqref{eq:APrioriPdf}.
+
+\begin{equation} \label{eq:APrioriPdf}
+	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+\end{equation}
+
+As we can see, a priori \pdf only depends on previously known functions and therefore can be
+calculated.
+
+We continue by the second stage called \emph{update}, where new observation \(y_t\) is taken into
+account and \emph{a posteriori} \pdf \(p(x_t | y_{1:t})\) is calculated.
+
 
 [Main source for these 2 sections:\cite{AruMasGor:02}]
 
