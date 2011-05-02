@@ -210,7 +210,7 @@ latex_domain_indices = False
 # A dict of additional options that override default .tex generation rules
 latex_elements = {
     'papersize': 'a4paper,oneside',  # a bit of hack with oneside
-    'pointsize': '11pt',
+    'pointsize': '12pt',
     'fontpkg': '',  # do not use Sphinx default 'times' fontpkg
     'fncychap': '',  # do not use Fancy Chapters
 }
