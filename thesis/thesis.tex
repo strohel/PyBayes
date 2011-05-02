@@ -7,6 +7,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{epsfig}
 \usepackage{graphicx}
 \ifrelease
@@ -53,10 +54,53 @@
 
 TODO motivatin for bayes filtration + a need for a convenient library (rapid prototyping vs. speed)
 
-Decision-making being a logical and natural ``next step''...
+applications: robotics, navigation, + tracking of toxic plume after radiation accident.
+
+Decision-making being a logical and natural ``next step'' - beyond the scope of this text.
+
+[proposed citations:\cite{ThrBurFox:05,Gus:02,HofSmi:09,HofSmiPech:09,PechHofSmi:09}]
 
 
-\chapter{Basics of Bayesian estimation}
+\chapter*{Notation} \addcontentsline{toc}{chapter}{Notation}
+
+Throughout this text, following notation is used
+
+\bigskip
+
+\begin{tabular}{l p{0.8\textwidth}}
+	\(\mathbb{N}\) & set of natural numbers \\
+	\(\mathbb{R}\) & set of real numbers \\
+	\(t\) & discrete time moment; \(t \in \mathbb{N}\) \\
+	\(a_t\) & value of quantity \(a\) at time \(t\); \(a_t \in \mathbb{R}^n, n \in \mathbb{N}\) \\
+		& unless noted otherwise, \(x_t\) denotes state vector at time \(t\) and \(y_t\) denotes
+		  observation vector at time \(t\) \\
+	\(a_{i:j}\) & sequence of quantities \((a_i, a_{i+1} \dots a_{j-1}, a_j)\) \\
+\end{tabular}
+
+
+\chapter{Basics of Recursive Bayesian Estimation}
+
+\section{Problem Statement}
+
+Assume a dynamic system described by a hidden state vector of real numbers,
+denoted in this text as \(x_t\) ... evolves at discrete time steps according to a known, assumed or
+approximated function \(f_t\)
+\[ x_t = f_t(x_{t-1}, v_{t-1}) \]
+where \(v_t\) is unevitable and random process noise, that comes from ... ... .. .
+
+also assume that we can obseve the system in each time step through an observation \(y_t\) that relates
+to the state, but may contain less information and adds further noise. 
+\[ y_t = h_t(x_t, w_t) \]
+where \(w_t\) is unevitable and random observation noise.
+
+Our goal is to estimate the hidden state \(x_t\) given the observations \(y_{1:t}\) 
+
+resursive = we do not need to keep track of all previous observations/state predictions, only
+appropriate \(a_{t-1}\) quantities are needed to estimate \(x_t\).
+
+\section{Theoretical solution}
+
+[Main source for these 2 sections:\cite{AruMasGor:02}]
 
 \section{Kalman Filter}
 
@@ -78,6 +122,12 @@ Interpreted vs. Compiled
 Object-oriented, procedural and Functional
 
 pass-by reference vs. copy-on-write (Matlab)
+
+\section{Survey of Existing Libraries for Bayesian estimation/decision making}
+
+Brief survey of existing libraries ... not fullfilling all requirements..
+
+The need to implement a new one :-)
 
 \section{C++}
 
@@ -107,6 +157,8 @@ NumPy.... parallelisation (approaches, improvements in Py 3.2) - GIL.. Py3k
 general info etc... extension types, building, ease of interfacing C (and F) code, .pxd files,
 NumPy support
 
+[citations:\cite{BehBraSel:09,Sel:09,BehBraCitDalSelSmi:11}]
+
 \subsection{Gradual Optimisation and Parallelisation}
 
 how can optimisaion be approached (gradually) and why this approach is superior
@@ -127,7 +179,7 @@ About it and why it should be used in a hypothetical bayesian python library
 
 2 types:
 
-	not-supported code (few, but bad, ongoing work)
+	not-supported code (few cases, but bad, ongoing work)
 
 	not-optimised code (much more work needed, but not hard to fix in most cases)
 
@@ -135,18 +187,9 @@ About it and why it should be used in a hypothetical bayesian python library
 
 		- limitations of pure python mode in regards to traditional .pyx files
 
+\section{Choice}
 
-\chapter{Finding a Way to a Suitable Bayesian Library}
-
-TODO: maybe not a chapter, but a section in another one (also better name for chapter)
-
-\section{The choice of Python/Cython}
-
-\section{Existing Python Libraries for Bayesian estimation/decision making}
-
-Survey of existing libraries ... not suitable
-
-The need to implement a new one :-)
+python/cython was choosen ...
 
 
 \chapter{The PyBayes Library}
@@ -159,6 +202,8 @@ Introduction, general directions, future considerations
 
 \section{Library Layout}
 
+[proposed citation: \cite{Smi:05}]
+
 \subsection{Random Variable Meta-representation}
 
 Why it is needed (ref to ProdCPdf)
@@ -170,9 +215,13 @@ AbstractGaussPdf family, one for AbstractEmpPdf family
 
 \subsection{Bayesian Filters}
 
+UML
+
 Nice graph of a run of a particle filter (Mirda has the plotting code)
 
 similar of marginalized particle filter? (gausses would be plotted vertically)
+
+[mention this:\cite{Smi:10}]
 
 \section{Documentation, Testing and Profiling}
 
@@ -182,13 +231,13 @@ Documenting using Sphinx, approach to documentation (mathematician-oriented), ma
 
 Testing - the separation of
 
-	- tests: test one class in isolation, quick, determinism (would be good, not achievable)
+- tests: test one class in isolation, quick, determinism (would be good, not achievable)
 
-	- stresses: test a great portion of code at once, run longer, non-determinism..
+- stresses: test a great portion of code at once, run longer, non-determinism..
 
 Profiling python/cython - how, existing support in PyBayes
 
-	- how to correct profiling-induced overhead
+- how to correct profiling-induced overhead
 
 \section{Comparison with BDM}
 
@@ -197,8 +246,6 @@ Profiling python/cython - how, existing support in PyBayes
 
 
 % použitá literatura
-\nocite{*} % TODO: jen docasne pro to, aby se zobrazily vsechny veci z BibTex databaze
-
 \clearpage % so that the contents link mentions correct page
 \phantomsection % so that hyperref makes correct reference
 \addcontentsline{toc}{chapter}{\bibname}

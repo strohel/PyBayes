@@ -3,8 +3,13 @@
 # later version of the license, at your option.
 
 """
-PyBayes is meant as a Python/Cython suite for performing common operations in
-Bayesian statistics... TODO
+PyBayes is an effort to create general, convenient to use and fast library for Bayesian filtering
+(and perhaps decision making in future). It is written in Python, but can make use of cython for
+performance-critical code-paths.
+
+You may want to see `my thesis`_ (WIP) for a background information.
+
+.. _my thesis: thesis.pdf
 """
 
 from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
