@@ -90,8 +90,8 @@ a few methods that either simplify the problem or approximate the solution are s
 \section{Problem Statement}
 
 Assume a dynamic system described by a hidden real-valued \emph{state vector} \(x\) which evolves at
-discrete time steps according to a known function \(f_t\) as described by
-\eqref{eq:DynSysFt}.
+discrete time steps according to a known function \(f_t\) (in this text called \emph{process model})
+as described by \eqref{eq:DynSysFt}.
 
 \begin{equation} \label{eq:DynSysFt}
 	x_t = f_t(x_{t-1}, v_{t-1})
@@ -109,8 +109,8 @@ noise} \(w\).
 	y_t = h_t(x_t, w_t)
 \end{equation}
 
-In \eqref{eq:DynSysHt} \(h_t\) is known function and \(w_t\) is identically independently
-distributed random variable sequence that denotes observation noise.
+In \eqref{eq:DynSysHt} \(h_t\) is known function called \emph{observation model} in this text and \(w_t\) is
+identically independently distributed random variable sequence that denotes observation noise.
 
 The goal of recursive\footnote{by the word recursive we mean that it is not needed to keep track of
 the whole batch of previous observations in practical methods, only appropriate quantities from time
@@ -155,11 +155,36 @@ But \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\) (TODO: why? cita
 As we can see, a priori \pdf only depends on previously known functions and therefore can be
 calculated.
 
-We continue by the second stage called \emph{update}, where new observation \(y_t\) is taken into
-account and \emph{a posteriori} \pdf \(p(x_t | y_{1:t})\) is calculated.
+We continue with the second stage called \emph{update}, where new observation \(y_t\) is taken into
+account and \emph{a posteriori} \pdf \(p(x_t | y_{1:t})\) is calculated. Bayes' theorem can be used
+to derive a posteriori \pdf \eqref{eq:APosterioriPdf}.
 
+\begin{equation} \label{eq:APosterioriPdf}
+	p(x_t | y_{1:t}) = \frac{p(y_t | x_t) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})}
+\end{equation}
 
-[Main source for these 2 sections:\cite{AruMasGor:02}]
+While both \pdfs in numerator are already known, \(p(y_t|y_{1:t-1})\) found in denominator can be
+calculated using the formula \eqref{eq:NormConstant}, where marginalization over \(x_t\) is used.
+
+\begin{equation} \label{eq:NormConstant}
+	p(y_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(y_t | x_t) p(x_t | y_{1:t-1}) \; \mathrm{d} x_{t}
+\end{equation}
+
+This isn't however strictily needed as \eqref{eq:NormConstant} does not depend on \(x_t\) and
+serves as a normalising constant in \eqref{eq:APosterioriPdf}. Depending on use-case the normalising
+constant may not be needed at all or may be computed alternatively using the fact that \(p(x_t | y_{1:y})\)
+integrates to \(1\).
+
+We have shown that so called \emph{optimal Bayesian solution} can be easily analytically inferred
+using only chain rule for \pdfs, marginalization and Bayes' theorem. On the other hand, using this
+method directly in practice proves difficult because at least one multidimensional integration has
+to be performed (in \eqref{eq:APrioriPdf}), which is (in its general form) hardly tractable for
+greater than small state vector dimensions.
+
+This is a motivation for various simplicifations ans approximations among which we have chosen
+Kalman filter described in the next section and particle filter family described later.
+
+MAIN SOURCE: \cite{AruMasGor:02} TODO: how to cite?
 
 \section{Kalman Filter}
 
@@ -218,7 +243,7 @@ NumPy support
 
 [citations:\cite{BehBraSel:09,Sel:09,BehBraCitDalSelSmi:11}]
 
-\subsection{Gradual Optimisation and Parallelisation}
+\subsection{Gradual Optimisation}
 
 how can optimisaion be approached (gradually) and why this approach is superior
 
