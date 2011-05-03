@@ -145,8 +145,8 @@ Using chain rule for \pdfs, the element of integration can be splitted.
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
 \end{equation*}
 
-But \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\) (TODO: why? citation? linked to
-\eqref{eq:DynSysFt}), leaving us with the result \eqref{eq:APrioriPdf}.
+But \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\) in accordance with the process model
+\eqref{eq:DynSysFt} (TODO: Am I right?), leaving us with the result \eqref{eq:APrioriPdf}.
 
 \begin{equation} \label{eq:APrioriPdf}
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
@@ -157,26 +157,37 @@ calculated.
 
 We continue with the second stage called \emph{update}, where new observation \(y_t\) is taken into
 account and \emph{a posteriori} \pdf \(p(x_t | y_{1:t})\) is calculated. Bayes' theorem can be used
-to derive a posteriori \pdf \eqref{eq:APosterioriPdf}.
+to derive a posteriori \pdf \eqref{eq:APosterioriPdfRaw}.
+
+\begin{equation} \label{eq:APosterioriPdfRaw}
+	p(x_t | y_{1:t}) = \frac{p(y_t | x_t, y_{1:t-1}) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})}
+\end{equation}
+
+According to the observation model \eqref{eq:DynSysHt}, \(y_t\) only depends on \(x_t\) (so that
+\(p(y_t | x_t, y_{1:t-1}) = p(y_t | x_t)\)) and aposteriori \pdf can be further simplified into
+\eqref{eq:APosterioriPdf}. (TODO: Am I right?)
 
 \begin{equation} \label{eq:APosterioriPdf}
 	p(x_t | y_{1:t}) = \frac{p(y_t | x_t) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})}
 \end{equation}
 
-While both \pdfs in numerator are already known, \(p(y_t|y_{1:t-1})\) found in denominator can be
-calculated using the formula \eqref{eq:NormConstant}, where marginalization over \(x_t\) is used.
+While both \pdfs in the numerator of \eqref{eq:APosterioriPdf} are already known, \(p(y_t|y_{1:t-1})\)
+found in the denominator can be calculated using the formula \eqref{eq:NormConstant}, where
+marginalization over \(x_t\) is preformed.
 
 \begin{equation} \label{eq:NormConstant}
 	p(y_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(y_t | x_t) p(x_t | y_{1:t-1}) \; \mathrm{d} x_{t}
 \end{equation}
 
-This isn't however strictily needed as \eqref{eq:NormConstant} does not depend on \(x_t\) and
+Computing \eqref{eq:NormConstant} isn't however strictily needed as it does not depend on \(x_t\) and
 serves as a normalising constant in \eqref{eq:APosterioriPdf}. Depending on use-case the normalising
 constant may not be needed at all or may be computed alternatively using the fact that \(p(x_t | y_{1:y})\)
 integrates to \(1\).
 
 We have shown that so called \emph{optimal Bayesian solution} can be easily analytically inferred
-using only chain rule for \pdfs, marginalization and Bayes' theorem. On the other hand, using this
+using only \emph{chain rule for \pdfs}, \emph{marginalization} and \emph{Bayes' theorem}. (equations
+\eqref{eq:APrioriPdf}, \eqref{eq:APosterioriPdf} and \eqref{eq:NormConstant} forming the main steps of the
+solution) On the other hand, using this
 method directly in practice proves difficult because at least one multidimensional integration has
 to be performed (in \eqref{eq:APrioriPdf}), which is (in its general form) hardly tractable for
 greater than small state vector dimensions.
