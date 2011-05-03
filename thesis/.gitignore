@@ -8,3 +8,5 @@
 *.brf
 *.bbl
 *.blg
+*.nav
+*.snm
