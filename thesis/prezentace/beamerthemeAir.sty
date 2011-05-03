@@ -1,0 +1,68 @@
+\usetheme{Rochester}
+
+\pgfdeclareimage[width=1.0\paperwidth]{air-header}{air-header}
+
+\setbeamertemplate{blocks}[rounded][shadow=true]
+\setbeamercovered{transparent}
+
+\beamer@headheight=0.13\paperwidth
+
+\definecolor{airorange}{rgb}{.953 ,.502 ,.04}
+\definecolor{airdarkblue}{HTML}{064F6F}
+\definecolor{airlightblue}{HTML}{0099d5}
+\definecolor{airgray}{HTML}{686868}
+\definecolor{airlightgray}{HTML}{eeeeee}
+\definecolor{airblue}{rgb}{.13 ,.43 ,.68}
+\setbeamercolor*{Title bar}{fg=white} % fg=airdarkblue
+\setbeamercolor*{Location bar}{fg=airorange,bg=airlightgray}
+\setbeamercolor*{frametitle}{parent=Title bar}
+\setbeamercolor*{block title}{bg=airlightblue,fg=white}
+\setbeamercolor*{block body}{bg=airlightgray,fg=airgray}
+\setbeamercolor*{normal text}{bg=white,fg=airgray}
+\setbeamercolor*{section in head/foot}{bg=airblue,fg=black}
+
+\usecolortheme[named=airorange]{structure}
+
+\setbeamerfont{section in head/foot}{size=\tiny,series=\normalfont}
+\setbeamerfont{frametitle}{size=\Large}
+
+%\setbeamertemplate{headline}
+\setbeamertemplate{frametitle}
+{
+  \vskip-0.25\beamer@headheight
+  \vskip-\baselineskip
+  \vskip-0.2cm
+  \hskip0.7cm\usebeamerfont*{frametitle}\insertframetitle
+  \vskip-0.10em
+  \hskip0.7cm\usebeamerfont*{framesubtitle}\insertframesubtitle
+}
+
+\setbeamertemplate{headline}
+{
+  \pgfuseimage{air-header}
+  \vskip -1.95cm
+  \linethickness{0.0pt}
+
+  \framelatex{
+  \begin{beamercolorbox}[wd=\paperwidth,ht=0.3\beamer@headheight]{Title bar}
+    \usebeamerfont{section in head/foot}%
+    \insertsectionnavigationhorizontal{0pt}{\hskip0.22cm}{}%
+  \end{beamercolorbox}}
+
+  \framelatex{
+  \begin{beamercolorbox}[wd=\paperwidth,ht=0.7\beamer@headheight]{Title bar}
+  \end{beamercolorbox}}
+}
+
+\setbeamertemplate{footline}
+{
+  \linethickness{0.25pt}
+  \framelatex{
+  \begin{beamercolorbox}[leftskip=.3cm,wd=\paperwidth,ht=0.3\beamer@headheight,sep=0.1cm]{Location bar}
+    \usebeamerfont{section in head/foot}%
+    \insertshortauthor~|~\insertshorttitle
+    \hfill
+    \insertframenumber/\inserttotalframenumber
+  \end{beamercolorbox}}
+}
+

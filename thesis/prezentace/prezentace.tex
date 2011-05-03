@@ -1,0 +1,303 @@
+\documentclass[12pt]{beamer}
+
+\usetheme{Air}
+\usepackage[czech]{babel}
+\usepackage{thumbpdf}
+\usepackage{wasysym}
+\usepackage{ucs}
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+
+\pdfinfo
+{
+  /Title       (Prostředí pro implementaci algoritmů Bayesovské filtrace)
+%  /Creator     (TeX)
+%  /Author      (Matěj Laitl)
+}
+
+
+\title{Prostředí pro implementaci algoritmů Bayesovské filtrace}
+%\subtitle{TODO}
+\author{Matěj Laitl\\ vedoucí práce: Ing. Václav Šmídl, Ph.D.; ÚTIA}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+
+% \section*{}
+% \begin{frame}
+%   \frametitle{Obsah}
+%   \tableofcontents[section=1,hidesubsections]
+% \end{frame}
+
+\AtBeginSection[]
+{
+  \frame<handout:0>
+  {
+    \frametitle{Přehled}
+    \tableofcontents[currentsection,hideallsubsections]
+  }
+}
+
+\AtBeginSubsection[]
+{
+  \frame<handout:0>
+  {
+    \frametitle{Přehled}
+    \tableofcontents[sectionstyle=show/hide,subsectionstyle=show/shaded/hide]
+  }
+}
+
+\newcommand<>{\highlighton}[1]{%
+  \alt#2{\structure{#1}}{{#1}}
+}
+
+\newcommand{\icon}[1]{\pgfimage[height=1em]{#1}}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Content starts here %%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\section{Úvod - zadání}
+
+\begin{frame}
+	\frametitle{Zadání}
+
+	\begin{block}{Úkoly práce}
+		\begin{itemize}
+		\item seznámit se s metodou rekurzivní Bayesovské identifikace
+		\item softwarová analýza - vhodnost přístupů a programových prostředí
+		\item implementace několika metod Bayesovské filtrace
+		\item prezentace implementace jako open-source projektu, zařazení do archivů sw
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\section{Rekurzivní Bayesovská identifikace}
+
+\begin{frame}
+	\frametitle{Formulace problému 1/2}
+	\framesubtitle{Dynamický systém}
+
+	\begin{block}{model procesu}
+		\(x_t = f_t(x_{t-1}, v_{t-1})\) \hspace{3cm} \(x_t\) .. stavový vektor
+
+		\begin{itemize}
+		\item \(v_t\) náhodný šum, iid
+		\item → definuje pdf\footnote{hustota pravděpodobnosti} \(p(x_t|x_{t-1})\)
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{model pozorování}
+		\(y_t = h_t(x_t, w_t)\) \hspace{3cm} \(y_t\) .. vektor pozorování
+
+		\begin{itemize}
+		\item \(w_t\) náhodný šum, iid
+		\item → definuje pdf \(p(y_t|x_t)\)
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Formulace problému 2/2}
+	\framesubtitle{Cíle}
+
+	{\large Úkol:
+	\begin{itemize}
+		\item odhadnout \(x_t\) z posloupnosti meření \(y_{1:t}\)
+		\item přesněji: spočítat pdf \(p(x_t | y_{1:t})\)
+	\end{itemize}
+	}
+
+	\begin{block}{Máme}
+		\begin{itemize}
+			\item \(p(x_t|x_{t-1})\) \hspace{1cm} + \(p(x_0)\)
+			\item \(p(y_t|x_t)\)
+		\end{itemize}
+	\end{block}
+
+	\begin{example}
+		\begin{itemize}
+			\item robotika (Apollo 11)..
+			\item počasí, síření radioaktivního spadu..
+		\end{itemize}
+	\end{example}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Matematický aparát}
+	\begin{block}{Řetězové pravidlo pro pdf}
+		\begin{align*}
+			\hspace{-1cm}
+			P(AB|C) &= P(A|BC) P(B|C)
+		\end{align*}
+	\end{block}
+
+	\begin{block}{Bayesova věta}
+		\begin{align*}
+			P(A|BC) = \frac{P(B|AC)P(A|C)}{P(B|C)}
+		\end{align*}
+	\end{block}
+
+	\begin{block}{Marginalizace pdf}
+		\begin{align*}
+			p(x, y) = \int_{-\infty}^{\infty} p(x, y, z) \; \mathrm{d} z
+		\end{align*}
+	\end{block}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Odvození řešení 1/2}
+	\framesubtitle{a priori pdf}
+
+	Máme \(p(x_{t-1} | y_{1:t-1})\) (rekurze), v prvním kroku odvodíme \(p(x_t | y_{1:t-1})\) 
+	(bez znalosti nového měření \(y_t\)). (řetěz. pravidlo, marginalizace)
+
+	\begin{align*}
+		p(x_t | y_{1:t-1}) &= \int_{-\infty}^{\infty} p(x_t, x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1} \\
+		%
+		p(x_t | y_{1:t-1}) &= \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1} \\
+		%
+		p(x_t | y_{1:t-1}) &= \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+	\end{align*}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Odvození řešení 2/2}
+	\framesubtitle{a posteriori pdf}
+
+	Přišlo pozorování \(y_t\), zakomponujme ho. (Bayes věta)
+
+	\begin{align*}
+		p(x_t | y_{1:t}) &= \frac{p(y_t | x_t, y_{1:t-1}) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})} \\
+		%
+		p(x_t | y_{1:t}) &= \frac{p(y_t | x_t) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})}
+	\end{align*}
+
+	Čitatel známý, jmenovatel je konstanta - buď netřeba nebo lze dopočítat marginalizací/z podmínky
+	normality.
+\end{frame}
+
+\begin{frame}
+	\frametitle{Problémy analytického řešení}
+
+	{\large Odvozené analytické řešení nelze dost dobře počítat} (vícerozměrný integrál)
+
+	\begin{block}{Zjednodušení problému}
+		\begin{itemize}
+			\item Kalmanův filtr: a priori i posteriori pdf jsou Gaussovky, šumy jsou Gaussovské
+			centrované, lineární systém
+			\item Síťové metody: pro diskrétní stavy
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Aproximace}
+		\begin{itemize}
+			\item Particle filter\footnote{překlad ``částicový filtr'' se nepoužívá}: odhaduje aposteriori pdf empirickou pdf,
+			nedeterministický (Monte Carlo - samplování z pdf)
+			\item Marginalizovaný Particle Filter
+		\end{itemize}
+	\end{block}
+
+\end{frame}
+
+\section{Výsledky softwarové analýzy}
+
+\begin{frame}
+	\frametitle{Východiska}
+
+	Cíl: vyvinout použitelnou knihovnu vhodnou pro vývoj nových přístupů Bayesovského
+	odhadování/rozhodování
+
+ 	\begin{block}{Požadavky}
+		\begin{itemize}
+			\item snadné a rychlé použití (vysokoúrovňový jazyk)
+			\item dostatečná rychlost
+			\item nízké počáteční požadavky na uživatele
+			\item přenositelnost, nezávislost na komerčních platformách
+		\end{itemize}
+ 	\end{block}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Paradigmata, Programovací jazyky}
+
+	\begin{block}{Vhodnost implementačních metodik}
+		Objektově orientované programování nejlépe vystihuje matematickou strukturu teorie
+	\end{block}
+
+	\begin{block}{Implementační prostředí 1}
+		\begin{itemize}
+			\item C++
+			\begin{itemize}
+				\item + rozšířenost, rychlost, existující knihovny pro Bayes..
+				\item - nízká produktivita, vysoké vstupní bariéry - nevhodné
+			\end{itemize}
+			\item Matlab
+			\begin{itemize}
+				\item + rozšířenost, vysoká produktivita
+				\item - CoW, problematický objektový model, proprietární - nevhodné
+			\end{itemize}
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Programovací jazyky redux}
+
+	\begin{block}{Implementační prostředí 2}
+		\begin{itemize}
+			\item Python
+			\begin{itemize}
+				\item + vysoká produktivita, existující mat. knihovny (NumPy), rozšíření, komunita
+				\item - vysoká režie (interpretovaný jazyk) - sám o sobě nevhodný
+			\end{itemize}
+			\item Cython
+			\begin{itemize}
+				\item překládá python kód do C
+				\item postupná optimalizace stávajícího python kódu
+				\item naměřeno: 100x zrychlení pro numerickou integraci\footnote{dokazuje zejména pomalost pythonu}
+				\item naměřeno: 13x zrychlení při paralelizaci na 16-jádrovém CPU (OpenMP)
+			\end{itemize}
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\section{PyBayes}
+
+\begin{frame}
+	\frametitle{PyBayes}
+
+	\begin{block}{PyBayes knihovna}
+		\begin{itemize}
+			\item open-source, otevřený vývoj na \url{http://github.com/strohel/PyBayes}
+			\item python + cython (překlad pythonu do C: 2x -- 100x zrychlení)
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Implementováno v PyBayes}
+		\begin{itemize}
+			\item základní i podmíněné pdf, produkt pdf, řetězové pravidlo
+			\item Kalman Filter, Particle filter, Marginalizovaný PF
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}
+  \vspace{2cm}
+  {\huge Děkuji za pozornost}
+
+  \vspace{3cm}
+  \begin{flushright}
+    Matěj Laitl
+
+    \structure{\footnotesize{matej@laitl.cz}}
+  \end{flushright}
+\end{frame}
+
+\end{document}
