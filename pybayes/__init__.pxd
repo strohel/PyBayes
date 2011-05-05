@@ -10,4 +10,5 @@ Cython definition file for PyBayes
 from pybayes.pdfs cimport RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
 from pybayes.pdfs cimport AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
 from pybayes.pdfs cimport MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
-from pybayes.filters cimport Filter, KalmanFilter, ParticleFilter, MarginalizedParticleFilter
+from pybayes.filters cimport Filter, KalmanFilter, ControlKalmanFilter, QRKalmanFilter
+from pybayes.filters cimport ParticleFilter, MarginalizedParticleFilter

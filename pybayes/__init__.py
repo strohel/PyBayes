@@ -15,4 +15,5 @@ You may want to see `my thesis`_ (WIP) for a background information.
 from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
 from pdfs import AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
 from pdfs import MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
-from filters import Filter, KalmanFilter, ParticleFilter, MarginalizedParticleFilter
+from filters import Filter, KalmanFilter, ControlKalmanFilter, QRKalmanFilter
+from filters import ParticleFilter, MarginalizedParticleFilter

@@ -21,13 +21,13 @@ from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 class Filter(object):
     """Abstract prototype of a bayesian filter."""
 
-    def bayes(self, yt, ut = None):
+    def bayes(self, yt, cond = None):
         """Perform approximate or exact bayes rule.
 
         :param yt: observation at time t
         :type yt: :class:`numpy.ndarray`
-        :param ut: intervence at time t (appliciable only to some filters)
-        :type ut: :class:`numpy.ndarray`
+        :param cond: condition at time t. Exact meaning is defined by each filter
+        :type cond: :class:`numpy.ndarray`
         :return: always returns True (see :meth:`posterior` to get aposteriori density)
         """
         raise NotImplementedError("Derived classes must implement this method")
@@ -43,7 +43,7 @@ class Filter(object):
         """
         raise NotImplementedError("Derived classes must implement this method")
 
-    def evidence_log(self, yt):  # TODO: sometimes also ut/cond?
+    def evidence_log(self, yt):
         """Return the logarithm of *evidence* function (also known as *marginal likehood*) evaluated
         in point yt.
 
@@ -62,7 +62,7 @@ class Filter(object):
 class KalmanFilter(Filter):
     """Kalman filter"""
 
-    def __init__(self, A, B, C, D, Q, R, state_pdf):
+    def __init__(self, A, C, Q, R, state_pdf):
         """TODO: documentation"""
 
         # check type of pdf
@@ -70,27 +70,18 @@ class KalmanFilter(Filter):
             raise TypeError("state_pdf must be (a subclass of) GaussPdf")
 
         # check type of input arrays
-        matrices = {"A":A, "B":B, "C":C, "D":D, "Q":Q, "R":R}
+        matrices = {"A":A, "C":C, "Q":Q, "R":R}
         for name in matrices:
-            matrix = matrices[name]
-            if type(matrix) != np.ndarray:  # TODO: insinstance(), but has different semantics
-                raise TypeError(name + " must be (exactly) numpy.ndarray, " +
-                                str(type(matrix)) + " given")
-            if matrix.ndim != 2:
-                raise ValueError(name + " must have 2 dimensions (thus forming a matrix), " +
-                                 str(matrix.ndim) + " given")
+            self._check_matrix(name, matrices[name])
 
         # remember vector shapes
         self.n = state_pdf.shape()  # dimension of state vector
-        self.k = B.shape[1]  # dimension of control vector
         self.j = C.shape[0]  # dimension of observation vector
 
         # dict of required matrice shapes (sizes)
         shapes = {
             "A":(self.n, self.n),
-            "B":(self.n, self.k),
             "C":(self.j, self.n),
-            "D":(self.j, self.k),
             "Q":(self.n, self.n),
             "R":(self.j, self.j)
         }
@@ -101,23 +92,28 @@ class KalmanFilter(Filter):
                 raise ValueError("Given shapes of state_pdf, B and C, matrix " + name +
                                  " must have shape " + str(shapes[name]) + ", " +
                                  str(matrix.shape) + " given")
-
-        self.A, self.B, self.C, self.D, self.Q, self.R = A, B, C, D, Q, R
-
+        self.A, self.C, self.Q, self.R = A, C, Q, R
         self.P = state_pdf
         self.S = GaussPdf(np.array([0.]), np.array([[1.]]))  # observation probability density function
+
+    def _check_matrix(self, name, matrix):
+        """Helper method that just checks the matrix has good type and is 2D. If not, raises exception"""
+        if not isinstance(matrix, np.ndarray):
+            raise TypeError("{0} must be (a subclass of) numpy.ndarray, {1} given".format(name,
+                            type(matrix)))
+        if matrix.ndim != 2:
+            raise ValueError("{0} must be 2D (thus a matrix) {1}-dimensional array given".format(
+                             name, matrix.ndim))
+        return True
 
     def __copy__(self):
         # type(self) is used because this method may be called for a derived class
         ret = type(self).__new__(type(self))
         ret.A = self.A
-        ret.B = self.B
         ret.C = self.C
-        ret.D = self.D
         ret.Q = self.Q
         ret.R = self.R
         ret.n = self.n
-        ret.k = self.k
         ret.j = self.j
         ret.P = self.P
         ret.S = self.S
@@ -127,40 +123,54 @@ class KalmanFilter(Filter):
         # type(self) is used because this method may be called for a derived class
         ret = type(self).__new__(type(self))
         ret.A = deepcopy(self.A, memo)  # numpy arrays:
-        ret.B = deepcopy(self.B, memo)
         ret.C = deepcopy(self.C, memo)
-        ret.D = deepcopy(self.D, memo)
         ret.Q = deepcopy(self.Q, memo)
         ret.R = deepcopy(self.R, memo)
         ret.n = self.n  # no need to copy integers
-        ret.k = self.k
         ret.j = self.j
         ret.P = deepcopy(self.P, memo)  # GaussPdfs:
         ret.S = deepcopy(self.S, memo)
         return ret
 
-    def bayes(self, yt, ut = None):
+    def _cond_preprocess(self, cond):
+        """Internal method called from :meth:`bayes` used to differentiate between different KF
+        variants. This method is called after yt check, but before any processing.
+
+        Must return True; default implementation just checks condition to be None."""
+        if cond is not None:
+            raise TypeError("Ordinary KalmanFilter takes no condition. See QRKalmanFilter and ControlKalmanFilter")
+        return True
+
+    def _cond_predict(self, cond):
+        """Internal method called from :meth:`bayes` used to differentiate between different KF
+        variants. This method is called as a last command of the `predict` phase.
+
+        Must return True; default implementation does nothing."""
+        return True
+
+    def _cond_update(self, cond):
+        """Internal method called from :meth:`bayes` used to differentiate between different KF
+        variants. This method is called as a last command of the `update` phase.
+
+        Must return True; default implementation does nothing."""
+        return True
+
+    def bayes(self, yt, cond = None):
         if not isinstance(yt, np.ndarray):
             raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
         if yt.ndim != 1 or yt.shape[0] != self.j:
             raise ValueError("yt must have shape {0}. ({1} given)".format((self.j,), (yt.shape[0],)))
-        if self.k > 0:  # only check ut when needed
-            if not isinstance(ut, np.ndarray):
-                raise TypeError("ut must be and instance of numpy.ndarray ({0} given)".format(type(ut)))
-            if ut.ndim != 1 or ut.shape[0] != self.k:
-                raise ValueError("ut must have shape {0}. ({1} given)".format((self.k,), (ut.shape[0],)))
+        self._cond_preprocess(cond)  # may be overriden in subclasses
 
         # predict
         self.P.mu = np.dot(self.A, self.P.mu)  # a priori estimate
-        if self.k > 0:  # only add control portion if needed
-            self.P.mu += np.dot(self.B, ut)
         self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # a priori variance
+        self._cond_predict(cond)  # may be overriden in subclasses
 
         # data update
         self.S.mu = np.dot(self.C, self.P.mu)
-        if self.k > 0:  # only add control portion if needed
-            self.S.mu += np.dot(self.D, ut)
         self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R
+        self._cond_update(cond)  # may be overridden in subclasses
 
         # kalman gain
         K = np.dot(np.dot(self.P.R, self.C.T), linalg.inv(self.S.R))
@@ -174,6 +184,101 @@ class KalmanFilter(Filter):
 
     def evidence_log(self, yt):
         return self.S.eval_log(yt)
+
+
+class ControlKalmanFilter(KalmanFilter):
+    """Simple extension to :class:`KalmanFilter` that takes control (intervention) vector as a
+    condition in :meth:`bayes` and also takes additional B and D matrices in constructor."""
+
+    def __init__(self, A, B, C, D, Q, R, state_pdf):
+        """Initialise ControlKalmanFilter.
+
+        For **A**, **C**, **Q**, **R** and **state_pdf** parameters see :class:`KalmanFilter`.
+
+        :param B: process control model matrix (TODO)
+        :type B: 2D :class:`numpy.ndarray`
+        :param D: process observation model matrix (TODO)
+        :type D: 2D :class:`numpy.ndarray`
+        """
+        KalmanFilter.__init__(self, A, C, Q, R, state_pdf)
+
+        # check type of input arrays
+        self._check_matrix("B", B)
+        self._check_matrix("D", D)
+
+        # remember vector shapes
+        self.k = B.shape[1]  # dimension of control vector
+
+        # dict of required matrice shapes (sizes)
+        shapes = {
+            "B":(self.n, self.k),
+            "D":(self.j, self.k),
+        }
+        # check input matrix sizes
+        for name, matrix in (("B",B), ("D",D)):
+            if matrix.shape != shapes[name]:
+                raise ValueError("Given shapes of state_pdf, B and C, matrix " + name +
+                                 " must have shape " + str(shapes[name]) + ", " +
+                                 str(matrix.shape) + " given")
+        self.B = B
+        self.D = D
+
+    def __copy__(self):
+        ret = KalmanFilter.__copy__(self)
+        ret.B = self.B
+        ret.D = self.D
+        ret.k = self.k
+        return ret
+
+    def __deepcopy__(self, memo):
+        ret = KalmanFilter.__deepcopy__(self, memo)
+        ret.B = deepcopy(self.B, memo)
+        ret.D = deepcopy(self.D, memo)
+        ret.k = self.k
+        return ret
+
+    def _cond_preprocess(self, cond):
+        if not isinstance(cond, np.ndarray):
+            raise TypeError("cond must be and instance of numpy.ndarray ({0} given)".format(type(cond)))
+        if cond.ndim != 1 or cond.shape[0] != self.k:
+            raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
+        return True
+
+    def _cond_predict(self, cond):
+        self.P.mu += np.dot(self.B, cond)
+        return True
+
+    def _cond_update(self, cond):
+        self.S.mu += np.dot(self.D, cond)
+        return True
+
+
+class QRKalmanFilter(KalmanFilter):
+    """An extension to :class:`KalmanFilter` that takes (diagonal elements of) noise matrices Q and
+    R in condition of :meth:`bayes` method."""
+
+    def __init__(self, A, C, state_pdf):
+        """Initialise QRKalmanFilter.
+
+        See :class:`KalmanFilter` for the description of **A**, **C** and **state_pdf** parameters.
+        """
+        n = state_pdf.shape()  # dimension of state vector
+        j = C.shape[0]  # dimension of observation vector
+        if n != j:
+            raise ValueError(("dimension of state vector ({0}) must be the same as dimension of " +
+                             "the observation vector ({1})").format(n, j))
+        if n != 1:
+            raise ValueError("QRKalmanFilter currently supports only univariate state vector")
+        KalmanFilter.__init__(self, A, C, np.zeros((n, n)), np.zeros((j, j)), state_pdf)
+
+    def _cond_preprocess(self, cond):
+        if not isinstance(cond, np.ndarray):
+            raise TypeError("cond must be and instance of numpy.ndarray ({0} given)".format(type(cond)))
+        if cond.ndim != 1 or cond.shape[0] != self.n:  # it is guaranteed that self.n == self.j
+            raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
+        self.Q[0,0] = cond[0]
+        self.R[0,0] = cond[0]
+        return True
 
 
 class ParticleFilter(Filter):
@@ -214,7 +319,7 @@ class ParticleFilter(Filter):
         # generate initial particles:
         self.emp = EmpPdf(init_pdf.samples(n))
 
-    def bayes(self, yt, ut = None):
+    def bayes(self, yt, cond = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`. The algorithm is as follows:
 
         1. generate new particles: :math:`x_t^{(i)} = \text{sample from }
@@ -290,14 +395,12 @@ class MarginalizedParticleFilter(Filter):
         init_particles = init_pdf.samples(n)
 
         # create all Kalman filters first
-        self.kalmans = np.empty(n, dtype=KalmanFilter) # array of references to Kalman filters
+        self.kalmans = np.empty(n, dtype=QRKalmanFilter) # array of references to Kalman filters
         gausses = np.empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
         for i in range(n):
-            gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]])) # TODO: dimension and initial covariance
-            self.kalmans[i] = KalmanFilter(A=np.array([[1.]]), B=np.empty((1,0)),
-                                           C=np.array([[1.]]), D=np.empty((1,0)),
-                                           Q=np.array([[123.]]), R=np.array([[123.]]), # set to b_t in each step
-                                           state_pdf=gausses[i])
+            # TODO: dimension and initial covariance
+            gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]]))
+            self.kalmans[i] = QRKalmanFilter(A=np.array([[1.]]), C=np.array([[1.]]), state_pdf=gausses[i])
         # construct apost pdf. Important: reference to ith GaussPdf is shared between ith Kalman
         # filter's state_pdf and ith memp't gauss
         self.memp = MarginalizedEmpPdf(gausses, init_particles[:,a_shape:])
@@ -309,7 +412,7 @@ class MarginalizedParticleFilter(Filter):
                   self.memp.gausses[i], self.memp.particles[i], self.kalmans[i].S)
         return ret[:-1]  # trim the last newline
 
-    def bayes(self, yt, ut = None):
+    def bayes(self, yt, cond = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`. Uses following algorithm:
 
         1. generate new b parts of particles: :math:`b_t^{(i)} = \text{sample from }
@@ -326,14 +429,10 @@ class MarginalizedParticleFilter(Filter):
         for i in range(self.kalmans.shape[0]):
             # generate new b_t
             self.memp.particles[i] = self.p_bt_btp.sample(self.memp.particles[i])
-
-            # assign b_t to kalman filter
             kalman = self.kalmans[i]
-            kalman.Q[0,0] = self.memp.particles[i,0]
-            kalman.R[0,0] = self.memp.particles[i,0]
-
-            kalman.bayes(yt)
-
+            # QRKalmanFilter interprets condition as (diagonal elements of) process and observation
+            # noise covariance matrix. The next line therefore assigns b_t into kalman filter:
+            kalman.bayes(yt, self.memp.particles[i])
             self.memp.weights[i] *= exp(kalman.evidence_log(yt))
 
         # make sure that weights are normalised
