@@ -18,8 +18,6 @@ import wrappers._numpy as np
 from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
-DEBUG = False
-
 class Filter(object):
     """Abstract prototype of a bayesian filter."""
 
@@ -325,9 +323,6 @@ class MarginalizedParticleFilter(Filter):
         5. normalise weights
         6. resample particles
         """
-        if DEBUG:
-            print "MPF particles before bayes():"
-            print self
         for i in range(self.kalmans.shape[0]):
             # generate new b_t
             self.memp.particles[i] = self.p_bt_btp.sample(self.memp.particles[i])
@@ -349,12 +344,6 @@ class MarginalizedParticleFilter(Filter):
 
     def _resample(self):
         indices = self.memp.get_resample_indices()
-
-        if DEBUG:
-            print "MPF particles after bayes() before resampling:"
-            print self
-            print "resample indices of new particles:", indices
-
         self.kalmans = self.kalmans[indices]  # resample kalman filters (makes references, not hard copies)
         self.memp.particles = self.memp.particles[indices]  # resample particles
         for i in range(self.kalmans.shape[0]):
