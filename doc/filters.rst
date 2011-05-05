@@ -10,10 +10,18 @@ Filter prototype
 
 .. autoclass:: Filter
 
-Kalman Filter
-=============
+Kalman Filter Family
+====================
 
 .. autoclass:: KalmanFilter
+
+   .. automethod:: __init__
+
+.. autoclass:: ControlKalmanFilter
+
+   .. automethod:: __init__
+
+.. autoclass:: QRKalmanFilter
 
    .. automethod:: __init__
 
