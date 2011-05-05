@@ -2,7 +2,9 @@
 #cython: boundscheck=False
 #cython: wraparound=False
 
-cpdef double f(double x):
+from cython.parallel cimport prange
+
+cpdef double f(double x) nogil:
 	return x*x
 
 cpdef integrate(a, b, N):
@@ -41,7 +43,7 @@ cpdef double integrate_omp(double a, double b, int N) except 0:
 		print "dx == 0!"
 		return 0
 
-	for i in xrange(N):
+	for i in prange(N, nogil=True, schedule=guided):
 		a = (i+1/2)*dx
 		s += f(a)*dx
 	return s

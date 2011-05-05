@@ -7,15 +7,15 @@ import time
 
 # Edit parameters here:
 
-params = 0.0, 3.0, 1*10**8 # from, to, N (number of steps)
+params = 0.0, 3.0, 3*10**8 # from, to, N (number of steps)
 
 # Comment/Uncomment individual tests here>
 
 tests = [
 	("cython_typed_openmp", c.integrate_omp),
 	("cython_typed", c.integrate_typed),
-#	("cython", c.integrate),
-#	("python", p.integrate),
+	("cython", c.integrate),
+	("python", p.integrate),
 ]
 
 
