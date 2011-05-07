@@ -28,7 +28,6 @@
 \setlength\evensidemargin{(\paperwidth-\textwidth)/2 - 1in}
 \setlength\topmargin{(\paperheight-\textheight-\headheight-\headsep-\footskip)/2 - 1in}
 
-% TODO: je toto potreba?
 %\parindent=0pt % odsazení 1. řádku odstavce
 \parskip=7pt   % mezera mezi odstavci
 
@@ -38,8 +37,9 @@
 	\hypersetup{colorlinks=true} % colour links instead of borders
 \fi
 
-\newcommand{\pdf}{probability density function }
-\newcommand{\pdfs}{probability density functions }
+\newcommand{\pdf}{probability density function}
+\newcommand{\pdfs}{probability density functions}
+\newcommand{\supp}{\operatorname{supp}}
 
 \begin{document}
 
@@ -83,7 +83,7 @@ Throughout this text, following notation is used
 
 \chapter{Basics of Recursive Bayesian Estimation}
 
-In following sections the problem of recursive Bayesian estimation is stated and its anylitical
+In following sections the problem of recursive Bayesian estimation is stated and its analytical
 solution is derived. Later on, due to practical intractability of the solution in its general form,
 a few methods that either simplify the problem or approximate the solution are shown.
 
@@ -118,20 +118,23 @@ moments \(t-1\) and \(t\) are needed to estimate \(x_t\). However, this does not
 derivation of the solution, where the notation of whole batch of observations \(y_{1:t}\) is used.}
 Bayesian estimation is to give an estimate of the state \(x_t\) given the
 observations \(y_{1:t}\) provided the knowledge of the functions \(f_t\) and \(h_t\).
-More formally, the goal is to find the \pdf \(p(x_t | y_{1:t})\).
+More formally, the goal is to find the probability density function\footnote{for the purpose of this % \pdf not used here intentionally
+text, {\pdf} \(p\) is generally multivariate non-negative function \(\mathbb{R}^n \rightarrow
+\mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n)  \; \mathrm{d} x_1 x_2 \dots x_n = 1\)}
+\(p(x_t | y_{1:t})\).
 Theoretical solution to this problem is known and is presented in next section.
 
 \section{Theoretical solution}
 
-At first, we observe that \pdf \(p(x_t|x_{t-1})\) can be derived from
+At first, we observe that {\pdf} \(p(x_t|x_{t-1})\) can be derived from the process model
 \eqref{eq:DynSysFt} (given the distribution of \(v_k\)) and that \(p(y_t|x_t)\) can be derived from
-\eqref{eq:DynSysHt} respectively. (given the distribution of \(w_k\))
+the observation model \eqref{eq:DynSysHt} respectively. (given the distribution of \(w_k\))
 
 Because recursive solution is requested, suppose that \(p(x_{t-1}|y_{1:t-1})\) and
-\(p(x_0)\)\footnote{known as the initial \pdf of the state vector} are known in order to be
-able to make the transition \(t-1 \; \rightarrow \; t\).
+\(p(x_0)\) are known\footnote{\(p(x_0)\) is known as the initial {\pdf} of the state vector} in
+order to be able to make the transition \(t-1 \; \rightarrow \; t\).
 
-In the first stage called \emph{prediction}, \emph{a priori} \pdf
+In the first stage that can be called \emph{prediction}, \emph{a priori} {\pdf}
 \(p(x_t | y_{1:t-1})\) is calculated without knowledge of \(y_t\). We begin the derivation by
 performing the reverse of the marginalization over \(x_{k-1}\).
 
@@ -139,39 +142,40 @@ performing the reverse of the marginalization over \(x_{k-1}\).
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t, x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
 \end{equation*}
 
-Using chain rule for \pdfs, the element of integration can be splitted.
+Using chain rule for {\pdfs}, the element of integration can be split.
 
 \begin{equation*}
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
 \end{equation*}
 
-But \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\) in accordance with the process model
-\eqref{eq:DynSysFt} (TODO: Am I right?), leaving us with the result \eqref{eq:APrioriPdf}.
+With an assumption that the modelled dynamic system \eqref{eq:DynSysFt} possesses
+\emph{Markov Property}, \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\).~\cite{AruMasGor:02}
+This leaves us with the result \eqref{eq:APrioriPdf}.
 
 \begin{equation} \label{eq:APrioriPdf}
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
 \end{equation}
 
-As we can see, a priori \pdf only depends on previously known functions and therefore can be
+As we can see, a priori {\pdf} only depends on previously known functions and therefore can be
 calculated.
 
-We continue with the second stage called \emph{update}, where new observation \(y_t\) is taken into
-account and \emph{a posteriori} \pdf \(p(x_t | y_{1:t})\) is calculated. Bayes' theorem can be used
-to derive a posteriori \pdf \eqref{eq:APosterioriPdfRaw}.
+We continue with the second stage that could be named \emph{update}, where new observation \(y_t\) is taken into
+account and \emph{a posteriori} {\pdf} \(p(x_t | y_{1:t})\) is calculated. Bayes' theorem can be used
+to derive a posteriori {\pdf} \eqref{eq:APosterioriPdfRaw}.
 
 \begin{equation} \label{eq:APosterioriPdfRaw}
 	p(x_t | y_{1:t}) = \frac{p(y_t | x_t, y_{1:t-1}) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})}
 \end{equation}
 
-According to the observation model \eqref{eq:DynSysHt}, \(y_t\) only depends on \(x_t\) (so that
-\(p(y_t | x_t, y_{1:t-1}) = p(y_t | x_t)\)) and aposteriori \pdf can be further simplified into
-\eqref{eq:APosterioriPdf}. (TODO: Am I right?)
+According to the observation model \eqref{eq:DynSysHt} and assuming Markov property, \(y_t\) only
+depends on \(x_t\). That is \(p(y_t | x_t, y_{1:t-1}) = p(y_t | x_t)\). Therefore a posteriori
+{\pdf} can be further simplified into \eqref{eq:APosterioriPdf}.
 
 \begin{equation} \label{eq:APosterioriPdf}
 	p(x_t | y_{1:t}) = \frac{p(y_t | x_t) p(x_t | y_{1:t-1})}{p(y_t | y_{1:t-1})}
 \end{equation}
 
-While both \pdfs in the numerator of \eqref{eq:APosterioriPdf} are already known, \(p(y_t|y_{1:t-1})\)
+While both {\pdfs} in the numerator of \eqref{eq:APosterioriPdf} are already known, \(p(y_t|y_{1:t-1})\)
 found in the denominator can be calculated using the formula \eqref{eq:NormConstant}, where
 marginalization over \(x_t\) is preformed.
 
@@ -179,25 +183,89 @@ marginalization over \(x_t\) is preformed.
 	p(y_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(y_t | x_t) p(x_t | y_{1:t-1}) \; \mathrm{d} x_{t}
 \end{equation}
 
-Computing \eqref{eq:NormConstant} isn't however strictily needed as it does not depend on \(x_t\) and
+Computing \eqref{eq:NormConstant} isn't however strictly needed as it does not depend on \(x_t\) and
 serves as a normalising constant in \eqref{eq:APosterioriPdf}. Depending on use-case the normalising
 constant may not be needed at all or may be computed alternatively using the fact that \(p(x_t | y_{1:y})\)
 integrates to \(1\).
 
-We have shown that so called \emph{optimal Bayesian solution} can be easily analytically inferred
-using only \emph{chain rule for \pdfs}, \emph{marginalization} and \emph{Bayes' theorem}. (equations
-\eqref{eq:APrioriPdf}, \eqref{eq:APosterioriPdf} and \eqref{eq:NormConstant} forming the main steps of the
-solution) On the other hand, using this
-method directly in practice proves difficult because at least one multidimensional integration has
-to be performed (in \eqref{eq:APrioriPdf}), which is (in its general form) hardly tractable for
-greater than small state vector dimensions.
+We have shown that so called \emph{optimal Bayesian solution}\cite{AruMasGor:02} can be easily
+analytically inferred using only \emph{chain rule for {\pdfs}}, \emph{marginalization} and
+\emph{Bayes' theorem}. (equations \eqref{eq:APrioriPdf}, \eqref{eq:APosterioriPdf} and
+\eqref{eq:NormConstant} forming the main steps of the solution) On the other hand, using this
+method directly in practice proves difficult because at least one parametric multidimensional
+integration has to be performed (in \eqref{eq:APrioriPdf}), which is (in its general form) hardly
+tractable for greater than small state vector dimensions.
 
-This is a motivation for various simplicifations ans approximations among which we have chosen
+This is a motivation for various simplifications and approximations among which we have chosen
 Kalman filter described in the next section and particle filter family described later.
 
-MAIN SOURCE: \cite{AruMasGor:02} TODO: how to cite?
-
 \section{Kalman Filter}
+
+Kalman filter\footnote{first presented by Rudolf Emil Kalman in 1960} poses additional set of strong
+assumptions on modelled dynamic system, but greatly
+simplifies optimal Bayesian solution \eqref{eq:APrioriPdf}, \eqref{eq:APosterioriPdf} into a
+sequence of algebraic operations with matrices. On the other hand, when these requirements can be
+fulfilled, there is no better estimator in Bayesian point of view because Kalman filter computes
+\(p(x_t | y_{1:t})\) \emph{exactly} (in theory).
+
+Assumptions additionally posed on system by Kalman filter are: % TODO: I don't want space between this and enumeration!
+\begin{enumerate}
+	\item \(f_t\) in the process model \eqref{eq:DynSysFt} is a linear function of \(x_t\) and
+	\(v_t\).
+	\item \(v_t \sim \mathcal{N}(0, Q_t)\) meaning that process noise \(v_t\) is normally
+	distributed\footnote{let \(\mathcal{N}(\mu, \Sigma)\) denote multivariate Gaussian {\pdf} with mean
+	vector \(\mu\) and covariance matrix \(\Sigma\).}
+	with zero mean\footnote{zero mean assumption is not strictly needed, it is however common in
+	many implementations.} and with known covariance matrix \(Q_t\).
+	\item \(h_t\) in the observation model \eqref{eq:DynSysHt} is a linear function of \(x_t\) and
+	\(w_t\).
+	\item \(w_t \sim \mathcal{N}(0, R_t)\) meaning that observation noise \(w_t\) is normally distributed
+	with zero mean and with known covariance matrix \(R_t\).
+	\item both initial state {\pdf} is Gaussian.
+\end{enumerate}
+
+It can be proved that if above assumptions hold, \(p(x_t|y_{1:t})\) is Gaussian for all
+\(t > 0\).~\cite{AruMasGor:02} Furthermore, given assumptions 1. and 2. the process model
+\eqref{eq:DynSysFt} can be reformulated as \eqref{eq:LinSysAt}, where \(A_t\) is real-valued matrix
+that represents \(f_t\).
+Using the same idea and assumptions 3. and 4. the observation model \eqref{eq:DynSysHt} can be
+expressed as \eqref{eq:LinSysCt}, \(C_t\) being real-valued matrix representing \(h_t\). Another
+common requirement used below in algorithm description is that \(v_t\) and \(w_t\) are
+stochastically independent.
+\begin{align}
+	x_t &= A_t x_{t-1} + \hat{v}_{t-1} \label{eq:LinSysAt} \\
+	y_t &= C_t x_t + \hat{w}_t \label{eq:LinSysCt}
+\end{align}
+
+At this point we can describe the algorithm of Kalman filter. As stated above, a posteriori {\pdf}
+is Gaussian and thus can be parametrised by mean vector \(\mu\) and covariance matrix \(P\). Let us
+denote a posteriori mean from previous iteration by \(\mu_{t-1|t-1}\) and associated covariance by
+\(P_{t-1|t-1}\) as in \eqref{eq:KalmanPreAPost}.
+\begin{equation} \label{eq:KalmanPreAPost}
+	p(x_{t-1} | y_{1:t-1}) = \mathcal{N}(\mu_{t-1|t-1}, P_{t-1|t-1})
+\end{equation}
+
+A priori {\pdf} can then be calculated as follows:~\cite{AruMasGor:02}
+\begin{align}
+	p(x_t | y_{1:t-1}) &= \mathcal{N}(\mu_{t|t-1}, P_{t|t-1}) \label{eq:KalmanAPost} \\
+	\mu_{t|t-1} &\leftarrow A_t \mu_{t-1|t-1} \\
+	P_{t|t-1} &\leftarrow A_t P_{t-1|t-1} A_t^T + \hat{Q}_{t-1}
+\end{align}
+
+Before introducing a posteriori {\pdf} it is useful to establish another Gaussian {\pdf}
+\eqref{eq:KalmanEvidence} that is not strictly needed, but is useful because is represents
+\emph{marginal likelihood} (sometimes called \emph{evidence}) \(p(y_t|y_{1:t-1})\). % TODO: right? (even time indices?) citation for this!
+[TODO: is that right? time indices okay? have to find citation]
+\begin{align}
+	p(y_t|y_{1:t-1}) &= \mathcal{N}(\nu_{t|t-1}, S_{t|t-1}) \label{eq:KalmanEvidence} \\
+	\nu_{t|t-1} &\leftarrow C_t \mu_{t|t-1} \\
+	S_{t|t-1} &\leftarrow C_t P_{t|t-1} C_t^T + \hat{R}_t
+\end{align}
+
+Finally ..... KALMAN GAIN
+
+A POSTERIORI pdf
+
 
 \section{Particle Filter}
 
