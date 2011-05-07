@@ -163,20 +163,21 @@ class KalmanFilter(Filter):
         self._cond_preprocess(cond)  # may be overriden in subclasses
 
         # predict
-        self.P.mu = np.dot(self.A, self.P.mu)  # a priori estimate
-        self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # a priori variance
+        self.P.mu = np.dot(self.A, self.P.mu)  # a priori state mean estimate
+        self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # a priori state covariance estimate
         self._cond_predict(cond)  # may be overriden in subclasses
 
         # data update
-        self.S.mu = np.dot(self.C, self.P.mu)
-        self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R
+        self.S.mu = np.dot(self.C, self.P.mu)  # a priori observation mean estimate
+        self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R  # a priori observation covariance estimate
         self._cond_update(cond)  # may be overridden in subclasses
 
         # kalman gain
         K = np.dot(np.dot(self.P.R, self.C.T), linalg.inv(self.S.R))
 
-        self.P.mu += np.dot(K, (yt - self.S.mu))  # a posteriori estimate
-        self.P.R -= np.dot(np.dot(K, self.C), self.P.R)  # a posteriori variance
+        # update according to observation
+        self.P.mu += np.dot(K, (yt - self.S.mu))  # a posteriori state mean estimate
+        self.P.R -= np.dot(np.dot(K, self.C), self.P.R)  # a posteriori state covariance estimate
         return True
 
     def posterior(self):
