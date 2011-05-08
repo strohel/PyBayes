@@ -10,7 +10,7 @@ cimport pybayes as pb
 
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
-@cython.locals(kalman = pb.ControlKalmanFilter,
+@cython.locals(kalman = pb.KalmanFilter,
                y = np.ndarray,
                u = np.ndarray,
                Mu_py = np.ndarray,

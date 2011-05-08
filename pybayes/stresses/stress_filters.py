@@ -30,7 +30,7 @@ def run_kalman_on_mat_data(input_file, output_file, timer):
     u = d.pop('u').T
 
     gauss = pb.GaussPdf(mu0, P0)
-    kalman = pb.ControlKalmanFilter(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
+    kalman = pb.KalmanFilter(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
 
     N = y.shape[0]
     n = mu0.shape[0]
