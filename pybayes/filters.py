@@ -324,6 +324,8 @@ class MarginalizedParticleFilter(Filter):
             self.memp.particles[i] = self.p_bt_btp.sample(self.memp.particles[i])
 
             # assign b_t to kalman filter
+            # TODO: more general and correct apprach would be some kind of QRKalmanFilter that would
+            # accept b_t in condition. This is planned in future.
             kalman = self.kalmans[i]
             kalman.Q[0,0] = self.memp.particles[i,0]
             kalman.R[0,0] = self.memp.particles[i,0]
