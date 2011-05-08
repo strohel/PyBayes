@@ -139,27 +139,22 @@ class KalmanFilter(Filter):
         ret.S = deepcopy(self.S, memo)
         return ret
 
-    def bayes(self, yt, cond = None):
+    def bayes(self, yt, cond = np.empty(0)):
         if not isinstance(yt, np.ndarray):
             raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
         if yt.ndim != 1 or yt.shape[0] != self.j:
             raise ValueError("yt must have shape {0}. ({1} given)".format((self.j,), (yt.shape[0],)))
-        if self.k > 0:  # only check cond when needed
-            if not isinstance(cond, np.ndarray):
-                raise TypeError("cond must be and instance of numpy.ndarray ({0} given)".format(type(cond)))
-            if cond.ndim != 1 or cond.shape[0] != self.k:
-                raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
+        if not isinstance(cond, np.ndarray):
+            raise TypeError("cond must be and instance of numpy.ndarray ({0} given)".format(type(cond)))
+        if cond.ndim != 1 or cond.shape[0] != self.k:
+            raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
 
         # predict
-        self.P.mu = np.dot(self.A, self.P.mu)  # a priori state mean estimate
-        if self.k > 0:  # only add control portion if needed
-            self.P.mu += np.dot(self.B, cond)
+        self.P.mu = np.dot(self.A, self.P.mu) + np.dot(self.B, cond)  # a priori state mean estimate
         self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # a priori state covariance estimate
 
         # data update
-        self.S.mu = np.dot(self.C, self.P.mu)  # a priori observation mean estimate
-        if self.k > 0:  # only add control portion if needed
-            self.S.mu += np.dot(self.D, cond)
+        self.S.mu = np.dot(self.C, self.P.mu) + np.dot(self.D, cond)  # a priori observation mean estimate
         self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R  # a priori observation covariance estimate
 
         # kalman gain
