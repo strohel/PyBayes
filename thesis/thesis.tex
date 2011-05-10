@@ -248,6 +248,8 @@ A priori {\pdf} \eqref{eq:KalmanAPrior} can then be calculated as follows:~\cite
 	P_{t|t-1} &\leftarrow A_t P_{t-1|t-1} A_t^T + \hat{Q}_{t-1} \notag
 \end{align}
 
+% VS: TODO: proc \leftarrow a ne = ?
+
 Before introducing a posteriori {\pdf} it is useful to establish another Gaussian {\pdf}
 \eqref{eq:KalmanEvidence} that is not necessarily needed, but is useful because it represents
 marginal likelihood \eqref{eq:MargLikelihood}. % TODO: right? citation for this!
@@ -443,7 +445,7 @@ Profiling python/cython - how, existing support in PyBayes
 
 	\part*{\appendixname}
 
-	\includepdf[pages=-]{../doc/_build/latex/PyBayes.pdf}
+%	\includepdf[pages=-]{../doc/_build/latex/PyBayes.pdf}
 \fi
 
 \end{document}
