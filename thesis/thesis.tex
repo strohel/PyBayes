@@ -273,7 +273,7 @@ using Kalman gain \(K_t\) and observation \(y_t\).~\cite{AruMasGor:02}
 In all formulas above \(A^T\) denotes a transpose of matrix \(A\) and \(A^{-1}\) denotes inverse
 matrix to \(A\). As can be seen, formulas \eqref{eq:APrioriPdf} and \eqref{eq:APosterioriPdf} have
 been reduced to tractable algebraic operations, computing inverse matrix\footnote{it can be shown
-that \(S_{t|t-1}\) is positive definite given the rank of \(C_t\) is \(j\) from \eqref{eq:LinSysCt},
+that \(S_{t|t-1}\) is positive definite given that \(C_t\) is full-ranked,
 therefore the inverse in \eqref{eq:KalmanGain} exists} being the most costly one.
 
 It should be further noted that Kalman filter and described algorithm can be easily enhanced to
@@ -283,7 +283,7 @@ example \emph{extended Kalman filter} that relaxes the requirement of linear sys
 approximating non-linear system with Taylor series. These are out of scope of this
 text, but provide areas for subsequent consideration.
 
-On the other hand, the assumption of Gaussian a posteriori {\pdf} cannot be easily overcame and for
+On the other hand, the assumption of Gaussian a posteriori {\pdf} cannot be easily overcome and for
 systems that show out non-Gaussian distributions of state vector another approach have to be
 taken.~\cite{AruMasGor:02} One such approach can be Monte Carlo-based \emph{particle filter}
 presented in the next section.
