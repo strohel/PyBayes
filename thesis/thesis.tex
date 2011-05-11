@@ -37,9 +37,12 @@
 	\hypersetup{colorlinks=true} % colour links instead of borders
 \fi
 
+% definitions of our own commands:
 \newcommand{\pdf}{probability density function}
 \newcommand{\pdfs}{probability density functions}
 \newcommand{\supp}{\operatorname{supp}}
+\newcommand{\assign}{\leftarrow} % TODO: what symbol to use in formulas for assignment? =, := or <-?
+
 
 \begin{document}
 
@@ -244,11 +247,9 @@ denote a posteriori mean from previous iteration by \(\mu_{t-1|t-1}\) and associ
 A priori {\pdf} \eqref{eq:KalmanAPrior} can then be calculated as follows:~\cite{AruMasGor:02}
 \begin{align}
 	p(x_t | y_{1:t-1}) &= \mathcal{N}(\mu_{t|t-1}, P_{t|t-1}) \label{eq:KalmanAPrior} \\
-	\mu_{t|t-1} &\leftarrow A_t \mu_{t-1|t-1} \notag \\
-	P_{t|t-1} &\leftarrow A_t P_{t-1|t-1} A_t^T + \hat{Q}_{t-1} \notag
+	\mu_{t|t-1} &\assign A_t \mu_{t-1|t-1} \notag \\
+	P_{t|t-1} &\assign A_t P_{t-1|t-1} A_t^T + \hat{Q}_{t-1} \notag
 \end{align}
-
-% VS: TODO: proc \leftarrow a ne = ?
 
 Before introducing a posteriori {\pdf} it is useful to establish another Gaussian {\pdf}
 \eqref{eq:KalmanEvidence} that is not necessarily needed, but is useful because it represents
@@ -256,18 +257,18 @@ marginal likelihood \eqref{eq:MargLikelihood}. % TODO: right? citation for this!
 [TODO: is that right? have to find citation (\cite{Smi:10} is general, but one that shows we can compute it this way for KF would be good)]
 \begin{align}
 	p(y_t|y_{1:t-1}) &= \mathcal{N}(\nu_{t|t-1}, S_{t|t-1}) \label{eq:KalmanEvidence} \\
-	\nu_{t|t-1} &\leftarrow C_t \mu_{t|t-1} \notag \\
-	S_{t|t-1} &\leftarrow C_t P_{t|t-1} C_t^T + \hat{R}_t \notag
+	\nu_{t|t-1} &\assign C_t \mu_{t|t-1} \notag \\
+	S_{t|t-1} &\assign C_t P_{t|t-1} C_t^T + \hat{R}_t \notag
 \end{align}
 
 The update phase of Kalman filter can be performed by computing so-called \emph{Kalman gain} matrix
 \eqref{eq:KalmanGain}, a posteriori {\pdf} \eqref{eq:KalmanAPost} is then derived from a priori one
 using Kalman gain \(K_t\) and observation \(y_t\).~\cite{AruMasGor:02}
 \begin{align}
-	K_t &\leftarrow P_{t|t-1} C_t^T S_{t|t-1}^{-1} \label{eq:KalmanGain} \\[\parskip]
+	K_t &\assign P_{t|t-1} C_t^T S_{t|t-1}^{-1} \label{eq:KalmanGain} \\[\parskip]
 	p(x_t|y_{1:t}) &= \mathcal{N}(\mu_{t|t}, P_{t|t}) \label{eq:KalmanAPost} \\
-	\mu_{t|t} &\leftarrow \mu_{t|t-1} + K_t(y_t - \nu_{t|t-1}) \notag \\
-	P_{t|t} &\leftarrow P_{t|t-1} - K_t C_t P_{t|t-1} \notag
+	\mu_{t|t} &\assign \mu_{t|t-1} + K_t(y_t - \nu_{t|t-1}) \notag \\
+	P_{t|t} &\assign P_{t|t-1} - K_t C_t P_{t|t-1} \notag
 \end{align}
 
 In all formulas above \(A^T\) denotes a transpose of matrix \(A\) and \(A^{-1}\) denotes inverse
