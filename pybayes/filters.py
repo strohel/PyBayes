@@ -25,9 +25,9 @@ class Filter(object):
         """Perform approximate or exact bayes rule.
 
         :param yt: observation at time t
-        :type yt: :class:`numpy.ndarray`
+        :type yt: 1D :class:`numpy.ndarray`
         :param cond: condition at time t. Exact meaning is defined by each filter
-        :type cond: :class:`numpy.ndarray`
+        :type cond: 1D :class:`numpy.ndarray`
         :return: always returns True (see :meth:`posterior` to get aposteriori density)
         """
         raise NotImplementedError("Derived classes must implement this method")
@@ -60,10 +60,53 @@ class Filter(object):
 
 
 class KalmanFilter(Filter):
-    """Kalman filter"""
+    r"""Implementation of standard Kalman filter. **cond** in :meth:`bayes` is interpreted as
+    control (intervention) input :math:`u_t` to the system.
+
+    Kalman filter forms *optimal Bayesian solution* for the following system:
+
+    .. math::
+
+        x_t &= A_t x_{t-1} + B_t u_t + v_{t-1} \quad \quad
+            A_t \in \mathbb{R}^{n,n} \;\;
+            B_t \in \mathbb{R}^{n,k} \;\;
+            \;\; n \in \mathbb{N}
+            \;\; k \in \mathbb{N}_0 \text{ (k may be zero)}
+            \\
+        y_t &= C_t x_t + D_t u_t + w_t \quad \quad
+            C_t \in \mathbb{R}^{j,n} \;\;
+            D_t \in \mathbb{R}^{j,k} \;\;
+            j \in \mathbb{N} \;\; j \leq n
+
+    where :math:`x_t \in \mathbb{R}^n` is hidden state vector, :math:`y_t \in \mathbb{R}^j` is
+    observation vector and :math:`u_t \in \mathbb{R}^k` is control vector. :math:`v_t` is normally
+    distributed process noise with covariance matrix :math:`Q_t`, :math:`w_t` is normally
+    distributed process noise with covariance matrix :math:`R_t`. Additionally, every a posteriori
+    pdf have to be Gaussian.
+    """
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
-        """TODO: documentation"""
+        r"""Initialise Kalman filter.
+
+        :param A: process model matrix :math:`A_t` from :class:`class description <KalmanFilter>`.
+        :type A: 2D :class:`numpy.ndarray`
+        :param B: process control model matrix :math:`B_t` from :class:`class description <KalmanFilter>`.
+        :type B: 2D :class:`numpy.ndarray`
+        :param C: observation model matrix :math:`C_t` from :class:`class description <KalmanFilter>`.
+           Must be full-ranked.
+        :type C: 2D :class:`numpy.ndarray`
+        :param D: observation control model matrix :math:`D_t` from :class:`class description <KalmanFilter>`.
+        :type D: 2D :class:`numpy.ndarray`
+        :param Q: process noise covariance matrix :math:`Q_t` from :class:`class description <KalmanFilter>`.
+           Must be positive-definite.
+        :type Q: 2D :class:`numpy.ndarray`
+        :param R: observation noise covariance matrix :math:`R_t` from :class:`class description <KalmanFilter>`.
+           Must be positive-definite.
+        :type R: 2D :class:`numpy.ndarray`
+
+        >>> TODO: initialise control-less kalman
+        >>> TODO: initialise control-ful kalman
+        """
 
         # check type of pdf
         if not isinstance(state_pdf, GaussPdf):
@@ -140,6 +183,15 @@ class KalmanFilter(Filter):
         return ret
 
     def bayes(self, yt, cond = np.empty(0)):
+        """Perform exact bayes rule.
+
+        :param yt: observation at time t
+        :type yt: 1D :class:`numpy.ndarray`
+        :param cond: control (intervention) vector at time t. May be :obj:`None` if filter is
+           control-less.
+        :type cond: 1D :class:`numpy.ndarray`
+        :return: always returns True (see :meth:`~Filter.posterior` to get aposteriori density)
+        """
         if not isinstance(yt, np.ndarray):
             raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
         if yt.ndim != 1 or yt.shape[0] != self.j:
