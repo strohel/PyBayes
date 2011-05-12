@@ -56,17 +56,6 @@
 \tableofcontents
 
 
-\chapter*{Introduction} \addcontentsline{toc}{chapter}{Introduction}
-
-TODO motivatin for bayes filtration + a need for a convenient library (rapid prototyping vs. speed)
-
-applications: robotics, navigation, + tracking of toxic plume after radiation accident.
-
-Decision-making being a logical and natural ``next step'' - beyond the scope of this text.
-
-[proposed citations:\cite{ThrBurFox:05,Gus:02,HofSmi:09,HofSmiPech:09,PechHofSmi:09}]
-
-
 \chapter*{Notation} \addcontentsline{toc}{chapter}{Notation}
 
 Throughout this text, following notation is used
@@ -85,8 +74,20 @@ Throughout this text, following notation is used
 		function{\footnotemark} with mean vector \(\mu\) and covariance matrix \(\Sigma\) \\
 \end{tabular}
 
+% \footnote does not work in tabular env, - this can be worked around with this
 \footnotetext{for the purpose of this text, {\pdf} \(p\) is multivariate non-negative function
 \(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n) \; \mathrm{d} x_1 x_2 \dots x_n = 1\)}
+
+
+\chapter*{Introduction} \addcontentsline{toc}{chapter}{Introduction}
+
+TODO motivatin for bayes filtration + a need for a convenient library (rapid prototyping vs. speed)
+
+applications: robotics, navigation, + tracking of toxic plume after radiation accident.
+
+Decision-making being a logical and natural ``next step'' - beyond the scope of this text.
+
+[proposed citations:\cite{ThrBurFox:05,Gus:02,HofSmi:09,HofSmiPech:09,PechHofSmi:09}]
 
 
 \chapter{Basics of Recursive Bayesian Estimation}
