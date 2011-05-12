@@ -81,7 +81,12 @@ Throughout this text, following notation is used
 		& unless noted otherwise, \(x_t\) denotes state vector at time \(t\) and \(y_t\) denotes
 		  observation vector at time \(t\) \\
 	\(a_{i:j}\) & sequence of quantities \((a_i, a_{i+1} \dots a_{j-1}, a_j)\) \\
+	\(\mathcal{N}(\mu, \Sigma)\) & multivariate normal (Gaussian) probability density
+		function{\footnotemark} with mean vector \(\mu\) and covariance matrix \(\Sigma\) \\
 \end{tabular}
+
+\footnotetext{for the purpose of this text, {\pdf} \(p\) is multivariate non-negative function
+\(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n) \; \mathrm{d} x_1 x_2 \dots x_n = 1\)}
 
 
 \chapter{Basics of Recursive Bayesian Estimation}
@@ -119,10 +124,7 @@ moments \(t-1\) and \(t\) are needed to estimate \(x_t\). However, this does not
 derivation of the solution, where the notation of whole batch of observations \(y_{1:t}\) is used.}
 Bayesian estimation is to give an estimate of the state \(x_t\) given the
 observations \(y_{1:t}\) provided the knowledge of the functions \(f_t\) and \(h_t\).
-More formally, the goal is to find the probability density function\footnote{for the purpose of this % \pdf not used here intentionally
-text, {\pdf} \(p\) is generally multivariate non-negative function \(\mathbb{R}^n \rightarrow
-\mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n)  \; \mathrm{d} x_1 x_2 \dots x_n = 1\)}
-\(p(x_t | y_{1:t})\).
+More formally, the goal is to find the {\pdf} \(p(x_t | y_{1:t})\).
 Theoretical solution to this problem is known and is presented in next section.
 
 \section{Theoretical solution}
@@ -210,10 +212,8 @@ Assumptions additionally posed on system by Kalman filter are: % TODO: I don't w
 	\item \(f_t\) in the process model \eqref{eq:DynSysFt} is a linear function of \(x_t\) and
 	\(v_t\).
 	\item \(v_t \sim \mathcal{N}(0, Q_t)\) meaning that process noise \(v_t\) is normally
-	distributed\footnote{\(\mathcal{N}(\mu, \Sigma)\) denotes multivariate Gaussian {\pdf} with mean
-	vector \(\mu\) and covariance matrix \(\Sigma\) in this text.}
-	with zero mean\footnote{zero mean assumption is not strictly needed, it is however common in
-	many implementations.} and with known covariance matrix \(Q_t\).
+	distributed with zero mean\footnote{zero mean assumption is not strictly needed, it is however
+	common in many implementations.} and with known covariance matrix \(Q_t\).
 	\item \(h_t\) in the observation model \eqref{eq:DynSysHt} is a linear function of \(x_t\) and
 	\(w_t\).
 	\item \(w_t \sim \mathcal{N}(0, R_t)\) meaning that observation noise \(w_t\) is normally distributed
@@ -234,7 +234,10 @@ stochastically independent.
 	y_t &= C_t x_t + \hat{w}_t & C_t &\in \mathbb{R}^{j,n} \;\; j \in \mathbb{N} \;\; j \leq n \label{eq:LinSysCt}
 \end{align}
 
-TODO: explain that noises with \(\hat{\text{hat}}\) are transformed thru \(A_t\) or \(C_t\). % TODO: hatted noises
+Note that we have marked noises \(v_t\) and \(w_t\) as \(\hat{v}_t\) and \(\hat{w}_t\) when they
+are transformed through \(A_t\), respectively \(C_t\) matrix. Let also \(\hat{Q}_t\) denote the
+covariance matrix of \(\hat{v}_t\) and \(\hat{R}_t\) denote the covariance matrix of \(\hat{w}_t\)
+in further text.
 
 At this point we can describe the algorithm of Kalman filter. As stated above, a posteriori {\pdf}
 is Gaussian and thus can be parametrised by mean vector \(\mu\) and covariance matrix \(P\). Let us
