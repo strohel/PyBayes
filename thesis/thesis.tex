@@ -295,6 +295,15 @@ presented in the next section.
 
 \section{Particle Filter}
 
+Particle filter represents approximate solution of the problem of recursive Bayesian estimation,
+thus can be called \emph{sub-optimal} algorithm. On the other hand, requirements posed on modelled
+system are much weaker that those assumed by optimal methods such as Kalman filter. Simple form of
+particle filter presented in this section requires only knowledge of {\pdf} \(p(x_t|x_{t-1})\)
+representing the process model\footnote{moreover, conditional sampling from \(p(x_t|x_{t-1})\) is
+the only operation that is performed with it} and knowledge of \(p(y_t|x_t)\) representing the observation model for all \(t\).\footnote{both
+{\pdfs} are generally time-varying, their representation (parametrised by conditioning variable) is
+frequently constant in time in practical applications}
+
 \section{Marginalized Particle Filter}
 
 
