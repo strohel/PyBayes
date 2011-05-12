@@ -71,18 +71,18 @@ class KalmanFilter(Filter):
             A_t \in \mathbb{R}^{n,n} \;\;
             B_t \in \mathbb{R}^{n,k} \;\;
             \;\; n \in \mathbb{N}
-            \;\; k \in \mathbb{N}_0 \text{ (k may be zero)}
+            \;\; k \in \mathbb{N}_0 \text{ (may be zero)}
             \\
-        y_t &= C_t x_t + D_t u_t + w_t \quad \quad
+        y_t &= C_t x_t + D_t u_t + w_t \quad \quad \quad \;\;
             C_t \in \mathbb{R}^{j,n} \;\;
             D_t \in \mathbb{R}^{j,k} \;\;
             j \in \mathbb{N} \;\; j \leq n
 
     where :math:`x_t \in \mathbb{R}^n` is hidden state vector, :math:`y_t \in \mathbb{R}^j` is
     observation vector and :math:`u_t \in \mathbb{R}^k` is control vector. :math:`v_t` is normally
-    distributed process noise with covariance matrix :math:`Q_t`, :math:`w_t` is normally
-    distributed process noise with covariance matrix :math:`R_t`. Additionally, every a posteriori
-    pdf have to be Gaussian.
+    distributed zero-mean process noise with covariance matrix :math:`Q_t`, :math:`w_t` is normally
+    distributed zero-mean process noise with covariance matrix :math:`R_t`. Additionally, every a
+    posteriori pdf (and intial pdf) have to be Gaussian.
     """
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
@@ -98,14 +98,24 @@ class KalmanFilter(Filter):
         :param D: observation control model matrix :math:`D_t` from :class:`class description <KalmanFilter>`.
         :type D: 2D :class:`numpy.ndarray`
         :param Q: process noise covariance matrix :math:`Q_t` from :class:`class description <KalmanFilter>`.
-           Must be positive-definite.
+           Must be positive definite.
         :type Q: 2D :class:`numpy.ndarray`
         :param R: observation noise covariance matrix :math:`R_t` from :class:`class description <KalmanFilter>`.
-           Must be positive-definite.
+           Must be positive definite.
         :type R: 2D :class:`numpy.ndarray`
+        :param state_pdf: initial state pdf. This object is referenced and used throughout whole
+           life of KalmanFilter, so it is not safe to reuse state pdf for other purposes.
+        :type state_pdf: :class:`~pybayes.pdfs.GaussPdf`
 
-        >>> TODO: initialise control-less kalman
-        >>> TODO: initialise control-ful kalman
+        All matrices can be time-varying - you can modify or replace all above stated matrices
+        providing that you don't change their shape and all constraints still hold. On the other
+        hand, you **should not modify state_pdf** unless you really know what you are doing.
+
+        >>> # initialise control-less Kalman filter:
+        >>> kf = pb.KalmanFilter(A=np.array([[1.]]), B=np.zeros((1,0)),
+                                 C=np.array([[1.]]), D=np.zeros((1,0)),
+                                 Q=np.array([[0.7]]), R=np.array([[0.3]]),
+                                 state_pdf=pb.GaussPdf(...))
         """
 
         # check type of pdf
