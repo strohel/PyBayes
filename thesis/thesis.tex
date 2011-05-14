@@ -10,6 +10,7 @@
 \usepackage{amssymb}
 \usepackage{epsfig}
 \usepackage{graphicx}
+\usepackage{enumitem} % so that spacing for lists can be easily set, resume option etc
 \ifrelease
 	\usepackage{pdfpages}
 \fi
@@ -30,6 +31,10 @@
 
 %\parindent=0pt % odsazení 1. řádku odstavce
 \parskip=4pt   % mezera mezi odstavci
+
+% set that list should not have vertical space
+\setlist{nolistsep}
+\setlist[1]{leftmargin=\parindent} % set indentation to level 1 lists to be same as paragraph indent
 
 \ifrelease
 	\hypersetup{pdfborder={0 0 0}} % no borders around links
@@ -387,7 +392,7 @@ One technique to diminish this is based on careful choice of proposal density (a
 \cite{AruMasGor:02}) second one is to add additional \emph{resample} step to above
 algorithm:\footnote{this additional step may be performed in every iteration or just when
 \(N_{\text{eff}}\) falls below certain threshold.}
-\begin{enumerate} \addtocounter{enumi}{3} % so that enumeration starts with number 4
+\begin{enumerate}[resume] % so that enumeration starts with number 4
 	\item for each \(i \in \hat{N}\) resample \(x_t^{(i)}\) from approximate a posteriori {\pdf}
 		\(\sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)})\). Given that sampling is truly random
 		and independent this means that each particle is in average copied \(n_i\) times, where \(n_i\)
