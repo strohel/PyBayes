@@ -63,12 +63,17 @@ Throughout this text, following notation is used
 
 \begin{tabular}{l p{0.8\textwidth}}
 	\(\mathbb{N}\) & set of natural numbers \\
+	\(\mathbb{N}_0\) & set of natural numbers including zero \\
 	\(\mathbb{R}\) & set of real numbers \\
-	\(t\) & discrete time moment; \(t \in \mathbb{N}\) \\
+	\(t\) & discrete time moment; \(t \in \mathbb{N}_0\) \\
 	\(a_t\) & value of quantity \(a\) at time \(t\); \(a_t \in \mathbb{R}^n, n \in \mathbb{N}\) \\
 		& unless noted otherwise, \(x_t\) denotes state vector at time \(t\) and \(y_t\) denotes
 		  observation vector at time \(t\) \\
 	\(a_{i:j}\) & sequence of quantities \((a_i, a_{i+1} \dots a_{j-1}, a_j)\) \\
+	\(a_{t|t-1}\) & TODO \\
+	\(p(a_t)\) & TODO \\
+	\(p(a_t|b_{t'})\) & TODO \\
+	\(\delta(a)\) & TODO \\
 	\(\mathcal{N}(\mu, \Sigma)\) & multivariate normal (Gaussian) probability density
 		function{\footnotemark} with mean vector \(\mu\) and covariance matrix \(\Sigma\) \\
 \end{tabular}
@@ -134,7 +139,7 @@ At first, we observe that {\pdf} \(p(x_t|x_{t-1})\) can be derived from the proc
 the observation model \eqref{eq:DynSysHt} respectively. (given the distribution of \(w_k\))
 
 Because recursive solution is requested, suppose that \(p(x_{t-1}|y_{1:t-1})\) and
-\(p(x_0)\) are known\footnote{\(p(x_0)\) is known as the initial {\pdf} of the state vector} in
+\(p(x_0)\) are known\footnote{\(p(x_0)\) can be called initial {\pdf} of the state vector} in
 order to be able to make the transition \(t-1 \; \rightarrow \; t\).
 
 In the first stage that can be called \emph{prediction}, \emph{a priori} {\pdf}
@@ -149,8 +154,10 @@ Using chain rule for {\pdfs}, the element of integration can be split.
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
 \end{equation*}
 
-With an assumption that the modelled dynamic system \eqref{eq:DynSysFt} possesses
-\emph{Markov Property}, \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\).~\cite{AruMasGor:02}
+With an assumption that the modelled dynamic system \eqref{eq:DynSysFt} possesses \emph{Markov
+Property}\footnote{an assumption of independence that states that system state in time \(t\) only
+depends on system state in \(t-1\) (and is not affected by previous states)},
+\(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\).~\cite{AruMasGor:02}
 This leaves us with the result \eqref{eq:APrioriPdf}.
 \begin{equation} \label{eq:APrioriPdf}
 	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
@@ -218,11 +225,11 @@ Assumptions additionally posed on system by Kalman filter are: % TODO: I don't w
 	\(w_t\).
 	\item \(w_t \sim \mathcal{N}(0, R_t)\) meaning that observation noise \(w_t\) is normally distributed
 	with zero mean and with known covariance matrix \(R_t\).
-	\item both initial state {\pdf} is Gaussian.
+	\item initial state {\pdf} is Gaussian.
 \end{enumerate}
 
 It can be proved that if above assumptions hold, \(p(x_t|y_{1:t})\) is Gaussian for all
-\(t > 0\).~\cite{AruMasGor:02} Furthermore, given assumptions 1. and 2. the process model
+\(t > 0\).~\cite{Pet:81} Furthermore, given assumptions 1. and 2. the process model
 \eqref{eq:DynSysFt} can be reformulated as \eqref{eq:LinSysAt}, where \(A_t\) is real-valued matrix
 that represents \(f_t\).
 Using the same idea and assumptions 3. and 4. the observation model \eqref{eq:DynSysHt} can be
@@ -277,7 +284,7 @@ In all formulas above \(A^T\) denotes a transpose of matrix \(A\) and \(A^{-1}\)
 matrix to \(A\). As can be seen, formulas \eqref{eq:APrioriPdf} and \eqref{eq:APosterioriPdf} have
 been reduced to tractable algebraic operations, computing inverse matrix\footnote{it can be shown
 that \(S_{t|t-1}\) is positive definite given that \(C_t\) is full-ranked,
-therefore the inverse in \eqref{eq:KalmanGain} exists} being the most costly one.
+therefore the inverse in \eqref{eq:KalmanGain} exists.} being the most costly one.
 
 It should be further noted that Kalman filter and described algorithm can be easily enhanced to
 additionally cope with \emph{intervention} (or control) vector applied to the system, making it
@@ -293,17 +300,106 @@ presented in the next section.
 
 \section{Particle Filter}
 
-Particle filter represents approximate solution of the problem of recursive Bayesian estimation,
-thus can be called \emph{sub-optimal} algorithm. On the other hand, requirements posed on modelled
-system are much weaker that those assumed by optimal methods such as Kalman filter. Simple form of
-particle filter presented in this section requires only knowledge of {\pdf} \(p(x_t|x_{t-1})\)
-representing the process model\footnote{moreover, conditional sampling from \(p(x_t|x_{t-1})\) is
-the only operation that is performed with it} and knowledge of \(p(y_t|x_t)\) representing the observation model for all \(t\).\footnote{both
-{\pdfs} are generally time-varying, their representation (parametrised by conditioning variable) is
-frequently constant in time in practical applications}
+Particle filters represent approximate solution of the problem of recursive Bayesian estimation,
+thus can be considered \emph{suboptimal} methods. Underlying algorithm described below is most
+commonly named \emph{sequential importance sampling (SIS)}. The biggest advantage of particle filtering
+is that requirements posed on modelled system are much weaker than those assumed by optimal methods
+such as Kalman filter. Simple form of particle filter presented in this section (that assumes that
+modelled system has Markov property) requires only knowledge of {\pdf} \(p(x_t|x_{t-1})\)
+representing the process model and knowledge of \(p(y_t|x_t)\) representing the observation
+model.\footnote{both {\pdfs} are generally time-varying and their knowledge for all \(t\) is needed,
+but their representation (parametrised by conditioning variable) is frequently constant in time in
+practical applications.}
+
+Sequential importance sampling approximates posterior density by weighted empirical
+{\pdf} \eqref{eq:PFAPost}.
+\begin{align}
+	p(x_t | y_{1:t}) \approx \sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)}) \label{eq:PFAPost} \\
+	\forall i \in \hat{N}: \omega_i \geq 0 \quad \sum_{i=1}^N \omega_i = 1 \notag
+\end{align}
+
+In \eqref{eq:PFAPost} \(x_t^{(i)}\) denotes value of i-th \emph{particle}: possible state of the
+system at time \(t\);
+\(\omega_t^{(i)}\) signifies weight of i-th particle at time \(t\): scalar value proportional to
+expected likelihood of the system being in state in small neighbourhood of \(x_t^{(i)}\);
+\(N\) denotes total number of particles\footnote{\(N\) is assumed to be
+arbitrary but fixed positive integer for our uses. Variants of particle filter exist that use
+adaptive number of particles, these are not discussed here.}, a significant tunable parameter
+of the filter.
+
+Described particle filter is bootstrapped by sampling \(N\) random particles from initial {\pdf}
+\(p(x_0)\). Later on, transition \(t-1 \; \rightarrow \; t\) can be performed as follows:
+\begin{enumerate}
+	\item for each \(i \in \hat{N}\) compute \(x_t^{(i)}\) by random sampling from conditional {\pdf}
+		\(p(x_t|x_{t-1})\) where \(x_{t-1}^{(i)}\) substitutes \(x_{t-1}\) in condition. This step
+		can be interpreted as a simulation of possible system state developments.
+	\item for each \(i \in \hat{N}\) compute weight \(\omega_t^{(i)}\) using \eqref{eq:PFWeightUpdate}
+		by taking observation \(y_t\) into account. \(x_t\) is substituted by \(x_t^{(i)}\) in
+		condition in \eqref{eq:PFWeightUpdate}. Simulated system states are confronted with reality
+		through observation.
+		\begin{equation} \label{eq:PFWeightUpdate}
+			\omega_t^{(i)} = p(y_t | x_t) \omega_{t-1}^{(i)}
+		\end{equation}
+	\item normalise weights according to \eqref{eq:PFWeightNormalise} so that approximation of
+		a~posteriori {\pdf} integrates to one.
+		\begin{equation} \label{eq:PFWeightNormalise}
+			\omega_t^{(i)} = \frac{\omega_t^{(i)}}{\sum_{j=1}^N \omega_t^{(j)}}
+		\end{equation}
+\end{enumerate}
+
+Relative computational ease that can be seen in above algorithm description comes with
+cost: first, particle filter is in principle non-deterministic because of the random sampling in
+step~1, in other words, particle filter is essentially a Monte Carlo method; second, appropriate
+number of particles \(N\) has to be chosen --- too small \(N\) can lead to significant approximation
+error while inadequately large \(N\) can make particle filter infeasibly time-consuming. It can be
+proved that particle filter converges to true a~posteriori density with
+\(N \rightarrow \infty\), therefore the number of particles should be chosen as a~balance of accuracy and
+speed.\cite{Smi:10}
+
+Only two operations with {\pdfs} were needed: sampling from \(p(x_t|x_{t-1})\) and evaluating
+\(p(y_t | x_t)\) in known point. Sometimes sampling from \(p(x_t|x_{t-1})\) is not
+feasible\footnote{but can be replaced by evaluation in known point} and/or better results are
+expected by taking observation \(y_t\) into account during sampling (step~1). This can be
+achieved by introducing so-called \emph{proposal density} (sometimes \emph{importance density})
+\(q(x_t|x_{t-1}, y_t)\). Sampling in step~1 then uses \(q(x_t|x_{t-1}, y_t)\) instead, where \(x_{t-1}\) in
+condition is substituted by \(x_{t-1}^{(i)}\). Weight computation in step~2 have to be replaced with
+\eqref{eq:PFWeightUpdateProp} that compensates different sampling distribution (every occurrence of
+\(x_t\), \(x_{t-1}\) in mentioned formula has to be substituted by \(x_t^{(i)}\) and \(x_{t-1}^{(i)}\)
+respectively). See \cite{AruMasGor:02} for derivation of these formulas and for discussion about
+choosing adequate proposal density.
+\begin{equation} \label{eq:PFWeightUpdateProp}
+	\omega_t^{(i)} = \frac{p(y_t|x_t)p(x_t|x_{t-1})}{q(x_t|x_{t-1}, y_t)} \omega_{t-1}^{(i)}
+\end{equation}
+
+Particle filters also suffer from a phenomenon known as \emph{sample impoverishment} or
+\emph{degeneracy problem}: after a few iterations all but one particles' weight falls close to
+zero.\footnote{it has been shown that variance of particle weights continually raises as algorithm
+progresses.~\cite{AruMasGor:02}} A measurement of degeneracy can be obtained by computing an
+approximate of \emph{effective sample size} \(N_{\text{eff}}\) at given time \(t\) using
+\eqref{eq:PFNeff}.~\cite{AruMasGor:02}
+\begin{equation} \label{eq:PFNeff}
+	N_{\text{eff}} \approx \left( \sum_{i=1}^N \left( \omega_t^{(i)} \right)^2 \right)^{-1}
+\end{equation}
+
+Very small \(N_{\text{eff}}\) compared to \(N\) signifies substantial loss of ``active'' particles,
+which is certainly undesirable as it hurts accuracy while leaving computational demands unchanged.
+One technique to diminish this is based on careful choice of proposal density (as explained in
+\cite{AruMasGor:02}) second one is to add additional \emph{resample} step to above
+algorithm:\footnote{this additional step may be performed in every iteration or just when
+\(N_{\text{eff}}\) falls below certain threshold.}
+\begin{enumerate} \addtocounter{enumi}{3} % so that enumeration starts with number 4
+	\item for each \(i \in \hat{N}\) resample \(x_t^{(i)}\) from approximate a posteriori {\pdf}
+		\(\sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)})\). Given that sampling is truly random
+		and independent this means that each particle is in average copied \(n_i\) times, where \(n_i\)
+		is roughly proportional to particle weight: \(n_i \approx \omega_t^{(i)} N\).
+\end{enumerate}
+
+Step~4 therefore facilitates avoidance of low-weight particles by replacing them with more weighted
+ones.
 
 \section{Marginalized Particle Filter}
 
+TODO: MPF. If in lack of time, write short mention and merge into PF section. % TODO: MPF
 
 \chapter{Software analysis}
 
@@ -423,7 +519,7 @@ similar of marginalized particle filter? (gausses would be plotted vertically)
 
 TODO: move above Library Layout?
 
-Documenting using Sphinx, approach to documentation (mathematician-oriented), math in documentation
+Documenting PyBayes using Sphinx, approach to documentation (mathematician-oriented), math in documentation
 
 Testing - the separation of
 
