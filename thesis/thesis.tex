@@ -46,6 +46,7 @@
 \newcommand{\pdf}{probability density function}
 \newcommand{\pdfs}{probability density functions}
 \newcommand{\supp}{\operatorname{supp}}
+\newcommand{\dx}{\mathrm{d}x}
 
 
 \begin{document}
@@ -67,25 +68,28 @@ Throughout this text, following notation is used
 \bigskip
 
 \begin{tabular}{l p{0.8\textwidth}}
-	\(\mathbb{N}\) & set of natural numbers \\
+	\(\mathbb{N}\) & set of natural numbers excluding zero \\
 	\(\mathbb{N}_0\) & set of natural numbers including zero \\
+	\(\widehat{N}\) & when \(N \in \mathbb{N}\): set of numbers \(\{1, 2 \dots N-1, N\}\) \\
 	\(\mathbb{R}\) & set of real numbers \\
 	\(t\) & discrete time moment; \(t \in \mathbb{N}_0\) \\
 	\(a_t\) & value of quantity \(a\) at time \(t\); \(a_t \in \mathbb{R}^n, n \in \mathbb{N}\) \\
-		& unless noted otherwise, \(x_t\) denotes state vector at time \(t\) and \(y_t\) denotes
-		  observation vector at time \(t\) \\
-	\(a_{i:j}\) & sequence of quantities \((a_i, a_{i+1} \dots a_{j-1}, a_j)\) \\
-	\(a_{t|t-1}\) & TODO \\
-	\(p(a_t)\) & TODO \\
-	\(p(a_t|b_{t'})\) & TODO \\
-	\(\delta(a)\) & TODO \\
-	\(\mathcal{N}(\mu, \Sigma)\) & multivariate normal (Gaussian) probability density
-		function{\footnotemark} with mean vector \(\mu\) and covariance matrix \(\Sigma\) \\
+	\(a_{t|t'}\) & quantity with two indices: \(t\) and \(t'\) \\
+		& there is no implicit link between \(a_{t}\), \(a_{t|t'}\) and \(a_{t'}\) \\
+	\(a_{t:t'}\) & sequence of quantities \((a_t, a_{t+1} \dots a_{t'-1}, a_{t'})\) \\
+	\(p(a_t)\) & probability density function{\footnotemark} of quantity \(a\) at time \(t\) (unless
+		noted otherwise) \\
+	\(p(a_t|b_{t'})\) & conditional {\pdf} of quantity \(a\) at time \(t\) given value of quantity
+		\(b\) at time \(t'\) \\
+	\(\delta(a)\) & Dirac delta function; used exclusively in context of {\pdfs} to denote discrete
+		distribution within framework of continuous distributions \\
+	\(\mathcal{N}(\mu, \Sigma)\) & multivariate normal (Gaussian) {\pdf} with mean vector \(\mu\)
+		and covariance matrix \(\Sigma\) \\
 \end{tabular}
 
-% \footnote does not work in tabular env, - this can be worked around with this
+% \footnote does not work in tabular environment, - this can be worked around with this
 \footnotetext{for the purpose of this text, {\pdf} \(p\) is multivariate non-negative function
-\(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n) \; \mathrm{d} x_1 x_2 \dots x_n = 1\)}
+\(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n) \; \dx_1 \dx_2 \dots \dx_n = 1\)}
 
 
 \chapter*{Introduction} \addcontentsline{toc}{chapter}{Introduction}
@@ -151,12 +155,12 @@ In the first stage that can be called \emph{prediction}, \emph{a priori} {\pdf}
 \(p(x_t | y_{1:t-1})\) is calculated without knowledge of \(y_t\). We begin the derivation by
 performing the reverse of the marginalization over \(x_{k-1}\).
 \begin{equation*}
-	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t, x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t, x_{t-1} | y_{1:t-1}) \; \dx_{t-1}
 \end{equation*}
 
 Using chain rule for {\pdfs}, the element of integration can be split.
 \begin{equation*}
-	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}, y_{1:t-1}) p(x_{t-1} | y_{1:t-1}) \; \dx_{t-1}
 \end{equation*}
 
 With an assumption that the modelled dynamic system \eqref{eq:DynSysFt} possesses \emph{Markov
@@ -165,7 +169,7 @@ depends on system state in \(t-1\) (and is not affected by previous states)},
 \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\).~\cite{AruMasGor:02}
 This leaves us with the result \eqref{eq:APrioriPdf}.
 \begin{equation} \label{eq:APrioriPdf}
-	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \mathrm{d} x_{t-1}
+	p(x_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(x_t | x_{t-1}) p(x_{t-1} | y_{1:t-1}) \; \dx_{t-1}
 \end{equation}
 
 As we can see, a priori {\pdf} only depends on previously known functions and therefore can be
@@ -190,7 +194,7 @@ found in the denominator can be calculated using the formula \eqref{eq:MargLikel
 marginalization over \(x_t\) is preformed. Quantity \eqref{eq:MargLikelihood} can also be interpreted as
 \emph{marginal likelihood} (sometimes called \emph{evidence}) of observation.~\cite{Smi:10}
 \begin{equation} \label{eq:MargLikelihood}
-	p(y_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(y_t | x_t) p(x_t | y_{1:t-1}) \; \mathrm{d} x_{t}
+	p(y_t | y_{1:t-1}) = \int_{-\infty}^{\infty} p(y_t | x_t) p(x_t | y_{1:t-1}) \; \dx_{t}
 \end{equation}
 
 Computing \eqref{eq:MargLikelihood} isn't however strictly needed as it does not depend on \(x_t\) and
@@ -320,7 +324,7 @@ Sequential importance sampling approximates posterior density by weighted empiri
 {\pdf} \eqref{eq:PFAPost}.
 \begin{align}
 	p(x_t | y_{1:t}) \approx \sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)}) \label{eq:PFAPost} \\
-	\forall i \in \hat{N}: \omega_i \geq 0 \quad \sum_{i=1}^N \omega_i = 1 \notag
+	\forall i \in \widehat{N}: \omega_i \geq 0 \quad \sum_{i=1}^N \omega_i = 1 \notag
 \end{align}
 
 In \eqref{eq:PFAPost} \(x_t^{(i)}\) denotes value of i-th \emph{particle}: possible state of the
@@ -335,10 +339,10 @@ of the filter.
 Described particle filter is bootstrapped by sampling \(N\) random particles from initial {\pdf}
 \(p(x_0)\). Later on, transition \(t-1 \; \rightarrow \; t\) can be performed as follows:
 \begin{enumerate}
-	\item for each \(i \in \hat{N}\) compute \(x_t^{(i)}\) by random sampling from conditional {\pdf}
+	\item for each \(i \in \widehat{N}\) compute \(x_t^{(i)}\) by random sampling from conditional {\pdf}
 		\(p(x_t|x_{t-1})\) where \(x_{t-1}^{(i)}\) substitutes \(x_{t-1}\) in condition. This step
 		can be interpreted as a simulation of possible system state developments.
-	\item for each \(i \in \hat{N}\) compute weight \(\omega_t^{(i)}\) using \eqref{eq:PFWeightUpdate}
+	\item for each \(i \in \widehat{N}\) compute weight \(\omega_t^{(i)}\) using \eqref{eq:PFWeightUpdate}
 		by taking observation \(y_t\) into account. \(x_t\) is substituted by \(x_t^{(i)}\) in
 		condition in \eqref{eq:PFWeightUpdate}. Simulated system states are confronted with reality
 		through observation.
@@ -393,14 +397,14 @@ One technique to diminish this is based on careful choice of proposal density (a
 algorithm:\footnote{this additional step may be performed in every iteration or just when
 \(N_{\text{eff}}\) falls below certain threshold.}
 \begin{enumerate}[resume] % so that enumeration starts with number 4
-	\item for each \(i \in \hat{N}\) resample \(x_t^{(i)}\) from approximate a posteriori {\pdf}
+	\item for each \(i \in \widehat{N}\) resample \(x_t^{(i)}\) from approximate a posteriori {\pdf}
 		\(\sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)})\). Given that sampling is truly random
 		and independent this means that each particle is in average copied \(n_i\) times, where \(n_i\)
 		is roughly proportional to particle weight: \(n_i \approx \omega_t^{(i)} N\).
 \end{enumerate}
 
-Step~4 therefore facilitates avoidance of low-weight particles by replacing them with more weighted
-ones.
+Step~4 therefore facilitates avoidance of particles with negligible weight by replacing them with more weighted
+ones. Such enhanced algorithm is known as \emph{sequential importance resampling (SIR)}.
 
 \section{Marginalized Particle Filter}
 
