@@ -364,9 +364,9 @@ cost: first, particle filter is in principle non-deterministic because of the ra
 step~1, in other words, particle filter is essentially a Monte Carlo method; second, appropriate
 number of particles \(N\) has to be chosen --- too small \(N\) can lead to significant approximation
 error while inadequately large \(N\) can make particle filter infeasibly time-consuming. It can be
-proved that particle filter converges to true a~posteriori density as \(N\) approaches infinity,
-therefore the number of particles should be chosen as a~balance of accuracy and
-speed.\cite{Smi:10}
+proved that particle filter converges to true a~posteriori density as \(N\) approaches
+infinity and certain other assumptions hold~\cite{CriDou:02}, therefore the number of particles
+should be chosen as a~balance of accuracy and speed.
 
 Only two operations with {\pdfs} were needed: sampling from \(p(x_t|x_{t-1})\) and evaluating
 \(p(y_t | x_t)\) in known point. Sometimes sampling from \(p(x_t|x_{t-1})\) is not
