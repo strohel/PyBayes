@@ -1,0 +1,81 @@
+\chapter{Software analysis}
+
+\section{Requirements}
+
+Ideal library for Bayesian filtering would posses following properties...:
+
+\section{Programming paradigms}
+
+Interpreted vs. Compiled
+
+Object-oriented, procedural and Functional
+
+pass-by reference vs. copy-on-write (Matlab)
+
+\section{Survey of Existing Libraries for Bayesian estimation/decision making}
+
+Brief survey of existing libraries ... not fullfilling all requirements..
+
+The need to implement a new one :-)
+
+\section{C++}
+
+BDM
+
+ - advantages of C (speed, C prevalence (many optimised libraries, BLAS, LAPACK.., OpenMP)
+
+ - disadvantages of C in our ``situation'' (steep learning curve, coplexity because of low-levelness
+   high initial barriers (need to have compiler, libraries...), inconveniently long edit/build/test
+   process)
+
+\section{Matlab}
+
+BDM (partially?)
+
+ - advantages (popularity, existing toolboxes, rapid development (high-level)
+
+ - disadv: strict copy-on-write, problematic object model (not in original design), difficulties
+           interfacing existing C (F) code
+
+\section{Python}
+
+NumPy.... parallelisation (approaches, improvements in Py 3.2) - GIL.. Py3k
+
+\section{Cython}
+
+general info etc... extension types, building, ease of interfacing C (and F) code, .pxd files,
+NumPy support
+
+[citations:\cite{BehBraSel:09,Sel:09,BehBraCitDalSelSmi:11}]
+
+\subsection{Gradual Optimisation}
+
+how can optimisaion be approached (gradually) and why this approach is superior
+
+integrate\_python\_cython example (``100x'' speedup for a special (very simple) case)
+
+\subsection{Parallelisation}
+
+integrate\_python\_cython patched with OpenMP (13x speedup in 16-core system)
+
+prange CEP
+
+\subsection{Pure Python mode}
+
+About it and why it should be used in a hypothetical bayesian python library
+
+\subsection{Limitations}
+
+2 types:
+
+	not-supported code (few cases, but bad, ongoing work)
+
+	not-optimised code (much more work needed, but not hard to fix in most cases)
+
+		- exception handling (functions returning void etc)
+
+		- limitations of pure python mode in regards to traditional .pyx files
+
+\section{Choice}
+
+python/cython was choosen ...

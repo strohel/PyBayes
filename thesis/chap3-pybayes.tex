@@ -1,0 +1,50 @@
+\chapter{The PyBayes Library}
+
+Introduction, general directions, future considerations
+
++ open development on github, open-source
+
+\section{Interpreted and Compiled}
+
+\section{Library Layout}
+
+[proposed citation: \cite{Smi:05}]
+
+\subsection{Random Variable Meta-representation}
+
+Why it is needed (ref to ProdCPdf)
+
+\subsection{Probability Density Functions}
+
+Nice UML diagrams! (better more smaller UMLs than one big) One for general pdf layut, one for
+AbstractGaussPdf family, one for AbstractEmpPdf family
+
+\subsection{Bayesian Filters}
+
+UML
+
+Nice graph of a run of a particle filter (Mirda has the plotting code)
+
+similar of marginalized particle filter? (gausses would be plotted vertically)
+
+[mention this:\cite{Smi:10}]
+
+\section{Documentation, Testing and Profiling}
+
+TODO: move above Library Layout?
+
+Documenting PyBayes using Sphinx, approach to documentation (mathematician-oriented), math in documentation
+
+Testing - the separation of
+
+- tests: test one class in isolation, quick, determinism (would be good, not achievable)
+
+- stresses: test a great portion of code at once, run longer, non-determinism..
+
+Profiling python/cython - how, existing support in PyBayes
+
+- how to correct profiling-induced overhead
+
+\section{Comparison with BDM}
+
+[skip if in time press]
