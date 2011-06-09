@@ -1,8 +1,50 @@
 \chapter{Software analysis}
 
+In this chapter general software development approaches and practices will be confronted with
+requirements posed on desired software library for Bayesian decision making. After stating these
+requirements, feasibility of various programming paradigms applied to our real-world problem is
+discussed. Continues brief survey of already available software whose conformance to requirements
+is studied. The chapter is ended by comparison of suitable features of 3 chosen programming
+languages: C++, Matlab language and Python. Emphasis is put on Python/Cython combination that was
+chosen for implementation.
+
+In whole chapter, the term \emph{user} refers to someone who uses the library in order to implement
+higher-level functionality (such as simulation of dynamic systems); user is essentially
+a~programmer.
+
 \section{Requirements}
 
-Ideal library for Bayesian filtering would posses following properties...:
+In order to formalise expectations for desired library for Bayesian estimation, following set of
+requirements was developed.
+
+Functionality: % TODO: bez indentace
+\begin{itemize}
+	\item Framework for working with potentially conditional {\pdfs} should be implemented
+		including support for basic operations such as product and chain rule. Chain rule
+		implementation should be flexible in a way that for example
+		\(p(a_t,b_t|a_{t-1},b_{t-1}) = p(a_t|a_{t-1},b_t)p(b_t|b_{t-1})\) product can be
+		represented.
+	\item Basic Bayesian filtering methods such as Kalman and particle filter have to be present,
+		plus at least one of more specialised algorithms --- marginalized particle filter or
+		non-linear Kalman filter variants.
+\end{itemize}
+
+Ease of use: % TODO: ditto
+\begin{itemize}
+	\item Up-to-date, complete and readable API\footnote{Application Programming Interface, a set of
+		rules that define how a particular library is used} documentation is required. Such
+		documentation should be well understandable by someone that already understands mathematical
+		background of particular algorithm.
+	\item Initial barriers for installing and setting up the library should be lowest possible.
+		Installing [TODO]
+	\item TODO: development productivity (hezčí slovo!)
+	\item The library should be platform-neutral and have to run on major server and workstation
+		platforms, at least on Microsoft Windows and GNU/Linux.
+	\item High level of interoperability is needed; data input/output should be straightforward as
+		well as using existing solutions for accompanying tasks such as visualising the results.
+\end{itemize}
+
+Performance:
 
 \section{Programming paradigms}
 

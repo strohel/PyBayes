@@ -16,8 +16,9 @@ PyBayes modules are laid out with following rules:
 * all modules go directly into ``pybayes/<module>.py`` (pure Python file) with
   cython augmentation file in ``pybayes/module.pxd``
 * in future, bigger independent units can form subpackages
-* ``pybayes/numpywrap.{pyx,py,pxd}`` are special, it is the only module that
-  has different implementation for cython and for python.
+* ``pybayes/wapperts/`` subpackage is special, it is the only package whose modules
+  have different implementation for cython and for python. It is accomplished by .py (Python) and
+  .pyx, .pxd (Cython) files.
 
 Tests and Stress Tests
 ======================
