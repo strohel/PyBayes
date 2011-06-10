@@ -29,22 +29,44 @@ Functionality: % TODO: bez indentace
 		non-linear Kalman filter variants.
 \end{itemize}
 
-Ease of use: % TODO: ditto
+General:
 \begin{itemize}
 	\item Up-to-date, complete and readable API\footnote{Application Programming Interface, a set of
 		rules that define how a particular library is used} documentation is required. Such
 		documentation should be well understandable by someone that already understands mathematical
 		background of particular algorithm.
-	\item Initial barriers for installing and setting up the library should be lowest possible.
-		Installing [TODO]
-	\item TODO: development productivity (hezčí slovo!)
-	\item The library should be platform-neutral and have to run on major server and workstation
-		platforms, at least on Microsoft Windows and GNU/Linux.
 	\item High level of interoperability is needed; data input/output should be straightforward as
 		well as using existing solutions for accompanying tasks such as visualising the results.
+	\item The library should be platform-neutral and have to run on major server and workstation
+		platforms, at least on Microsoft Windows and GNU/Linux.
+	\item TODO: opensource/free software / extendibility.
+\end{itemize}
+
+Usability:
+\begin{itemize}
+	\item Initial barriers for installing and setting up the library should be lowest possible.
+		For example a necessity to install third-party libraries from sources is considered
+		infeasible.
+	\item Implementation environment used for the library should allow for high programmer
+		productivity; prototyping new solutions should be quick and cheap (in terms of effort)
+		operation. This requirement effectively biases towards higher-level programming
+		languages.
 \end{itemize}
 
 Performance:
+\begin{itemize}
+	\item Computational overhead\footnote{excess computational costs not directly involved
+		in solving particular problem; for example interpreter overhead.} should be kept reasonably
+		low.
+	\item Applications built atop of the library should be able to scale well on multi-processor
+		systems. This can be achieved for example by thread-safety of critical library objects % TODO: mozna trochu blbost
+		or by explicit parallelisation provided by the library.
+\end{itemize}
+
+It is evident that some of the requirements are antagonistic, most prominent example being demand
+for \emph{low computational overhead} while still offering \emph{high programmer productivity} and
+rapid prototyping. The task of finding tradeoffs between contradictory tendencies or developing smart
+solutions that work around traditional limitations is left upon the implementations. % TODO: jde tato veta pochopit?
 
 \section{Programming paradigms}
 
