@@ -118,7 +118,7 @@ fulfilled, there is no better estimator in Bayesian point of view because Kalman
 \(p(x_t | y_{1:t})\) \emph{exactly}\footnote{not accounting for numeric errors that arise in
 practical implementations}.
 
-Assumptions additionally posed on system by Kalman filter are: % TODO: I don't want space between this and enumeration!
+Assumptions additionally posed on system by Kalman filter are:
 \begin{enumerate}
 	\item \(f_t\) in the process model \eqref{eq:DynSysFt} is a linear function of \(x_t\) and
 	\(v_t\).
@@ -219,7 +219,7 @@ Sequential importance sampling approximates posterior density by weighted empiri
 {\pdf} \eqref{eq:PFAPost}.
 \begin{align}
 	p(x_t | y_{1:t}) \approx \sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)}) \label{eq:PFAPost} \\
-	\forall i \in \widehat{N}: \omega_i \geq 0 \quad \sum_{i=1}^N \omega_i = 1 \notag
+	\forall i \in \mathbb{N} \;\; i \leq N: \omega_i \geq 0 \quad\quad \sum_{i=1}^N \omega_i = 1 \notag
 \end{align}
 
 In \eqref{eq:PFAPost} \(x_t^{(i)}\) denotes value of i-th \emph{particle}: possible state of the
@@ -232,12 +232,13 @@ adaptive number of particles, these are not discussed here.}, a significant tuna
 of the filter.
 
 Described particle filter is bootstrapped by sampling \(N\) random particles from initial {\pdf}
-\(p(x_0)\). Later on, transition \(t-1 \; \rightarrow \; t\) can be performed as follows:
+\(p(x_0)\). Let \(i \in \mathbb{N} \;\; i \leq N\), transition \(t-1 \; \rightarrow \; t\) can be
+performed as follows:
 \begin{enumerate}
-	\item for each \(i \in \widehat{N}\) compute \(x_t^{(i)}\) by random sampling from conditional {\pdf}
+	\item for each \(i\) compute \(x_t^{(i)}\) by random sampling from conditional {\pdf}
 		\(p(x_t|x_{t-1})\) where \(x_{t-1}^{(i)}\) substitutes \(x_{t-1}\) in condition. This step
 		can be interpreted as a simulation of possible system state developments.
-	\item for each \(i \in \widehat{N}\) compute weight \(\omega_t^{(i)}\) using \eqref{eq:PFWeightUpdate}
+	\item for each \(i\) compute weight \(\omega_t^{(i)}\) using \eqref{eq:PFWeightUpdate}
 		by taking observation \(y_t\) into account. \(x_t\) is substituted by \(x_t^{(i)}\) in
 		condition in \eqref{eq:PFWeightUpdate}. Simulated system states are confronted with reality
 		through observation.
@@ -292,7 +293,7 @@ One technique to diminish this is based on careful choice of proposal density (a
 algorithm:\footnote{this additional step may be performed in every iteration or just when
 \(N_{\text{eff}}\) falls below certain threshold.}
 \begin{enumerate}[resume] % so that enumeration starts with number 4
-	\item for each \(i \in \widehat{N}\) resample \(x_t^{(i)}\) from approximate a posteriori {\pdf}
+	\item for each \(i\) resample \(x_t^{(i)}\) from approximate a posteriori {\pdf}
 		\(\sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)})\). Given that sampling is truly random
 		and independent this means that each particle is in average copied \(n_i\) times, where \(n_i\)
 		is roughly proportional to particle weight: \(n_i \approx \omega_t^{(i)} N\).
