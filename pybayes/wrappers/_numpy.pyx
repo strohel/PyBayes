@@ -22,6 +22,7 @@ cdef ndarray dot(ndarray a, ndarray b):
     cdef t.CBLAS_TRANSPOSE trans_a, trans_b  # needed for matrix * matrix
     cdef ndarray ret
     cdef npy_intp shape[2]
+    cdef int lda, ldb
 
     if a is None:
         raise TypeError("a must be numpy.ndarray")
@@ -32,46 +33,53 @@ cdef ndarray dot(ndarray a, ndarray b):
     if b.descr.type_num != NPY_DOUBLE:
         raise ValueError("b is not of type double")
 
+    if a.ndim != 2:
+        raise ValueError("I can only handle matrix*vector and matrix*matrix!")
+
+    if a.shape[1] != b.shape[0]:
+        raise ValueError("a columns != b rows")
+
     if PyArray_ISCARRAY_RO(a):
         order_a = t.CblasRowMajor
         trans_a = t.CblasNoTrans
+        lda = a.shape[1]
     elif PyArray_ISFARRAY_RO(a):
         order_a = t.CblasColMajor
         trans_a = t.CblasTrans
+        lda = a.shape[0]
     else:
         raise ValueError("a must be C contiguos or F contiguos (ro)")
 
-    if a.ndim == 2:
-        if a.shape[1] != b.shape[0]:
-            raise ValueError("a columns != b rows")
-        if b.ndim == 1:  # matrix * vector
-            if not PyArray_ISCARRAY_RO(b):
-                raise ValueError("b must be C Contiguos (ro) array")
+    if b.ndim == 1:  # matrix * vector
+        if not PyArray_ISCARRAY_RO(b):
+            raise ValueError("b must be C Contiguos (ro) array")
 
-            shape[0] = a.shape[0];  # prepare shape to pass to dgemv_
-            ret = PyArray_EMPTY(1, shape, NPY_DOUBLE, 0)  # create empty array for result of right dimension
+        shape[0] = a.shape[0];  # prepare shape to pass to dgemv_
+        ret = PyArray_EMPTY(1, shape, NPY_DOUBLE, 0)  # create empty array for result of right dimension
 
+        if a.shape[0] > 0 and a.shape[1] > 0:  # otherwise BLAS may fail
             t.dgemv_(order_a, t.CblasNoTrans, a.shape[0], a.shape[1], 1.0, <double*> a.data,
-                     a.shape[1], <double*> b.data, 1, 0.0, <double*> ret.data, 1)
-            return ret
+                        a.shape[1], <double*> b.data, 1, 0.0, <double*> ret.data, 1)
+        return ret
 
-        if b.ndim == 2:  # matrix * matrix
-            if PyArray_ISCARRAY_RO(b):
-                trans_b = t.CblasNoTrans
-            elif PyArray_ISFARRAY_RO(b):
-                trans_b = t.CblasTrans
-            else:
-                raise ValueError("b must be C contiguos or F contiguos (ro)")
+    if b.ndim == 2:  # matrix * matrix
+        if PyArray_ISCARRAY_RO(b):
+            trans_b = t.CblasNoTrans
+            ldb = b.shape[1]
+        elif PyArray_ISFARRAY_RO(b):
+            trans_b = t.CblasTrans
+            ldb = b.shape[0]
+        else:
+            raise ValueError("b must be C contiguos or F contiguos (ro)")
 
-            shape[0] = a.shape[0]  # prepare shape to pass to dgemm_
-            shape[1] = b.shape[1]
-            ret = PyArray_EMPTY(2, shape, NPY_DOUBLE, 0)  # allocate retsult matrix
+        shape[0] = a.shape[0]  # prepare shape to pass to dgemm_
+        shape[1] = b.shape[1]
+        ret = PyArray_EMPTY(2, shape, NPY_DOUBLE, 0)  # allocate retsult matrix
 
-            t.dgemm_(t.CblasRowMajor, trans_a, trans_b, ret.shape[0], ret.shape[1], b.shape[0],
-                     1.0, <double*> a.data, a.shape[1], <double*> b.data, b.shape[1],
-                     0.0, <double*> ret.data, ret.shape[1])
-            return ret
-    raise ValueError("I can only handle matrix*vector and matrix*matrix!")
+        t.dgemm_(t.CblasRowMajor, trans_a, trans_b, a.shape[0], b.shape[1], a.shape[1],
+                    1.0, <double*> a.data, lda, <double*> b.data, ldb,
+                    0.0, <double*> ret.data, b.shape[1])
+        return ret
 
 # this is defined separately because of different return type
 cdef double dotvv(ndarray a, ndarray b) except? -1:
