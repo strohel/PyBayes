@@ -35,4 +35,4 @@ class TestWrappersLinalg(PbTestCase):
         """Test that we have defined slogdet the correct way for older NumPy versions"""
         arr = np.array([[1., 2.], [3., 4.]])
         res = linalg.slogdet(arr)
-        self.assertEqual(res, (-1., 0.6931471805599454))
+        self.assertApproxEqual(res, (-1., 0.6931471805599454))

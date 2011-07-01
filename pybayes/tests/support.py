@@ -17,6 +17,8 @@ class PbTestCase(ut.TestCase):
         Function for checking that different matrices from different
         computations are in some sense "equal" in the verification tests.
         """
+        X = np.asarray(X)
+        Y = np.asarray(Y)
         fuzz = 1.0e-8
 
         if np.all(abs(X - Y) < fuzz):
