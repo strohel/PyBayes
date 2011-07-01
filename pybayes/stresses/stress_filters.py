@@ -8,7 +8,6 @@ import os.path
 import time
 
 import numpy as np
-from scipy.io import loadmat, savemat
 
 import pybayes as pb
 
@@ -22,6 +21,12 @@ def stress_kalman(options, timer):
     run_kalman_on_mat_data(input_file, output_file, timer)
 
 def run_kalman_on_mat_data(input_file, output_file, timer):
+    # this should be here so that only this stress fails when scipy is not installed
+    try:
+        from scipy.io import loadmat, savemat
+    except ImportError, e:
+        raise StopIteration("Kalman filter stress needs scipy installed: " + str(e))
+
     d = loadmat(input_file, struct_as_record=True, mat_dtype=True)
 
     mu0 = np.reshape(d.pop('mu0'), (-1,))  # otherwise we would get 2D array of shape (1xN)
