@@ -57,9 +57,13 @@ def clean(options):
 
     dist = Distribution()
     dist.parse_config_files()
-    prefix = dist.get_option_dict("install")["prefix"][1]  # get prefix out of parsed options
-    install_dir = os.path.join(get_python_lib(False, False, prefix), "pybayes")  # we don't know if we should use plat_specific or no (depends on previous PyBayes install)
-    del dist
+    if "prefix" in dist.get_option_dict("install"):
+        prefix = dist.get_option_dict("install")["prefix"][1]  # get prefix out of parsed options
+        install_dir = os.path.join(get_python_lib(False, False, prefix), "pybayes")
+    else:
+        install_dir = os.path.join(get_python_lib(False, False), "pybayes")
+    # we don't know if we should use plat_specific or no (depends on previous PyBayes install) in
+    # both above get_python_lib() calls
 
     if os.path.isdir(install_dir):
         print "Recursively deleting {0}".format(install_dir)

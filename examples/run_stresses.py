@@ -98,6 +98,6 @@ for stress in stresses:
             print "  {0}".format(timer)
     count += 1
 
-print "Ran {0} stresses in {1}s. {2} of them were skipped, {2} of them failed.".format(
+print "Ran {0} stresses in {1}s. {2} of them were skipped, {3} of them failed.".format(
       count, timer.cumtime, skipped, failed)
 print
