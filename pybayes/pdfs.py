@@ -1095,7 +1095,8 @@ class GaussCPdf(CPdf):
            cpdf. Must be a subclass of :class:`AbstractGaussPdf` and the default is
            :class:`GaussPdf`. One alternative is :class:`LogNormPdf` for example.
 
-        TODO: better specification of callback functions
+        *Please note that the way of specifying callback function f and g is not yet fixed and may
+        be changed in future.*
         """
         self._shape = shape
         self._cond_shape = cond_shape

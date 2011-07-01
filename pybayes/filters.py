@@ -300,8 +300,8 @@ class ParticleFilter(Filter):
 
 
 class MarginalizedParticleFilter(Filter):
-    r"""Standard marginalized particle filter implementation. Assume that state variable :math:`x`
-    can be divided into two (TODO: independent?) parts: :math:`x_t = [a_t, b_t]`, then aposteriori
+    r"""Marginalized particle filter implementation. Assume that state variable :math:`x`
+    can be divided into two parts: :math:`x_t = [a_t, b_t]`, then aposteriori
     pdf can be denoted as:
 
     TODO: better description.
