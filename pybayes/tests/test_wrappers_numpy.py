@@ -4,7 +4,7 @@
 
 """Tests for wrappers._numpy"""
 
-from numpy import array, eye
+from numpy import array, eye, dot
 
 import pybayes.wrappers._numpy as nw
 from support import PbTestCase
@@ -28,6 +28,44 @@ class TestWrappersNumpy(PbTestCase):
         for (left, right, exp) in [(A, B, AB), (B, A, BA), (A, x, Ax), (B, x, Bx)]:
             res = nw.dot(left, right)
             self.assertApproxEqual(res, exp)
+
+    def test_dot_dimensions(self):
+        """Test that dot(a, b) works with different combinations of matrix dimensions"""
+        A = array([[1., 2.]])
+        B = array([[1., 2., 3.],
+                   [4., 5., 6.]])
+        self.assertApproxEqual(nw.dot(A, B), dot(A, B))  # second dot call is from NumPy
+        self.assertApproxEqual(nw.dot(B.T, A.T), dot(B.T, A.T))
+        with self.assertRaises(ValueError):
+            nw.dot(A.T, B.T)
+        with self.assertRaises(ValueError):
+            nw.dot(B, A)
+
+        C = array([[1., 2.],
+                   [3., 4.],
+                   [5., 6.]])
+        D = array([[1.],
+                   [2.]])
+        self.assertApproxEqual(nw.dot(C, D), dot(C, D))
+        self.assertApproxEqual(nw.dot(D.T, C.T), dot(D.T, C.T))
+        with self.assertRaises(ValueError):
+            nw.dot(C.T, D.T)
+        with self.assertRaises(ValueError):
+            nw.dot(D, C)
+
+        # test all (transposed, smaller-dimension first) combinations
+        self.assertApproxEqual(nw.dot(D.T, B), dot(D.T, B))
+        self.assertApproxEqual(nw.dot(B.T, D), dot(B.T, D))
+        self.assertApproxEqual(nw.dot(A, C.T), dot(A, C.T))
+        self.assertApproxEqual(nw.dot(C, A.T), dot(C, A.T))
+        with self.assertRaises(ValueError):
+            nw.dot(D, B.T)
+        with self.assertRaises(ValueError):
+            nw.dot(B, D.T)
+        with self.assertRaises(ValueError):
+            nw.dot(A.T, C)
+        with self.assertRaises(ValueError):
+            nw.dot(C.T, A)
 
     def test_dot_as_in_kalman(self):
         # a specific test for a problem that occured in KalmanFilter.bayes()
