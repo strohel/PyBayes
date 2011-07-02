@@ -448,7 +448,7 @@ class LogNormPdf(PbTestCase):
         x = np.zeros(1.)
         for i in range(17):
             x[0] = i - 1.
-            self.assertApproxEqual(exp(self.lognorm.eval_log(x)), exp_results[i])
+            self.assertApproxEqual(exp(self.lognorm.eval_log(x)), exp_results[i][0])
 
     def test_sample(self):
         """Test LogNormPdf.sample() mean and variance. This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
