@@ -18,8 +18,7 @@ cimport tokyo as t
 import_array()  # needed to call any PyArray functions
 
 cdef ndarray dot(ndarray a, ndarray b):
-    cdef t.CBLAS_ORDER order_a  # needed for matrix * vector
-    cdef t.CBLAS_TRANSPOSE trans_a, trans_b  # needed for matrix * matrix
+    cdef t.CBLAS_TRANSPOSE trans_a, trans_b  # stored directly, or transposed?
     cdef ndarray ret
     cdef npy_intp shape[2]
     cdef int lda, ldb
@@ -40,12 +39,12 @@ cdef ndarray dot(ndarray a, ndarray b):
         raise ValueError("a columns != b rows")
 
     if PyArray_ISCARRAY_RO(a):
-        order_a = t.CblasRowMajor
         trans_a = t.CblasNoTrans
+        ldb = a.shape[0]  # abused for number of A rows
         lda = a.shape[1]
     elif PyArray_ISFARRAY_RO(a):
-        order_a = t.CblasColMajor
         trans_a = t.CblasTrans
+        ldb = a.shape[1]  # abused for number of A.T rows
         lda = a.shape[0]
     else:
         raise ValueError("a must be C contiguos or F contiguos (ro)")
@@ -58,8 +57,8 @@ cdef ndarray dot(ndarray a, ndarray b):
         ret = PyArray_EMPTY(1, shape, NPY_DOUBLE, 0)  # create empty array for result of right dimension
 
         if a.shape[0] > 0 and a.shape[1] > 0:  # otherwise BLAS may fail
-            t.dgemv_(order_a, t.CblasNoTrans, a.shape[0], a.shape[1], 1.0, <double*> a.data,
-                        a.shape[1], <double*> b.data, 1, 0.0, <double*> ret.data, 1)
+            t.dgemv_(t.CblasRowMajor, trans_a, ldb, lda, 1.0, <double*> a.data,
+                     lda, <double*> b.data, 1, 0.0, <double*> ret.data, 1)
         return ret
 
     if b.ndim == 2:  # matrix * matrix
@@ -77,8 +76,8 @@ cdef ndarray dot(ndarray a, ndarray b):
         ret = PyArray_EMPTY(2, shape, NPY_DOUBLE, 0)  # allocate retsult matrix
 
         t.dgemm_(t.CblasRowMajor, trans_a, trans_b, a.shape[0], b.shape[1], a.shape[1],
-                    1.0, <double*> a.data, lda, <double*> b.data, ldb,
-                    0.0, <double*> ret.data, b.shape[1])
+                 1.0, <double*> a.data, lda, <double*> b.data, ldb,
+                 0.0, <double*> ret.data, b.shape[1])
         return ret
 
 # this is defined separately because of different return type

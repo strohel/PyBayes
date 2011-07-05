@@ -67,6 +67,23 @@ class TestWrappersNumpy(PbTestCase):
         with self.assertRaises(ValueError):
             nw.dot(C.T, A)
 
+    def test_dotmv_dimensions(self):
+        A = array([[1., 2.]])
+        B = array([[1., 2.],
+                   [3., 4.],
+                   [5., 6.]])
+        # while AT.T = A, its internal is dirrefent and sometimes causes problems. we try to detect them
+        AT = array([[1.],
+                    [2.]])
+        BT = array([[1., 3., 5.],
+                    [2., 4., 6.]])
+        x = array([-123., -345.])
+
+        self.assertApproxEqual(nw.dot(A, x), dot(A, x))  # second dot call is from numpy
+        self.assertApproxEqual(nw.dot(B, x), dot(B, x))
+        self.assertApproxEqual(nw.dot(AT.T, x), dot(AT.T, x))
+        self.assertApproxEqual(nw.dot(BT.T, x), dot(BT.T, x))
+
     def test_dot_as_in_kalman(self):
         # a specific test for a problem that occured in KalmanFilter.bayes()
         A = array([[1., -0.5], [1., 0.]])
