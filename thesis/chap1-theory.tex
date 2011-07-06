@@ -43,7 +43,7 @@ At first, we observe that {\pdf} \(p(x_t|x_{t-1})\) can be derived from the proc
 the observation model \eqref{eq:DynSysHt} respectively. (given the distribution of \(w_k\))
 
 Because recursive solution is requested, suppose that \(p(x_{t-1}|y_{1:t-1})\) and
-\(p(x_0)\) are known\footnote{\(p(x_0)\) can be called initial {\pdf} of the state vector} in
+\(p(x_0)\) are known\footnote{\(p(x_0)\) can be called initial {\pdf} of the state vector.} in
 order to be able to make the transition \(t-1 \; \rightarrow \; t\).
 
 In the first stage that can be called \emph{prediction}, \emph{a priori} {\pdf}
@@ -60,7 +60,7 @@ Using chain rule for {\pdfs}, the element of integration can be split.
 
 With an assumption that the modelled dynamic system \eqref{eq:DynSysFt} possesses \emph{Markov
 Property}\footnote{an assumption of independence that states that system state in time \(t\) only
-depends on system state in \(t-1\) (and is not directly affected by previous states)},
+depends on system state in \(t-1\) (and is not directly affected by previous states).},
 \(p(x_t | x_{t-1}, y_{1:t-1})\) equals \(p(x_t | x_{t-1})\).~\cite{AruMasGor:02}
 This leaves us with the result \eqref{eq:APrioriPdf}.
 \begin{equation} \label{eq:APrioriPdf}
@@ -110,13 +110,13 @@ Kalman filter described in the next section and particle filter family described
 
 \section{Kalman Filter}
 
-Kalman filter\footnote{first presented by Rudolf Emil Kalman in 1960} poses additional set of strong
+Kalman filter\footnote{first presented by Rudolf Emil Kalman in 1960.} poses additional set of strong
 assumptions on modelled dynamic system, but greatly
 simplifies optimal Bayesian solution \eqref{eq:APrioriPdf}, \eqref{eq:APosterioriPdf} into a
 sequence of algebraic operations with matrices. On the other hand, when these requirements can be
 fulfilled, there is no better estimator in Bayesian point of view because Kalman filter computes
 \(p(x_t | y_{1:t})\) \emph{exactly}\footnote{not accounting for numeric errors that arise in
-practical implementations}.
+practical implementations.}.
 
 Assumptions additionally posed on system by Kalman filter are:
 \begin{enumerate}
@@ -263,7 +263,7 @@ should be chosen as a~balance of accuracy and speed.
 
 Only two operations with {\pdfs} were needed: sampling from \(p(x_t|x_{t-1})\) and evaluating
 \(p(y_t | x_t)\) in known point. Sometimes sampling from \(p(x_t|x_{t-1})\) is not
-feasible\footnote{but can be replaced by evaluation in known point} and/or better results are
+feasible\footnote{but can be replaced by evaluation in known point.} and/or better results are
 expected by taking observation \(y_t\) into account during sampling (step~1). This can be
 achieved by introducing so-called \emph{proposal density} (sometimes \emph{importance density})
 \(q(x_t|x_{t-1}, y_t)\). Sampling in step~1 then uses \(q(x_t|x_{t-1}, y_t)\) instead, where \(x_{t-1}\) in
