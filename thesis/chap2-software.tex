@@ -14,10 +14,12 @@ a~programmer.
 
 \section{Requirements}
 
+TODO: target audience. % TODO target audience
+
 In order to formalise expectations for desired library for Bayesian estimation, following set of
 requirements was developed.
 
-Functionality: % TODO: bez indentace
+\noindent Functionality:
 \begin{itemize}
 	\item Framework for working with potentially conditional {\pdfs} should be implemented
 		including support for basic operations such as product and chain rule. Chain rule
@@ -28,20 +30,20 @@ Functionality: % TODO: bez indentace
 		plus at least one of more specialised algorithms --- marginalized particle filter or
 		non-linear Kalman filter variants.
 \end{itemize}
-
 General:
 \begin{itemize}
 	\item Up-to-date, complete and readable API\footnote{Application Programming Interface, a set of
-		rules that define how a particular library is used} documentation is required. Such
+		rules that define how a particular library is used.} documentation is required. Such
 		documentation should be well understandable by someone that already understands mathematical
 		background of particular algorithm.
 	\item High level of interoperability is needed; data input/output should be straightforward as
 		well as using existing solutions for accompanying tasks such as visualising the results.
 	\item The library should be platform-neutral and have to run on major server and workstation
 		platforms, at least on Microsoft Windows and GNU/Linux.
-	\item TODO: opensource/free software / extendibility.
+	\item The library should be Free/Open-source software as it is believed by the authors that such
+		licensing/development model results in software of greatest quality in long term. Framework
+		used by the library should make it easy to adapt and extend the library for various needs.
 \end{itemize}
-
 Usability:
 \begin{itemize}
 	\item Initial barriers for installing and setting up the library should be lowest possible.
@@ -52,29 +54,117 @@ Usability:
 		operation. This requirement effectively biases towards higher-level programming
 		languages.
 \end{itemize}
-
 Performance:
 \begin{itemize}
 	\item Computational overhead\footnote{excess computational costs not directly involved
 		in solving particular problem; for example interpreter overhead.} should be kept reasonably
 		low.
 	\item Applications built atop of the library should be able to scale well on multi-processor
-		systems. This can be achieved for example by thread-safety of critical library objects % TODO: mozna trochu blbost
+		systems. This can be achieved for example by thread-safety of critical library objects
 		or by explicit parallelisation provided by the library.
 \end{itemize}
 
 It is evident that some of the requirements are antagonistic, most prominent example being demand
 for \emph{low computational overhead} while still offering \emph{high programmer productivity} and
 rapid prototyping. The task of finding tradeoffs between contradictory tendencies or developing smart
-solutions that work around traditional limitations is left upon the implementations. % TODO: jde tato veta pochopit?
+solutions that work around traditional limitations is left upon the implementations.
 
 \section{Programming paradigms}
 
+Many programming paradigms exist and each programming language usually suggests particular paradigm,
+though many languages let programmers choose from or combine multiple paradigms. This section
+discusses how well could be three most prominent paradigms (procedural, object-oriented and
+functional) applied to software library for Bayesian estimation. Later on additional features of
+implementation environments such as interpreted vs. compiled approach or argument passing convention
+are evaluated.
+
+\begin{subsection}{Procedural paradigm}
+	Procedural paradigm is the traditional approach that appeared along first high-level programming languages.
+	Procedural programming can be viewed as a structured variant of imperative programming, where
+	programmer specifies steps (in form of orders) needed to reach desired program state.
+	Structured approach that empathises dividing the code into logical and self-contained
+	blocks (procedures, modules) is used to make code more reusable, extensible and modular.
+	Today's most notable procedural languages include C and Fortran.
+
+	Most procedural languages are associated with very low overhead (performance of programs
+	compiled using optimising compiler tend to be very close to ideal programs written in
+	assembly code); mentioned languages are also spread and well-known in scientific computing.
+
+	On the other hand, while possible, it is considered elaborate task by the author to write
+	a~modular and extensible library in these languages. Another disadvantage is that
+	usually only very basic building blocks are provided by the language --- structures like
+	lists and strings have to be supplied by the programmer or a third-party library. This only
+	adds to the fact that procedural paradigm-oriented languages are commonly not easy to learn
+	and that programmer productivity associated with these languages may be much lower compared
+	to more high-level languages.
+\end{subsection}
+
+\begin{subsection}{Object-oriented paradigm}
+	Object-oriented paradigm extends procedural approach with the idea of \emph{objects} --- structures with procedures
+	(called \emph{methods}) and variables (called \emph{attributes}) bound to them. Other
+	feature frequently offered is \emph{polymorphism} (an extension to language's type
+	system that adds the notion of \emph{subtypes} and a rule that subtype of a given type can
+	be used everywhere where given type can be used) most often facilitated through a concept of
+	\emph{classes}, common models for sets of objects with same behaviour but different
+	payload; objects are then said to be \emph{instances} of classes. Subclass \emph{inherits}
+	methods and attributes from its superclass and can \emph{override} them or add its own.
+	\emph{Encapsulation}, language mechanism to restrict access to certain object attributes and
+	methods, may be employed by the language to increase robustness by hiding implementation
+	details. In order to be considered object-oriented, statically typed languages
+	(p.~\pageref{desc:StaticTyping}) should provide \emph{dynamic dispatch}\footnote{a way of
+	calling methods where the exact method to call is resolved at runtime based on actual (dynamic)
+	object type (in contrast to static object type).}, en essential complement to polymorphism, for
+	certain or all object methods.
+
+	Notable examples of languages that support (although not exclusively) object-oriented
+	paradigm are statically typed C++, Java and dynamically typed (p.~\pageref{desc:DynamicTyping})
+	MATLAB language, Python, Smalltalk.
+
+	Object-oriented features typically have very small overhead compared to procedural code with
+	equal functionality, so additional complexity introduced is the only downside, in author's
+	opinion. We believe that these disadvantages are greatly outweighed by powerful features
+	that object-oriented languages provide (when utilised properly).
+
+	It was also determined that
+	a library for Bayesian estimation could benefit from many object-oriented techniques: {\pdf}
+	and its conditional variant could be easily modelled as classes with abstract methods that
+	would represent common operation such as evaluation in a given point or drawing random samples.
+	Classes representing particular {\pdfs} would then subclass abstract base classes and implement
+	appropriate methods while adding relevant attributes such as border points for uniform
+	distribution. This would allow for example to create generic form of particle filter
+	(p.~\pageref{sec:ParticleFilter}) that would accept any conditional {\pdf} as a parameter.
+	Bayesian filter itself can be abstracted into a class that would provide a method to compute
+	a~posteriori {\pdf} from a~priori one taking observation as a parameter.
+\end{subsection}
+
+\begin{subsection}{Functional paradigm}
+	Fundamental idea of functional programming is that
+	functions have no side effects --- their result does not change or depend on program state, only
+	on supplied parameters. A language where each function has mentioned attribute is called
+	\emph{purely functional} whereas the same adjective is applied to such functions in other
+	languages. This is often accompanied by a principle that all data are immutable (apart from
+	basic list-like container type) and that functions are so-called ``first-class citizens''
+	--- they can be passed to a function and returned. Placing a restriction of no side-effect on
+	functions allows compiler/interpreter to do various transformations: parallelisation of function
+	calls whose parameters don't depend on each other's results, skipping function calls where the
+	result is unused, caching return values for particular parameters.
+
+	Common programming languages... TODO
+\end{subsection}
+
+\begin{description}
+	\item[statically typed languages] \hfill \phantomsection \label{desc:StaticTyping} \\
+		are something.
+	\item[dynamically typed languages] \hfill \phantomsection \label{desc:DynamicTyping} \\
+		are something different
+\end{description}
+
+
 Interpreted vs. Compiled
 
-Object-oriented, procedural and Functional
-
 pass-by reference vs. copy-on-write (Matlab)
+
+memory management / garbage-collected
 
 \section{Survey of Existing Libraries for Bayesian estimation/decision making}
 
