@@ -78,89 +78,130 @@ functional) applied to software library for Bayesian estimation. Later on additi
 implementation environments such as interpreted vs. compiled approach or argument passing convention
 are evaluated.
 
-\begin{subsection}{Procedural paradigm}
-	Procedural paradigm is the traditional approach that appeared along first high-level programming languages.
-	Procedural programming can be viewed as a structured variant of imperative programming, where
-	programmer specifies steps (in form of orders) needed to reach desired program state.
-	Structured approach that empathises dividing the code into logical and self-contained
-	blocks (procedures, modules) is used to make code more reusable, extensible and modular.
-	Today's most notable procedural languages include C and Fortran.
+\subsection{Procedural paradigm}
 
-	Most procedural languages are associated with very low overhead (performance of programs
-	compiled using optimising compiler tend to be very close to ideal programs written in
-	assembly code); mentioned languages are also spread and well-known in scientific computing.
+Procedural paradigm is the traditional approach that appeared along first high-level programming languages.
+Procedural programming can be viewed as a structured variant of imperative programming, where
+programmer specifies steps (in form of orders) needed to reach desired program state.
+Structured approach that empathises dividing the code into logical and self-contained
+blocks (procedures, modules) is used to make code more reusable, extensible and modular.
+Today's most notable procedural languages include C and Fortran.
 
-	On the other hand, while possible, it is considered elaborate task by the author to write
-	a~modular and extensible library in these languages. Another disadvantage is that
-	usually only very basic building blocks are provided by the language --- structures like
-	lists and strings have to be supplied by the programmer or a third-party library. This only
-	adds to the fact that procedural paradigm-oriented languages are commonly not easy to learn
-	and that programmer productivity associated with these languages may be much lower compared
-	to more high-level languages.
-\end{subsection}
+Most procedural languages are associated with very low overhead (performance of programs
+compiled using optimising compiler tend to be very close to ideal programs written in
+assembly code); mentioned languages are also spread and well-known in scientific computing.
 
-\begin{subsection}{Object-oriented paradigm}
-	Object-oriented paradigm extends procedural approach with the idea of \emph{objects} --- structures with procedures
-	(called \emph{methods}) and variables (called \emph{attributes}) bound to them. Other
-	feature frequently offered is \emph{polymorphism} (an extension to language's type
-	system that adds the notion of \emph{subtypes} and a rule that subtype of a given type can
-	be used everywhere where given type can be used) most often facilitated through a concept of
-	\emph{classes}, common models for sets of objects with same behaviour but different
-	payload; objects are then said to be \emph{instances} of classes. Subclass \emph{inherits}
-	methods and attributes from its superclass and can \emph{override} them or add its own.
-	\emph{Encapsulation}, language mechanism to restrict access to certain object attributes and
-	methods, may be employed by the language to increase robustness by hiding implementation
-	details. In order to be considered object-oriented, statically typed languages
-	(p.~\pageref{desc:StaticTyping}) should provide \emph{dynamic dispatch}\footnote{a way of
-	calling methods where the exact method to call is resolved at runtime based on actual (dynamic)
-	object type (in contrast to static object type).}, en essential complement to polymorphism, for
-	certain or all object methods.
+On the other hand, while possible, it is considered elaborate task by the author to write
+a~modular and extensible library in these languages. Another disadvantage is that
+usually only very basic building blocks are provided by the language --- structures like
+lists and strings have to be supplied by the programmer or a third-party library. This only
+adds to the fact that procedural paradigm-oriented languages are commonly not easy to learn
+and that programmer productivity associated with these languages may be much lower compared
+to more high-level languages.
 
-	Notable examples of languages that support (although not exclusively) object-oriented
-	paradigm are statically typed C++, Java and dynamically typed (p.~\pageref{desc:DynamicTyping})
-	MATLAB language, Python, Smalltalk.
+\subsection{Object-oriented paradigm}
 
-	Object-oriented features typically have very small overhead compared to procedural code with
-	equal functionality, so additional complexity introduced is the only downside, in author's
-	opinion. We believe that these disadvantages are greatly outweighed by powerful features
-	that object-oriented languages provide (when utilised properly).
+Object-oriented paradigm extends procedural approach with the idea of \emph{objects} --- structures with procedures
+(called \emph{methods}) and variables (called \emph{attributes}) bound to them. Other
+feature frequently offered is \emph{polymorphism} (an extension to language's type
+system that adds the notion of \emph{subtypes} and a rule that subtype of a given type can
+be used everywhere where given type can be used) most often facilitated through a concept of
+\emph{classes}, common models for sets of objects with same behaviour but different
+payload; objects are then said to be \emph{instances} of classes. Subclass \emph{inherits}
+methods and attributes from its superclass and can \emph{override} them or add its own.
+\emph{Encapsulation}, language mechanism to restrict access to certain object attributes and
+methods, may be employed by the language to increase robustness by hiding implementation
+details. In order to be considered object-oriented, statically typed languages
+(p.~\pageref{desc:StaticTyping}) should provide \emph{dynamic dispatch}\footnote{a way of
+calling methods where the exact method to call is resolved at runtime based on actual (dynamic)
+object type (in contrast to static object type).}, en essential complement to polymorphism, for
+certain or all object methods.
 
-	It was also determined that
-	a library for Bayesian estimation could benefit from many object-oriented techniques: {\pdf}
-	and its conditional variant could be easily modelled as classes with abstract methods that
-	would represent common operation such as evaluation in a given point or drawing random samples.
-	Classes representing particular {\pdfs} would then subclass abstract base classes and implement
-	appropriate methods while adding relevant attributes such as border points for uniform
-	distribution. This would allow for example to create generic form of particle filter
-	(p.~\pageref{sec:ParticleFilter}) that would accept any conditional {\pdf} as a parameter.
-	Bayesian filter itself can be abstracted into a class that would provide a method to compute
-	a~posteriori {\pdf} from a~priori one taking observation as a parameter.
-\end{subsection}
+Notable examples of languages that support (although not exclusively) object-oriented
+paradigm are statically typed C++, Java and dynamically typed (p.~\pageref{desc:DynamicTyping})
+MATLAB language, Python, Smalltalk.
 
-\begin{subsection}{Functional paradigm}
-	Fundamental idea of functional programming is that
-	functions have no side effects --- their result does not change or depend on program state, only
-	on supplied parameters. A language where each function has mentioned attribute is called
-	\emph{purely functional} whereas the same adjective is applied to such functions in other
-	languages. This is often accompanied by a principle that all data are immutable (apart from
-	basic list-like container type) and that functions are so-called ``first-class citizens''
-	--- they can be passed to a function and returned. Placing a restriction of no side-effect on
-	functions allows compiler/interpreter to do various transformations: parallelisation of function
-	calls whose parameters don't depend on each other's results, skipping function calls where the
-	result is unused, caching return values for particular parameters.
+Object-oriented features typically have very small overhead compared to procedural code with
+equal functionality, so additional complexity introduced is the only downside, in author's
+opinion. We believe that these disadvantages are greatly outweighed by powerful features
+that object-oriented languages provide (when utilised properly).
 
-	Common programming languages... TODO
-\end{subsection}
+It was also determined that
+a library for Bayesian estimation could benefit from many object-oriented techniques: {\pdf}
+and its conditional variant could be easily modelled as classes with abstract methods that
+would represent common operation such as evaluation in a given point or drawing random samples.
+Classes representing particular {\pdfs} would then subclass abstract base classes and implement
+appropriate methods while adding relevant attributes such as border points for uniform
+distribution. This would allow for example to create generic form of particle filter
+(p.~\pageref{sec:ParticleFilter}) that would accept any conditional {\pdf} as a parameter.
+Bayesian filter itself can be abstracted into a class that would provide a method to compute
+a~posteriori {\pdf} from a~priori one taking observation as a parameter.
 
+\subsection{Functional paradigm}
+Fundamental idea of functional programming is that
+functions have no side effects --- their result does not change or depend on program state, only
+on supplied parameters. A language where each function has mentioned attribute is called
+\emph{purely functional} whereas the same adjective is applied to such functions in other
+languages. This is often accompanied by a principle that all data are immutable (apart from
+basic list-like container type) and that functions are so-called ``first-class citizens''
+--- they can be passed to a function and returned. Placing a restriction of no side-effect on
+functions allows compiler/interpreter to do various transformations: parallelisation of function
+calls whose parameters don't depend on each other's results, skipping function calls where the
+result is unused, caching return values for particular parameters.
+
+Among languages specially designed for functional programming are: Haskell, Lisp dialects Scheme
+and~Clojure, Erlang. Python supports many functional programming techniques\footnote{e.g. functions
+as first-class citizens, closures, list comprehensions}.
+
+While functional programming is popular subject of academic research, its use is much less
+widespread compared to procedural and object-oriented paradigms. Additionally, in the author's
+opinion, transition to functional programming requires significant change of programmer's
+mindset. Combined with the fact that syntax of mentioned functionally-oriented languages differs
+significantly from many popular procedural or object-oriented languages, we believe that it would
+be unsuitable decision for a library that aims for wide adoption.
+
+\subsection{Other programming language considerations}
+
+Apart from recently discussed general approaches to programming, we should note a few other
+attributes of languages or their implementations that significantly affect software written using
+them. The first distinction is based on type system of a language --- we may divide them into
+2~major groups:
 \begin{description}
 	\item[statically typed languages] \hfill \phantomsection \label{desc:StaticTyping} \\
-		are something.
+		bind object types to \emph{variables}; vast majority of type-checking is done at
+		compile-time.\footnote{or the time when the code is parsed for interpreted languages.} This
+		means that each variable can be assigned only values of given type (subject to
+		polymorphism); most such languages require that variable (function parameter, object
+		attribute) types are properly declared.
 	\item[dynamically typed languages] \hfill \phantomsection \label{desc:DynamicTyping} \\
-		are something different
+		bind object types to \emph{values}; vast majority of type-checking is done at runtime.
+		Programmer can assign and reassign objects of arbitrary types to given variable. Variables
+		(and object attributes) are usually declared by assignment.
 \end{description}
 
+We consider dynamically typed languages more convenient for programmers.\footnote{we're convinced
+that sensible variable reuse and lack of need to declare variable types lets the programmer focus
+more on the actual task.} This convenience however
+comes with a~cost: dynamic typing imposes inevitable computing overhead as method calls and
+attribute accesses must be resolved at runtime. Additionally, compiling a program in statically
+typed language can reveal many simple programming errors such as calling mistyped method names, even
+in unreachable code-paths; this is not the case for dynamically-typed languages and we suggest
+compensating this with more thorough test-suite.
 
-Interpreted vs. Compiled
+Another related property is interpreted vs. compiled nature; we should emphasize that this property
+refers to language \emph{implementation}, not to the language itself:\footnote{for example C language
+is commonly regarded as compiled one, several C interpreters however exist.}
+\begin{description}
+	\item[compiled implementations] \hfill \\
+		translate source code directly into machine code suitable for given target processor. Their
+		advantages are zero overhead, no requirement of installing additional software (interpreter)
+		on target machine.
+	\item[interpreted implementations] \hfill \\
+		either directly executes commands in source code or, more frequently, translates source code
+		into platform-independent \emph{intermediate representation} which is afterwards executed in
+		a \emph{virtual machine}. We may allow the translate and execute steps to be separated so that
+		Java and similar languages can be included. 
+\end{description}
 
 pass-by reference vs. copy-on-write (Matlab)
 
