@@ -169,7 +169,7 @@ them. The first distinction is based on type system of a language --- we may div
 \begin{description}
 	\item[statically typed languages] \hfill \phantomsection \label{desc:StaticTyping} \\
 		bind object types to \emph{variables}; vast majority of type-checking is done at
-		compile-time.\footnote{or the time when the code is parsed for interpreted languages.} This
+		compile-time. This
 		means that each variable can be assigned only values of given type (subject to
 		polymorphism); most such languages require that variable (function parameter, object
 		attribute) types are properly declared.
@@ -179,12 +179,12 @@ them. The first distinction is based on type system of a language --- we may div
 		(and object attributes) are usually declared by assignment.
 \end{description}
 
-We consider dynamically typed languages more convenient for programmers.\footnote{we're convinced
-that sensible variable reuse and lack of need to declare variable types lets the programmer focus
-more on the actual task.} This convenience however
+We consider dynamically typed languages more convenient for programmers --- we're convinced that the
+possibility of sensible variable reuse and lack of need to declare variable types lets the
+programmer focus more on the actual task, especially during prototyping stage. This convenience however
 comes with a~cost: dynamic typing imposes inevitable computing overhead as method calls and
-attribute accesses must be resolved at runtime. Additionally, compiling a program in statically
-typed language can reveal many simple programming errors such as calling mistyped method names, even
+attribute accesses must be resolved at runtime. Additionally, compiling a program written in statically
+typed language can reveal many simple programming errors such as calling mistyped methods, even
 in unreachable code-paths; this is not the case for dynamically-typed languages and we suggest
 compensating this with more thorough test-suite.
 
@@ -197,21 +197,29 @@ is commonly regarded as compiled one, several C interpreters however exist.}
 		advantages are zero overhead, no requirement of installing additional software (interpreter)
 		on target machine.
 	\item[interpreted implementations] \hfill \\
-		either directly executes commands in source code or, more frequently, translates source code
+		either directly execute commands in source code or, more frequently, translate source code
 		into platform-independent \emph{intermediate representation} which is afterwards executed in
 		a \emph{virtual machine}. We may allow the translate and execute steps to be separated so that
-		Java and similar languages can be included. 
+		Java and similar languages can be included. Advantages include usually shorter
+		write-run-debug cycle that speeds up development and portable distribution options.
+		Interpreted languages have been historically associated with considerable processing
+		overhead, but \emph{just-in-time compilation}\footnote{interpreter feature that translates
+		portions of bytecode into machine code at runtime.} along with \emph{adaptive
+		optimisation}\footnote{a technique to use profiling data from recent past (collected perhaps
+		when relevant portion of code was run in interpreted mode) to optimise just-in-time compiled
+		code.} present in modern interpreters can minimise or even reverse interpreter
+		overhead: Paul Buchheit have shown\footnote{\url{http://paulbuchheit.blogspot.com/2007/06/java-is-faster-than-c.html}}
+		that second and onward iterations of fractal-generating Java program were actually
+		5\%~faster than equivalent C program. We have reproduced the test with following results:
+		Java program was 10\% slower (for second and subsequent iterations) than C program and 1600\%
+		slower when just-in-time compilation was disabled. % TODO: nejaky test report a zdrojaky jako priloha?
 \end{description}
+
+TODO:
 
 pass-by reference vs. copy-on-write (Matlab)
 
 memory management / garbage-collected
-
-\section{Survey of Existing Libraries for Bayesian estimation/decision making}
-
-Brief survey of existing libraries ... not fullfilling all requirements..
-
-The need to implement a new one :-)
 
 \section{C++}
 
@@ -270,6 +278,12 @@ About it and why it should be used in a hypothetical bayesian python library
 		- exception handling (functions returning void etc)
 
 		- limitations of pure python mode in regards to traditional .pyx files
+
+\section{Survey of Existing Libraries for Bayesian estimation/decision making}
+
+Brief survey of existing libraries ... not fullfilling all requirements..
+
+The need to implement a new one :-)
 
 \section{Choice}
 
