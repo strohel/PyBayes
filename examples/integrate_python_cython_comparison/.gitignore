@@ -1,2 +1,5 @@
-/*.so
-/build/
+*.so
+build/
+*.a
+
+#/integrate_cython.c  # this file is generated, however distributed so that live cython is not needed

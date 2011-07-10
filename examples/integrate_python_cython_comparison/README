@@ -1,14 +1,11 @@
-How to compile cython module?
+How to compile cython module and C version?
 
-1. cython must be installed
-2. issue: ./setup.py build_ext -i
+1. cython must be installed, you need version >= 0.14.2 so that prange is supported
+2. compile C version:
+ $ gcc -O2 -fopenmp -c integrate_c.c -o libintegrate_c.a
+2. issue:
+ $ ./setup.py build_ext -i
 3. integrate_cython.so should appear next to integrate_cython.pyx
-
-How to enable openmp?
-
-1. issue ./setup.py build_ext -i   (to generate integrate_cython.c)
-2. patch integrate_cython.c with integrate_cython_apply_omp.patch
-3. reissue ./setup.py build_ext -i   (to regenerate integrate_cython.so from .c file)
 
 How to run?
 
