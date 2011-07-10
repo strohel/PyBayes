@@ -1,0 +1,15 @@
+How to run?
+
+1. compile java code into bytecode:
+$ javac test.java
+
+2. compile C code:
+$ gcc -O2 test.c -o test  # you may replace -O2 with different optimisation flags
+
+3. Run them:
+$ java -XX:CompileThreshold=<number> Mendelbrot  # set low threshold to force JIT compilation,
+                                                 # set very high threshold to disable JIT
+$ ./test
+
+You may want tu suppres standard error output to see only measured times:
+$ ./test 2>/dev/null
