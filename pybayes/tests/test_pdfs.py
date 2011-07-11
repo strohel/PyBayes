@@ -271,8 +271,6 @@ class TestGaussPdf(PbTestCase):
             [3, 4]
         ]))
 
-        # TODO: non positive-definite variance
-
     def test_copy(self):
         """Test that copying GaussPdf works as expected"""
         o = self.gauss  # original

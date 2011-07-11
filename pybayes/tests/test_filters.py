@@ -129,7 +129,7 @@ class testParticleFilter(PbTestCase):
         self.assertEqual(type(self.pf), pb.ParticleFilter)
 
     def test_bayes(self):
-        # TODO: this test runs, but accepts anything
+        # TODO: this test currently does little to verify that PF gives appropriate results
         np.set_printoptions(linewidth=120, precision=2, suppress=True)
         for i in range(20):
             self.pf.bayes(np.array([i], dtype=float))

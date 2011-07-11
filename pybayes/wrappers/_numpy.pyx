@@ -10,7 +10,7 @@
 
 from numpy cimport *
 # cython workaround: cannot import *
-from numpy import any, arange, array, asarray, cumsum, diag, empty, exp, ones, prod, sum, zeros
+from numpy import any, arange, array, asarray, cumsum, diag, empty, exp, eye, ones, prod, sum, zeros
 
 cimport tokyo as t
 

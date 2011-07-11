@@ -304,7 +304,7 @@ class MarginalizedParticleFilter(Filter):
     can be divided into two parts: :math:`x_t = [a_t, b_t]`, then aposteriori
     pdf can be denoted as:
 
-    TODO: better description.
+    TODO: better description of Marginalized Particle Filter class
 
     .. math::
 
@@ -351,7 +351,7 @@ class MarginalizedParticleFilter(Filter):
         self.kalmans = np.empty(n, dtype=KalmanFilter) # array of references to Kalman filters
         gausses = np.empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
         for i in range(n):
-            gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]])) # TODO: dimension and initial covariance
+            gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]]))
             self.kalmans[i] = KalmanFilter(A=np.array([[1.]]), B=np.empty((1,0)),
                                            C=np.array([[1.]]), D=np.empty((1,0)),
                                            Q=np.array([[123.]]), R=np.array([[123.]]), # set to b_t in each step

@@ -463,7 +463,7 @@ class AbstractGaussPdf(Pdf):
         that is doesn't add class variables)"""
         # we cannont use AbstractGaussPdf statically - this method may be called
         # by derived class
-        ret = type(self).__new__(type(self))  # TODO: currently slower than PY_NEW()
+        ret = type(self).__new__(type(self))  # optimisation TODO: currently slower than PY_NEW()
         ret.mu = self.mu
         ret.R = self.R
         ret.rv = self.rv
@@ -475,7 +475,7 @@ class AbstractGaussPdf(Pdf):
         that is doesn't add class variables)"""
         # we cannont use AbstractGaussPdf statically - this method may be called
         # by derived class
-        ret = type(self).__new__(type(self))  # TODO: currently slower than PY_NEW()
+        ret = type(self).__new__(type(self))  # optimisation TODO: currently slower than PY_NEW()
         ret.mu = deepcopy(self.mu, memo)
         ret.R = deepcopy(self.R, memo)
         ret.rv = deepcopy(self.rv, memo)
@@ -493,12 +493,14 @@ class GaussPdf(AbstractGaussPdf):
     def __init__(self, mean, cov, rv = None):
         r"""Initialise Gaussian pdf.
 
-        :param mean: mean value
+        :param mean: mean value; stored in **mu** attribute
         :type mean: 1D :class:`numpy.ndarray`
-        :param cov: covariance matrix
+        :param cov: covariance matrix; stored in **R** arrtibute
         :type cov: 2D :class:`numpy.ndarray`
 
-        To create standard normal distribution:
+        Covariance matrix **cov** must be *positive definite*. This is not checked during
+        initialisation; it fail or give incorrect results in :meth:`~CPdf.eval_log` or
+        :meth:`~CPdf.sample`. To create standard normal distribution:
 
         >>> # note that cov is a matrix because of the double [[ and ]]
         >>> norm = GaussPdf(np.array([0.]), np.array([[1.]]))
@@ -517,7 +519,7 @@ class GaussPdf(AbstractGaussPdf):
                              str(cov.shape) + " given")
         if np.any(cov != cov.T):
             raise ValueError("cov must be symmetric (complex covariance not supported)")
-        # TODO: covariance must be positive definite
+
         self.mu = mean
         self.R = cov
         self._set_rvs(rv, None)
@@ -1103,8 +1105,7 @@ class GaussCPdf(CPdf):
         self.f = f
         self.g = g
         if base_class is None:
-            # TODO: to be correct, np.eye would be needed
-            self.gauss = GaussPdf(np.zeros(self._shape), np.ones((self._shape, self._shape)))
+            self.gauss = GaussPdf(np.zeros(self._shape), np.eye(self._shape))
         else:
             if not issubclass(base_class, AbstractGaussPdf):
                 raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
@@ -1145,8 +1146,6 @@ class ProdCPdf(CPdf):
     r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
     Extends :class:`CPdf`.
 
-    TODO: make aggreate [cond\_]rv construction automatic and drop old constuctor.
-
     In a
     simple textbook case denoted below it isn't needed to specify random variables
     at all. In this case when no random variable associations are passed,
@@ -1173,10 +1172,14 @@ class ProdCPdf(CPdf):
     >>> p_2 = SomePdf(..., rv=RV(x_2), cond_rv=RV(y_2, y_1))
     >>> p = ProdCPdf((p_2, p_1), rv=RV(x_1, x_2), cond_rv=RV(y_1, y_2))  # order of
     >>> # pdfs is insignificant - order of rv components determines data flow
+
+    *Please note: this will change in near future in following way: it will be always required to
+    specify rvs and cond_rvs of factor pdfs (at least ones that are shared), but product rv and
+    cond_rv will be inferred automatically when not specified.*
     """
 
     def __init__(self, factors, rv = None, cond_rv = None):
-        """Construct chain rule of multiple cpdfs.
+        r"""Construct chain rule of multiple cpdfs.
 
         :param factors: sequence of densities that will form the product
         :type factors: sequence of :class:`CPdf`
