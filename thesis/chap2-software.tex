@@ -178,7 +178,6 @@ them. The first distinction is based on type system of a language --- we may div
 		Programmer can assign and reassign objects of arbitrary types to given variable. Variables
 		(and object attributes) are usually declared by assignment.
 \end{description}
-
 We consider dynamically typed languages more convenient for programmers --- we're convinced that the
 possibility of sensible variable reuse and lack of need to declare variable types lets the
 programmer focus more on the actual task, especially during prototyping stage. This convenience however
@@ -189,12 +188,14 @@ in unreachable code-paths; this is not the case for dynamically-typed languages 
 compensating this with more thorough test-suite.
 
 Another related property is interpreted vs. compiled nature; we should emphasize that this property
-refers to language \emph{implementation}, not to the language itself:\footnote{for example C language
-is commonly regarded as compiled one, several C interpreters however exist.}
+refers to language \emph{implementation}, not directly to the language itself, e.g. C language
+is commonly regarded as compiled one, several C interpreters however exist. We use the term
+``language is compiled/interpreted'' to denote that principal implementation of that language is
+compiled, respectively interpreted.
 \begin{description}
 	\item[compiled implementations] \hfill \\
 		translate source code directly into machine code suitable for given target processor. Their
-		advantages are zero overhead, no requirement of installing additional software (interpreter)
+		advantages are zero overhead, no requirement to install additional software (interpreter)
 		on target machine.
 	\item[interpreted implementations] \hfill \\
 		either directly execute commands in source code or, more frequently, translate source code
@@ -212,14 +213,64 @@ is commonly regarded as compiled one, several C interpreters however exist.}
 		that second and onward iterations of fractal-generating Java program were actually
 		5\%~faster than equivalent C program. We have reproduced the test with following results:
 		Java program was 10\% slower (for second and subsequent iterations) than C program and 1600\%
-		slower when just-in-time compilation was disabled. % TODO: nejaky test report a zdrojaky jako priloha?
+		slower when just-in-time compilation was disabled. Complete test environment along with
+		instructions how to reproduce it be found in
+		\href{http://github.com/strohel/PyBayes/tree/master/examples/benchmark_c_java}{\nolinkurl{examples/benchmark_c_java}}
+		directory in the PyBayes source code repository.
 \end{description}
+There exists a historic link between statically typed and compiled languages, respectively
+dynamically typed and interpreted languages. Java which is itself statically typed and it's major
+implementation is interpreted and Erlang's (which is dynamically typed) compiled
+HiPE\footnote{The High-Performance Erlang Project: http://www.it.uu.se/research/group/hipe/}
+implementation are some examples of languages that break the rule. We believe that this historic
+link is the source of a common misconception that interpreted languages are inherently slow. Our
+findings (see also Python/Cython/C benchmark on p. \pageref{sec:CythonPerformace}) indicate that
+the source of heavy overhead is likely to be the dynamic type system rather than overhead of modern
+just-in-time interpreters. In accordance with these findings, we may conclude that choice of language
+implementation type should rather be based on development and distribution convenience than on
+expected performance. % TODO: je tato veta dostatecne jasna?
 
-TODO:
+Each programming language may support one or more following function call conventions that determine
+how function parameters are passed:
+\begin{description}
+	\item[call-by-value convention] \hfill \\
+		ensures that caller function does not change variables passed as parameters from caller
+		scope by copying them at function call time. This provides clear semantics but incurs
+		computational and memory overhead, especially when large data structures are used as
+		parameters. As a form of optimisation, some language implementations may employ
+		copy-on-write technique so that variables are copied only when they are mutated from within
+		called function, thus saving space and time when some parameters are only read from.
+	\item[call-by-reference convention] \hfill \\
+		hands fully-privileged references to parameters to called function. These references can be
+		used to modify or assign to parameters within called function and these changes are visible
+		to caller function. This approach minimises function call overhead but may appear confusing
+		to a programmer when local variable is changed ``behind her back" unexpectedly. On the other
+		hand, call-by-reference allows for programming techniques impossible with call-by-value
+		alone (e.g. a function that swaps two values).
+	\item[call-by-object (call-by-sharing) convention] \hfill \\
+		can be viewed as a compromise between call-by-value and call-by-reference: parameters are
+		passed as references that can be used to modify referred objects (unless marked immutable),
+		but cannot be used to assign to referred objects. When an object is marked as immutable,
+		passing this object behaves like call-by-value call without copying overhead (in the calling
+		function point of view). Java and Python use call-by-object as their sole function calling
+		method\footnote{python case: \url{http://effbot.org/zone/call-by-object.htm}} and both mark
+		certain elementary types (most prominently numbers and strings) as immutable. C's
+		pointer-to-const and C++'s reference-to-const parameters can be viewed as call-by-object
+		methods where referred objects are marked as immutable in called function scope.
+\end{description}
+We suggest that a language that supports at least one of call-by-reference or call-by-object
+conventions is used for Bayesian estimation library; while call-by-value-only languages can be simpler
+to implement, they impose unnecessary restrictions on library design and cause overhead in places
+where it could be avoided.
 
-pass-by reference vs. copy-on-write (Matlab)
-
-memory management / garbage-collected
+Last discussed aspect of programming languages relates to memory management:
+\begin{description}
+	\item[garbage-collected] \hfill \\
+		provide memory management for... TODO
+	\item[non garbage-collected] \hfill \\
+		put the burden of memory management on the shoulders of programmer: she is responsible for
+		correctly reclaiming resources when they are no longer in use.
+\end{description}
 
 \section{C++}
 
@@ -278,6 +329,8 @@ About it and why it should be used in a hypothetical bayesian python library
 		- exception handling (functions returning void etc)
 
 		- limitations of pure python mode in regards to traditional .pyx files
+
+\subsection{Performance comparison with C and Python} \label{sec:CythonPerformace}
 
 \section{Survey of Existing Libraries for Bayesian estimation/decision making}
 
