@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import integrate_cython as c
+try:
+    import integrate_cython as c
+except ImportError as e:
+    print "Failed to import integrate_cython, cython tests wont be available:", e
+    c = None
 import integrate_python as p
 import time
 
@@ -11,17 +15,17 @@ params = 0.0, 3.0, 100*10**6  # from, to, N (number of steps)
 
 # Comment/Uncomment individual tests here>
 
-tests = [
-    ("c_omp", c.integrate_c_omp),
-    ("cython_typed_openmp", c.integrate_omp),
-    ("c", c.integrate_c),
-    ("cython_typed", c.integrate_typed),
-    ("cython", c.integrate),
-    ("python", p.integrate),
-]
+tests = []
+if c:
+    tests += [("c_omp", c.integrate_c_omp),
+              ("cython_typed_openmp", c.integrate_omp),
+              ("c", c.integrate_c),
+              ("cython_typed", c.integrate_typed),
+              ("cython", c.integrate)]
+tests += [("python", p.integrate)]
 
 
-# Do not edit below here
+# No need to edit edit below here
 
 times = {}
 
