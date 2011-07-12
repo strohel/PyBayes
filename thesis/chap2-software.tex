@@ -14,10 +14,9 @@ a~programmer.
 
 \section{Requirements}
 
-TODO: target audience. % TODO target audience
-
-In order to formalise expectations for desired library for Bayesian estimation, following set of
-requirements was developed.
+Our intended audience is broad scientific community interested in the field of recursive Bayesian
+estimation and decision-making. Keeping this in mind and in order to formalise expectations for
+desired library for Bayesian estimation, following set of requirements was developed.
 
 \noindent Functionality:
 \begin{itemize}
@@ -234,8 +233,8 @@ Each programming language may support one or more following function call conven
 how function parameters are passed:
 \begin{description}
 	\item[call-by-value convention] \hfill \\
-		ensures that caller function does not change variables passed as parameters from caller
-		scope by copying them at function call time. This provides clear semantics but incurs
+		ensures that called function does not change variables passed as parameters from calling
+		function by copying them at function call time. This provides clear semantics but incurs
 		computational and memory overhead, especially when large data structures are used as
 		parameters. As a form of optimisation, some language implementations may employ
 		copy-on-write technique so that variables are copied only when they are mutated from within
@@ -243,14 +242,15 @@ how function parameters are passed:
 	\item[call-by-reference convention] \hfill \\
 		hands fully-privileged references to parameters to called function. These references can be
 		used to modify or assign to parameters within called function and these changes are visible
-		to caller function. This approach minimises function call overhead but may appear confusing
+		to calling function. This approach minimises function call overhead but may appear confusing
 		to a programmer when local variable is changed ``behind her back" unexpectedly. On the other
 		hand, call-by-reference allows for programming techniques impossible with call-by-value
 		alone (e.g. a function that swaps two values).
 	\item[call-by-object (call-by-sharing) convention] \hfill \\
 		can be viewed as a compromise between call-by-value and call-by-reference: parameters are
 		passed as references that can be used to modify referred objects (unless marked immutable),
-		but cannot be used to assign to referred objects. When an object is marked as immutable,
+		but cannot be used to assign to referred objects (or this assignment is invisible to calling
+		function). When an object is marked as immutable,
 		passing this object behaves like call-by-value call without copying overhead (in the calling
 		function point of view). Java and Python use call-by-object as their sole function calling
 		method\footnote{python case: \url{http://effbot.org/zone/call-by-object.htm}} and both mark
@@ -260,17 +260,44 @@ how function parameters are passed:
 \end{description}
 We suggest that a language that supports at least one of call-by-reference or call-by-object
 conventions is used for Bayesian estimation library; while call-by-value-only languages can be simpler
-to implement, they impose unnecessary restrictions on library design and cause overhead in places
-where it could be avoided.
+to implement, we are convinced that they impose unnecessary restrictions on library design and cause
+overhead in places where it could be avoided.
 
 Last discussed aspect of programming languages relates to memory management:
 \begin{description}
-	\item[garbage-collected] \hfill \\
-		provide memory management for... TODO
-	\item[non garbage-collected] \hfill \\
-		put the burden of memory management on the shoulders of programmer: she is responsible for
-		correctly reclaiming resources when they are no longer in use.
+	\item[garbage-collected languages] \hfill \\
+		provide memory management in the language itself. This fact considerably simplifies
+		programming as programmer doesn't need to reclaim unused memory resources herself. Another advantage
+		is that automatic memory management prevents most occurrences of several programming errors:
+		memory leaks,\footnote{an error condition when a region of memory is no longer used, but not
+		reclaimed.} dangling pointers\footnote{a pointer to an object that has been already destroyed;
+		such pointers are highly error-prone.} and double-frees.\footnote{an error condition where a
+		single region of memory is reclaimed twice; memory corruption frequently occurs in this
+		case.} Two major
+		approaches to garbage collection exist and both incur runtime computational or memory
+		overhead. \emph{Tracing garbage collector} repeatedly scans program heap\footnote{an area of
+		memory used for dynamic memory allocation.} memory for objects
+		with no references to them, then reclaims memory used by these objects. Program performance
+		may be substantially impacted while tracings garbage collector performs its scan; furthermore
+		the moment when garbage collector fires may be unpredictable. \emph{Reference counting}
+		memory management works by embedding an attribute, \emph{reference count}, to each object
+		that could be allocated on heap and then using this attribute to track number of references
+		to given object. When reference count falls to zero, the object can be destroyed. Reference
+		counting adds small memory overhead per each object allocated and potentially significant
+		computational overhead as reference counts have to be kept up-to-date. However, techniques
+		exist that minimise this overhead, for example those mentioned in~\cite{LevPet:06}.
+	\item[non garbage-collected languages] \hfill \\
+		put the burden of memory management on shoulders of the programmer: she is responsible for
+		correctly reclaiming resources when they are no longer in use. The advantages are clear:
+		no overhead due to memory management, probably also smaller complexity of language
+		implementation. However, as mentioned earlier, languages without automatic memory management
+		make certain classes of programmer errors more likely to occur.
 \end{description}
+In our view, convenience of garbage-collected languages outweighs overhead they bring for a project
+like a library for Bayesian estimation targeting wide adoption. We also believe that automatic
+memory management can simplify library design and its usage as there is no need to specify who is
+responsible for destroying involved objects on the library side and no need to think about it at
+the user side.
 
 \section{C++}
 
