@@ -301,6 +301,34 @@ the user side.
 
 \section{C++}
 
+C++ is regarded as one of the most popular programming languages today, along with Java and
+C;\footnote{TIOBE Programming Community Index for July 2011:
+\url{http://www.tiobe.com/index.php/content/paperinfo/tpci/index.html}} it combines properties of
+both low-level and high-level languages, sometimes being described as intermediate-level language.
+C++ extensively supports both procedural and class-based object-oriented paradigm, forming a
+multi-paradigm language; generic programming is implemented by means of \emph{templates}, which
+allow classes and functions to operate on arbitrary data types while still being type-safe.
+C++ is statically-typed, all major implementations are compiled, supports call-by-value (the
+default), call-by-reference and a variant of call-by-object function call conventions. C++ lacks
+implicit garbage collection for heap-allocated data --- the programmer must reclaim memory used
+by those objects manually; use of \emph{smart pointers}\footnote{a template class that behaves like
+a pointer through use of operator overloading but adds additional memory management features such as
+reference counting} may although help with this task. C++ is almost 100\% compatible with the C
+language in a way that most C programs compile and run fine then compiled as C++ programs. C++ also
+makes it easy to use C libraries without a need to recompile them.~\cite{Str:00}
+
+When used as an implementation language for desired library for recursive Bayesian estimation, we
+have identified potential advantages of the C++ language:
+\begin{description}
+	\item[widespread] \hfill \\
+		C/C++ code forms large part of the software ecosystem. Thanks to that
+	\item[low overhead] \hfill \\
+		C++ was designed to incur minimal overhead possible. In all benchmarks we've seen (e.g. The
+		Computer Language Benchmarks Game\footnote{http://shootout.alioth.debian.org/}), C++ is
+		hard to outperform by a significant margin (
+\end{description}
+set of drawbacks
+
 BDM
 
  - advantages of C (speed, C prevalence (many optimised libraries, BLAS, LAPACK.., OpenMP)
@@ -333,13 +361,15 @@ NumPy support
 
 how can optimisaion be approached (gradually) and why this approach is superior
 
-integrate\_python\_cython example (``100x'' speedup for a special (very simple) case)
+[see c_cy_py...]
 
 \subsection{Parallelisation}
 
 integrate\_python\_cython patched with OpenMP (13x speedup in 16-core system)
 
-prange CEP
+prange CEP -- implemented!
+
+[see c_cy_py...]
 
 \subsection{Pure Python mode}
 
@@ -358,6 +388,8 @@ About it and why it should be used in a hypothetical bayesian python library
 		- limitations of pure python mode in regards to traditional .pyx files
 
 \subsection{Performance comparison with C and Python} \label{sec:CythonPerformace}
+
+benchmark_c_cy_py
 
 \section{Survey of Existing Libraries for Bayesian estimation/decision making}
 
