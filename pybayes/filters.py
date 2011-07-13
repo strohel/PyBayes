@@ -81,7 +81,7 @@ class KalmanFilter(Filter):
     where :math:`x_t \in \mathbb{R}^n` is hidden state vector, :math:`y_t \in \mathbb{R}^j` is
     observation vector and :math:`u_t \in \mathbb{R}^k` is control vector. :math:`v_t` is normally
     distributed zero-mean process noise with covariance matrix :math:`Q_t`, :math:`w_t` is normally
-    distributed zero-mean process noise with covariance matrix :math:`R_t`. Additionally, every a
+    distributed zero-mean observation noise with covariance matrix :math:`R_t`. Additionally, every a
     posteriori pdf (and intial pdf) have to be Gaussian.
     """
 

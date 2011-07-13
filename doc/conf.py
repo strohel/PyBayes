@@ -198,9 +198,6 @@ latex_show_pagerefs = True
 # If true, show URL addresses after external links.
 latex_show_urls = False
 
-# Additional stuff for the LaTeX preamble.
-#latex_preamble = ''
-
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
 
@@ -213,6 +210,7 @@ latex_elements = {
     'pointsize': '12pt',
     'fontpkg': '',  # do not use Sphinx default 'times' fontpkg
     'fncychap': '',  # do not use Fancy Chapters
+    'preamble': '\usepackage{amsfonts}\n', # so that \mathbb works
 }
 
 # -- Options for man output --------------------------------------------------
