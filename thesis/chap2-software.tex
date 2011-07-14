@@ -5,12 +5,11 @@ requirements posed on desired software library for Bayesian decision making. Aft
 requirements, feasibility of various programming paradigms applied to our real-world problem is
 discussed. Continues brief survey of already available software whose conformance to requirements
 is studied. The chapter is ended by comparison of suitable features of 3 chosen programming
-languages: C++, Matlab language and Python. Emphasis is put on Python/Cython combination that was
+languages: C++, MATLAB language and Python. Emphasis is put on Python/Cython combination that was
 chosen for implementation.
 
-In whole chapter, the term \emph{user} refers to someone who uses the library in order to implement
-higher-level functionality (such as simulation of dynamic systems); user is essentially
-a~programmer.
+In whole chapter, the term \emph{user} refers to someone (a programmer) who uses the library in
+order to implement higher-level functionality (such as simulation of dynamic systems).
 
 \section{Requirements}
 
@@ -194,8 +193,10 @@ compiled, respectively interpreted.
 \begin{description}
 	\item[compiled implementations] \hfill \\
 		translate source code directly into machine code suitable for given target processor. Their
-		advantages are zero overhead, no requirement to install additional software (interpreter)
-		on target machine.
+		advantage is zero interpreter overhead. Developers are required to install a
+		compiler (and perhaps a build system) or an IDE\footnote{Integrated Development Environment}
+		used by given project (library) to be able to modify it. Write-build-run-debug cycle is
+		usually longer in comparison to interpreted implementations.
 	\item[interpreted implementations] \hfill \\
 		either directly execute commands in source code or, more frequently, translate source code
 		into platform-independent \emph{intermediate representation} which is afterwards executed in
@@ -317,25 +318,50 @@ reference counting} may although help with this task. C++ is almost 100\% compat
 language in a way that most C programs compile and run fine then compiled as C++ programs. C++ also
 makes it easy to use C libraries without a need to recompile them.~\cite{Str:00}
 
-When used as an implementation language for desired library for recursive Bayesian estimation, we
+When used as an implementation language for the desired library for recursive Bayesian estimation, we
 have identified potential advantages of the C++ language:
 \begin{description}
-	\item[widespread] \hfill \\
-		C/C++ code forms large part of the software ecosystem. Thanks to that
 	\item[low overhead] \hfill \\
 		C++ was designed to incur minimal overhead possible. In all benchmarks we've seen (e.g. The
-		Computer Language Benchmarks Game\footnote{http://shootout.alioth.debian.org/}), C++ is
-		hard to outperform by a significant margin (
+		Computer Language Benchmarks Game\footnote{http://shootout.alioth.debian.org/}), it is
+		hard to outperform C++ by a significant margin (Fortran and assembly code would be
+		candidates for that).
+	\item[widespread] \hfill \\
+		C/C++ code forms large part of the software ecosystem. Thanks to that, incredible number of
+		both proprietary and free IDEs, debuggers,
+		profilers and other related coding tools is available. This fact makes development more
+		convenient.
+	\item[libraries] \hfill \\
+		Thanks to C++ popularity, several high-quality libraries for numerical calculations/computer
+		algebra are available, many of them are free software or free to use. These are for example
+		C interfaces to BLAS\footnote{Basic Linear Algebra Subprograms: \url{http://www.netlib.org/blas/}}
+		and LAPACK\footnote{Linear Algebra PACKage: \url{http://www.netlib.org/lapack/}} (both low-level
+		and fixed function), higher-level IT++\footnote{\url{http://itpp.sourceforge.net/}} built
+		atop of BLAS/LAPACK or independent template-based library
+		Eigen.\footnote{\url{http://eigen.tuxfamily.org/}} Additionally,
+		OpenMP\footnote{Open Multi-Processing API and libraries: \url{http://openmp.org/}}
+		can be used to parallelise existing algorithms without rewriting them.
 \end{description}
-set of drawbacks
+However, using C++ would, in our opinion, bring following major drawbacks:
+\begin{description}
+	\item[diversity] \hfill \\
+		While there are many C/C++ libraries for specific tasks (such as data visualisation), it
+		may prove difficult in our opinion to combine them freely as there are no \emph{de facto}
+		standard data types for e.g. vectors and matrices --- many libraries use their own.
+	\item[learning curve] \hfill \\
+		C++ takes longer to learn and even when mastered, programmer productivity is subjectively
+		lower compared to very high level languages. We also fear that many members of out intended
+		audience are simply unwilling to learn or use C++.
+\end{description}
+Moreover, discussion about statically-typed, compiled and non-garbage-collected languages from
+previous section also apply. Due to this, we have decided not to use C++ if an alternative with
+reasonable overhead is found.
 
-BDM
-
- - advantages of C (speed, C prevalence (many optimised libraries, BLAS, LAPACK.., OpenMP)
-
- - disadvantages of C in our ``situation'' (steep learning curve, coplexity because of low-levelness
-   high initial barriers (need to have compiler, libraries...), inconveniently long edit/build/test
-   process)
+Several object-oriented C++ libraries for recursive Bayesian estimation exist:
+Bayes++\footnote{\url{http://bayesclasses.sourceforge.net/}}, BDM\footnote{Bayesian Decision Making
+Library: \url{http://www.utia.cas.cz/AS/softwaretools/bdm}} and BFL~\cite{BFL}. BDM library is later
+used to compare performance of Cython, C++ and MATLAB implementations of Kalman filter, see
+\autoref{sec:PyBayesPerformance} on page \pageref{sec:PyBayesPerformance}.
 
 \section{Matlab}
 
@@ -361,7 +387,7 @@ NumPy support
 
 how can optimisaion be approached (gradually) and why this approach is superior
 
-[see c_cy_py...]
+[see c\_cy\_py...]
 
 \subsection{Parallelisation}
 
@@ -369,7 +395,7 @@ integrate\_python\_cython patched with OpenMP (13x speedup in 16-core system)
 
 prange CEP -- implemented!
 
-[see c_cy_py...]
+[see c\_cy\_py...]
 
 \subsection{Pure Python mode}
 
@@ -389,14 +415,5 @@ About it and why it should be used in a hypothetical bayesian python library
 
 \subsection{Performance comparison with C and Python} \label{sec:CythonPerformace}
 
-benchmark_c_cy_py
+benchmark\_c\_cy\_py
 
-\section{Survey of Existing Libraries for Bayesian estimation/decision making}
-
-Brief survey of existing libraries ... not fullfilling all requirements..
-
-The need to implement a new one :-)
-
-\section{Choice}
-
-python/cython was choosen ...
