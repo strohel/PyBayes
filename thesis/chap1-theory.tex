@@ -232,7 +232,8 @@ arbitrary but fixed positive integer for our uses. Variants of the particle filt
 adaptive number of particles, these are not discussed here.}, a significant tunable parameter
 of the filter.
 
-Described particle filter is initialised by sampling \(N\) random particles from the initial {\pdf}
+As the initial step of the described particle filter, \(N\) random particles are sampled
+from the initial {\pdf}
 \(p(x_0)\). Let \(i \in \mathbb{N} \;\; i \leq N\), transition \(t-1 \; \rightarrow \; t\) can be
 performed as follows:
 \begin{enumerate}
@@ -280,28 +281,32 @@ choosing adequate proposal density.
 Particle filters also suffer from a phenomenon known as \emph{sample impoverishment} or
 \emph{degeneracy problem}: after a few iterations all but one particles' weight falls close to
 zero.\footnote{it has been shown that variance of particle weights continually raises as algorithm
-progresses.~\cite{AruMasGor:02}} A measurement of degeneracy can be obtained by computing an
+progresses.~\cite{AruMasGor:02}}
+One technique to diminish this is based on careful choice of proposal density (as explained in
+\cite{AruMasGor:02}), a second one is to add additional \emph{resample} step to the above
+algorithm:
+\begin{enumerate}[resume] % so that enumeration starts with number 4
+	\item for each \(i\) resample \(x_t^{(i)}\) from approximate posterior {\pdf}
+		\(\sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)})\) and reset all weights to \(\frac{1}{N}\).
+		Given that sampling is truly random and independent this means that each particle is in
+		average copied \(n_i\) times, where \(n_i\) is roughly proportional to particle weight:
+		\(n_i \approx \omega_t^{(i)} N\). Statistics of posterior {\pdf} are therefore (roughly and
+		on average) maintained while low-weight particles are eliminated.
+\end{enumerate}
+Step~4 therefore facilitates avoidance of particles with negligible weight by replacing them with more weighted
+ones. Such enhanced algorithm is known as \emph{sequential importance resampling (SIR)}.
+
+Because particle resampling is computationally expensive operation, a technique can be used where
+resampling is skipped in some iterations, based on the following idea:
+a measurement of degeneracy can be obtained by computing an
 approximate of \emph{effective sample size} \(N_{\text{eff}}\) at given time \(t\) using
 \eqref{eq:PFNeff}.~\cite{AruMasGor:02}
 \begin{equation} \label{eq:PFNeff}
 	N_{\text{eff}} \approx \left( \sum_{i=1}^N \left( \omega_t^{(i)} \right)^2 \right)^{-1}
 \end{equation}
-
 Very small \(N_{\text{eff}}\) compared to \(N\) signifies a substantial loss of ``active'' particles,
 which is certainly undesirable as it hurts accuracy while leaving computational demands unchanged.
-One technique to diminish this is based on careful choice of proposal density (as explained in
-\cite{AruMasGor:02}), a second one is to add additional \emph{resample} step to above
-algorithm:\footnote{this additional step may be performed in every iteration or just when
-\(N_{\text{eff}}\) falls below certain threshold.}
-\begin{enumerate}[resume] % so that enumeration starts with number 4
-	\item for each \(i\) resample \(x_t^{(i)}\) from approximate posterior {\pdf}
-		\(\sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)})\). Given that sampling is truly random
-		and independent this means that each particle is in average copied \(n_i\) times, where \(n_i\)
-		is roughly proportional to particle weight: \(n_i \approx \omega_t^{(i)} N\).
-\end{enumerate}
-
-Step~4 therefore facilitates avoidance of particles with negligible weight by replacing them with more weighted
-ones. Such enhanced algorithm is known as \emph{sequential importance resampling (SIR)}.
+Step~4 is then performed only when \(N_{\text{eff}}\) falls below certain threshold.
 
 Recursive Bayesian estimation using SIR methods can be applied to a wide range of dynamic systems
 (even to those where more specialised methods fail) and can be tuned with number of particles \(N\) and
