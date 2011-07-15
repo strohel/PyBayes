@@ -28,14 +28,14 @@ class Filter(object):
         :type yt: 1D :class:`numpy.ndarray`
         :param cond: condition at time t. Exact meaning is defined by each filter
         :type cond: 1D :class:`numpy.ndarray`
-        :return: always returns True (see :meth:`posterior` to get aposteriori density)
+        :return: always returns True (see :meth:`posterior` to get posterior density)
         """
         raise NotImplementedError("Derived classes must implement this method")
 
     def posterior(self):
-        """Return aposteriori probability density funcion (:class:`~pybayes.pdfs.Pdf`).
+        """Return posterior probability density funcion (:class:`~pybayes.pdfs.Pdf`).
 
-        :return: aposteriori density
+        :return: posterior density
         :rtype: :class:`~pybayes.pdfs.Pdf`
 
         *Filter implementations may decide to return a reference to their work pdf - it is not safe
@@ -81,8 +81,8 @@ class KalmanFilter(Filter):
     where :math:`x_t \in \mathbb{R}^n` is hidden state vector, :math:`y_t \in \mathbb{R}^j` is
     observation vector and :math:`u_t \in \mathbb{R}^k` is control vector. :math:`v_t` is normally
     distributed zero-mean process noise with covariance matrix :math:`Q_t`, :math:`w_t` is normally
-    distributed zero-mean observation noise with covariance matrix :math:`R_t`. Additionally, every a
-    posteriori pdf (and intial pdf) have to be Gaussian.
+    distributed zero-mean observation noise with covariance matrix :math:`R_t`. Additionally, intial
+    pdf (**state_pdf**) has to be Gaussian.
     """
 
     def __init__(self, A, B, C, D, Q, R, state_pdf):
@@ -200,7 +200,7 @@ class KalmanFilter(Filter):
         :param cond: control (intervention) vector at time t. May be :obj:`None` if filter is
            control-less.
         :type cond: 1D :class:`numpy.ndarray`
-        :return: always returns True (see :meth:`~Filter.posterior` to get aposteriori density)
+        :return: always returns True (see :meth:`~Filter.posterior` to get posterior density)
         """
         if not isinstance(yt, np.ndarray):
             raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
@@ -212,19 +212,19 @@ class KalmanFilter(Filter):
             raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
 
         # predict
-        self.P.mu = np.dot(self.A, self.P.mu) + np.dot(self.B, cond)  # a priori state mean estimate
-        self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # a priori state covariance estimate
+        self.P.mu = np.dot(self.A, self.P.mu) + np.dot(self.B, cond)  # prior state mean estimate
+        self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # prior state covariance estimate
 
         # data update
-        self.S.mu = np.dot(self.C, self.P.mu) + np.dot(self.D, cond)  # a priori observation mean estimate
-        self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R  # a priori observation covariance estimate
+        self.S.mu = np.dot(self.C, self.P.mu) + np.dot(self.D, cond)  # prior observation mean estimate
+        self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R  # prior observation covariance estimate
 
         # kalman gain
         K = np.dot(np.dot(self.P.R, self.C.T), linalg.inv(self.S.R))
 
         # update according to observation
-        self.P.mu += np.dot(K, (yt - self.S.mu))  # a posteriori state mean estimate
-        self.P.R -= np.dot(np.dot(K, self.C), self.P.R)  # a posteriori state covariance estimate
+        self.P.mu += np.dot(K, (yt - self.S.mu))  # posterior state mean estimate
+        self.P.R -= np.dot(np.dot(K, self.C), self.P.R)  # posterior state covariance estimate
         return True
 
     def posterior(self):
@@ -235,7 +235,7 @@ class KalmanFilter(Filter):
 
 
 class ParticleFilter(Filter):
-    r"""A filter whose aposteriori density takes the form
+    r"""A filter whose posterior density takes the form
 
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
     """
@@ -301,8 +301,7 @@ class ParticleFilter(Filter):
 
 class MarginalizedParticleFilter(Filter):
     r"""Marginalized particle filter implementation. Assume that state variable :math:`x`
-    can be divided into two parts: :math:`x_t = [a_t, b_t]`, then aposteriori
-    pdf can be denoted as:
+    can be divided into two parts: :math:`x_t = [a_t, b_t]`, then posterior pdf can be denoted as:
 
     TODO: better description of Marginalized Particle Filter class
 

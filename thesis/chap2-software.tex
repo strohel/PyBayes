@@ -1,11 +1,10 @@
 \chapter{Software analysis}
 
 In this chapter general software development approaches and practices will be confronted with
-requirements posed on desired software library for Bayesian decision making. After stating these
+requirements posed on the desired software library for recursive Bayesian estimation. After stating these
 requirements, feasibility of various programming paradigms applied to our real-world problem is
-discussed. Continues brief survey of already available software whose conformance to requirements
-is studied. The chapter is ended by comparison of suitable features of 3 chosen programming
-languages: C++, MATLAB language and Python. Emphasis is put on Python/Cython combination that was
+discussed. Continues a comparison of suitable features of 3 chosen programming
+languages: C++, MATLAB language and Python. Emphasis is put on the Python/Cython combination that was
 chosen for implementation.
 
 In whole chapter, the term \emph{user} refers to someone (a programmer) who uses the library in
@@ -13,19 +12,19 @@ order to implement higher-level functionality (such as simulation of dynamic sys
 
 \section{Requirements}
 
-Our intended audience is broad scientific community interested in the field of recursive Bayesian
-estimation and decision-making. Keeping this in mind and in order to formalise expectations for
-desired library for Bayesian estimation, following set of requirements was developed.
+Our intended audience is a broad scientific community interested in the field of the recursive
+Bayesian estimation and decision-making. Keeping this in mind and in order to formalise expectations for
+the desired library for Bayesian filtering, the following set of requirements was developed.
 
 \noindent Functionality:
 \begin{itemize}
 	\item Framework for working with potentially conditional {\pdfs} should be implemented
-		including support for basic operations such as product and chain rule. Chain rule
+		including support for basic operations such as product and chain rule. The chain rule
 		implementation should be flexible in a way that for example
 		\(p(a_t,b_t|a_{t-1},b_{t-1}) = p(a_t|a_{t-1},b_t)p(b_t|b_{t-1})\) product can be
 		represented.
-	\item Basic Bayesian filtering methods such as Kalman and particle filter have to be present,
-		plus at least one of more specialised algorithms --- marginalized particle filter or
+	\item Basic Bayesian filtering methods such as the Kalman and particle filter have to be present,
+		plus at least one of more specialised algorithms --- a marginalized particle filter or
 		non-linear Kalman filter variants.
 \end{itemize}
 General:
@@ -33,7 +32,7 @@ General:
 	\item Up-to-date, complete and readable API\footnote{Application Programming Interface, a set of
 		rules that define how a particular library is used.} documentation is required. Such
 		documentation should be well understandable by someone that already understands mathematical
-		background of particular algorithm.
+		background of the particular algorithm.
 	\item High level of interoperability is needed; data input/output should be straightforward as
 		well as using existing solutions for accompanying tasks such as visualising the results.
 	\item The library should be platform-neutral and have to run on major server and workstation
@@ -69,45 +68,46 @@ solutions that work around traditional limitations is left upon the implementati
 
 \section{Programming paradigms}
 
-Many programming paradigms exist and each programming language usually suggests particular paradigm,
+Many programming paradigms exist and each programming language usually suggests a particular paradigm,
 though many languages let programmers choose from or combine multiple paradigms. This section
 discusses how well could be three most prominent paradigms (procedural, object-oriented and
-functional) applied to software library for Bayesian estimation. Later on additional features of
+functional) applied to the software library for Bayesian filtering. Later on additional features of
 implementation environments such as interpreted vs. compiled approach or argument passing convention
 are evaluated.
 
 \subsection{Procedural paradigm}
 
-Procedural paradigm is the traditional approach that appeared along first high-level programming languages.
-Procedural programming can be viewed as a structured variant of imperative programming, where
+The procedural paradigm is the traditional approach that appeared along the first high-level programming languages.
+The procedural programming can be viewed as a structured variant of imperative programming, where
 programmer specifies steps (in form of orders) needed to reach desired program state.
-Structured approach that empathises dividing the code into logical and self-contained
-blocks (procedures, modules) is used to make code more reusable, extensible and modular.
+Structured approach that emphasizes dividing the code into logical and self-contained
+blocks (procedures, modules) is used to make the code more reusable, extensible and modular.
 Today's most notable procedural languages include C and Fortran.
 
 Most procedural languages are associated with very low overhead (performance of programs
 compiled using optimising compiler tend to be very close to ideal programs written in
 assembly code); mentioned languages are also spread and well-known in scientific computing.
 
-On the other hand, while possible, it is considered elaborate task by the author to write
+On the other hand, while possible, it is considered an elaborate task by the author to write
 a~modular and extensible library in these languages. Another disadvantage is that
 usually only very basic building blocks are provided by the language --- structures like
 lists and strings have to be supplied by the programmer or a third-party library. This only
-adds to the fact that procedural paradigm-oriented languages are commonly not easy to learn
+adds to the fact that the procedural paradigm-oriented languages are commonly not easy to learn
 and that programmer productivity associated with these languages may be much lower compared
 to more high-level languages.
 
-\subsection{Object-oriented paradigm}
+\subsection{Object-oriented paradigm} \label{sec:OOP}
 
-Object-oriented paradigm extends procedural approach with the idea of \emph{objects} --- structures with procedures
+The object-oriented paradigm extends the procedural approach with the idea of \emph{objects} ---
+structures with procedures
 (called \emph{methods}) and variables (called \emph{attributes}) bound to them. Other
 feature frequently offered is \emph{polymorphism} (an extension to language's type
 system that adds the notion of \emph{subtypes} and a rule that subtype of a given type can
 be used everywhere where given type can be used) most often facilitated through a concept of
 \emph{classes}, common models for sets of objects with same behaviour but different
-payload; objects are then said to be \emph{instances} of classes. Subclass \emph{inherits}
+payload; objects are then said to be \emph{instances} of classes. A subclass \emph{inherits}
 methods and attributes from its superclass and can \emph{override} them or add its own.
-\emph{Encapsulation}, language mechanism to restrict access to certain object attributes and
+\emph{Encapsulation}, a language mechanism to restrict access to certain object attributes and
 methods, may be employed by the language to increase robustness by hiding implementation
 details. In order to be considered object-oriented, statically typed languages
 (p.~\pageref{desc:StaticTyping}) should provide \emph{dynamic dispatch}\footnote{a way of
@@ -125,7 +125,7 @@ opinion. We believe that these disadvantages are greatly outweighed by powerful 
 that object-oriented languages provide (when utilised properly).
 
 It was also determined that
-a library for Bayesian estimation could benefit from many object-oriented techniques: {\pdf}
+the desired library for Bayesian filtering could benefit from many object-oriented techniques: {\pdf}
 and its conditional variant could be easily modelled as classes with abstract methods that
 would represent common operation such as evaluation in a given point or drawing random samples.
 Classes representing particular {\pdfs} would then subclass abstract base classes and implement
@@ -133,10 +133,10 @@ appropriate methods while adding relevant attributes such as border points for u
 distribution. This would allow for example to create generic form of particle filter
 (p.~\pageref{sec:ParticleFilter}) that would accept any conditional {\pdf} as a parameter.
 Bayesian filter itself can be abstracted into a class that would provide a method to compute
-a~posteriori {\pdf} from a~priori one taking observation as a parameter.
+posterior {\pdf} from prior one taking observation as a parameter.
 
 \subsection{Functional paradigm}
-Fundamental idea of functional programming is that
+Fundamental idea of the functional programming is that
 functions have no side effects --- their result does not change or depend on program state, only
 on supplied parameters. A language where each function has mentioned attribute is called
 \emph{purely functional} whereas the same adjective is applied to such functions in other
@@ -154,7 +154,7 @@ as first-class citizens, closures, list comprehensions}.
 While functional programming is popular subject of academic research, its use is much less
 widespread compared to procedural and object-oriented paradigms. Additionally, in the author's
 opinion, transition to functional programming requires significant change of programmer's
-mindset. Combined with the fact that syntax of mentioned functionally-oriented languages differs
+mindset. Combined with the fact that syntax of the mentioned functionally-oriented languages differs
 significantly from many popular procedural or object-oriented languages, we believe that it would
 be unsuitable decision for a library that aims for wide adoption.
 
@@ -183,7 +183,8 @@ comes with a~cost: dynamic typing imposes inevitable computing overhead as metho
 attribute accesses must be resolved at runtime. Additionally, compiling a program written in statically
 typed language can reveal many simple programming errors such as calling mistyped methods, even
 in unreachable code-paths; this is not the case for dynamically-typed languages and we suggest
-compensating this with more thorough test-suite.
+compensating this with more thorough test-suite (code coverage tools can greatly help with creating
+proper test-suite, see \autoref{sec:PyBayesDocsTests} on page \pageref{sec:PyBayesDocsTests}).
 
 Another related property is interpreted vs. compiled nature; we should emphasize that this property
 refers to language \emph{implementation}, not directly to the language itself, e.g. C language
@@ -260,9 +261,9 @@ how function parameters are passed:
 		methods where referred objects are marked as immutable in called function scope.
 \end{description}
 We suggest that a language that supports at least one of call-by-reference or call-by-object
-conventions is used for Bayesian estimation library; while call-by-value-only languages can be simpler
-to implement, we are convinced that they impose unnecessary restrictions on library design and cause
-overhead in places where it could be avoided.
+conventions is used for the desired recursive Bayesian estimation library; while call-by-value-only
+languages can be simpler to implement, we are convinced that they impose unnecessary restrictions
+on the library design and cause overhead in places where it could be avoided.
 
 Last discussed aspect of programming languages relates to memory management:
 \begin{description}
@@ -295,7 +296,7 @@ Last discussed aspect of programming languages relates to memory management:
 		make certain classes of programmer errors more likely to occur.
 \end{description}
 In our view, convenience of garbage-collected languages outweighs overhead they bring for a project
-like a library for Bayesian estimation targeting wide adoption. We also believe that automatic
+like a library for recursive Bayesian estimation targeting wide adoption. We also believe that automatic
 memory management can simplify library design and its usage as there is no need to specify who is
 responsible for destroying involved objects on the library side and no need to think about it at
 the user side.

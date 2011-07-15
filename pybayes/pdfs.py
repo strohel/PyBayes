@@ -736,7 +736,7 @@ class EmpPdf(AbstractEmpPdf):
 
 
 class MarginalizedEmpPdf(AbstractEmpPdf):
-    r"""An extension to empirical pdf (:class:`EmpPdf`) used as aposteriori density by
+    r"""An extension to empirical pdf (:class:`EmpPdf`) used as posterior density by
     :class:`~pybayes.filters.MarginalizedParticleFilter`. Extends :class:`AbstractEmpPdf`.
 
     Assume that random variable :math:`x` can be divided into 2 independent
