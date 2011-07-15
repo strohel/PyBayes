@@ -363,18 +363,75 @@ Bayes++\footnote{\url{http://bayesclasses.sourceforge.net/}}, BDM~\cite{BDM} and
 BDM library is later used to compare performance of Cython, C++ and MATLAB implementations of the
 Kalman filter, see \autoref{sec:PyBayesPerformance} on page \pageref{sec:PyBayesPerformance}.
 
-\section{Matlab}
+\section{MATLAB language}
 
-BDM (partially?)
+MATLAB language is a very high level language used exclusively by the
+MATLAB\footnote{\url{http://www.mathworks.com/products/matlab/}} environment, a~proprietary platform
+developed by MathWorks.\footnote{\url{http://www.mathworks.com/}} MATLAB language extensively
+supports procedural programming paradigm and since version 7.6 (R2008a) class-based object oriented
+paradigm is also fully supported.\footnote{\url{http://www.mathworks.com/products/matlab/whatsnew.html}}
+MATLAB language is dynamically-typed, interpreted language with automatic memory management.
 
- - advantages (popularity, existing toolboxes, rapid development (high-level)
-
- - disadv: strict copy-on-write, problematic object model (not in original design), difficulties
-           interfacing existing C (F) code
+MATLAB language possesses, in our belief, following favourable attributes when used to implement the
+desired library for Bayesian filtering:
+\begin{description}
+	\item[popularity among academia] \hfill \\
+		While MATLAB language is not as widespread as C++ on the global scale, it is very popular in
+		scientific community, our intended audience.
+	\item[performance] \hfill \\
+		MATLAB language is very well optimised for numerical computing.
+	\item[wide range of extensions] \hfill \\
+		High number of well integrated extension modules (toolboxes) is bundled with MATLAB or
+		available from third parties. This makes associated tasks such as data visualisation
+		particularly straightforward.
+	\item[rapid development] \hfill \\
+		Being a very high level language, we expect programmer productivity in the MATLAB language being
+		fairly high. MATLAB environment is itself a good IDE and its interactive shell fosters rapid
+		prototyping.
+\end{description}
+Disadvantages [TODO]:
+\begin{description}
+	\item[vendor lock-in] \hfill \\
+		MATLAB is commercial software; free alternatives such as GNU
+		Octave\footnote{\url{http://www.gnu.org/software/octave/}},
+		Scilab\footnote{\url{http://www.scilab.org/}} or
+		FreeMat\footnote{\url{http://freemat.sourceforge.net/}} exist, however all of them provide
+		only limited compatibility with the MATLAB language. Developing for a non-standard proprietary
+		platform always imposes risks of the vendor changing license or pricing policy etc.
+	\item[problematic object model] \hfill \\
+		We have identified in \autoref{sec:OOP} that object-oriented approach is important for
+		a~well-designed and usable library for Bayesian filtering. Nonetheless MATLAB's
+		implementation of object-oriented programming is viewed as problematic by many, including us. For
+		example, function call parameter passing convention is determined by the object class/data
+		type --- MATLAB distinguishes \emph{value classes} that have call-by-value semantics and
+		\emph{handle classes} that have call-by-object semantics.\footnote{call-by-object semantics
+		tested in version 7.11 (R2010b).} The resulting effect is that calling
+		identical function with otherwise equivalent value and handle classes can yield very
+		different behaviour.
+	\item[hard-coded call-by-value semantics] \hfill \\
+		2D array, a very central data-type of the MATLAB language, has call-by-value function call
+		convention hard-coded; this results in potentially substantial function call overhead.
+		Although current MATLAB versions try to minimise copying by employing copy-on-write
+		technique\footnote{\url{http://blogs.mathworks.com/loren/2006/05/10/memory-management-for-functions-and-variables/}}
+		or performing some operations in-place,\footnote{\url{http://blogs.mathworks.com/loren/2007/03/22/in-place-operations-on-data/}}
+		our tests have shown that even combining these techniques doesn't eliminate unnecessary
+		copying overhead which we believe is the main source of grave performance regression of
+		object-oriented code with regards to imperative code; see \autoref{sec:PyBayesPerformance}
+		on page \pageref{sec:PyBayesPerformance}.
+%	\item[hard to integrate] \hfill \\ % TODO: matlab call C code, c code call matlab; matlab compiler
+\end{description}
+We consider presented drawbacks significant and therefore decided not to use the MATLAB language for
+the desired Bayesian filtering library. BDM library~\cite{BDM} contains both object oriented and
+imperative implementation of the Kalman filter in the MATLAB language; these are compared with our
+implementation in \autoref{sec:PyBayesPerformance}.
 
 \section{Python}
 
+Python\footnote{} is 
+
 NumPy.... parallelisation (approaches, improvements in Py 3.2) - GIL.. Py3k
+
+PyMC - konkurenci knihovna? -- spise ne
 
 \section{Cython}
 
