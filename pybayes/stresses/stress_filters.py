@@ -8,11 +8,13 @@ import os.path
 import time
 
 import numpy as np
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
 
 import pybayes as pb
 
-
-DEBUG = False
 
 def stress_kalman(options, timer):
     input_file = options.datadir + "/stress_kalman_data.mat"
@@ -138,18 +140,23 @@ def run_pf(options, timer, pf_opts, nr_particles, pf_class):
 
     x_t = pf_opts.x_t
     y_t = pf_opts.y_t
-    cumerror = np.zeros(2)  # vector of cummulative square error
+    mean = np.empty((nr_steps, 2))
+
     timer.start()
     for i in range(nr_steps):
-        if DEBUG:
-            print "simulated x_{0} = {1}".format(i, x_t[i])
-            print "simulated y_{0} = {1}".format(i, y_t[i])
         pf.bayes(y_t[i])
-        apost = pf.posterior()
-        cumerror += (apost.mean() - x_t[i])**2
-        if DEBUG:
-            print "returned mu_{0} = {1}".format(i, apost.mean())
-            print
+        mean[i] = pf.posterior().mean()
     timer.stop()
+    cumerror = np.sum((mean - x_t)**2, 0)
     print "  {0}-{3} cummulative error for {1} steps: {2}".format(
         nr_particles, nr_steps, np.sqrt(cumerror), pf_class.__name__)
+    plt = None  # disable plotting for now
+    if plt:
+        x = np.arange(nr_steps)
+        plt.plot(x, mean[:,0], 'x', label="{0}: {1}".format(nr_particles, pf_class.__name__))
+        plt.plot(x, mean[:,1], '+', label="{0}: {1}".format(nr_particles, pf_class.__name__))
+    if plt and nr_particles == 90 and pf_class == pb.MarginalizedParticleFilter:
+        plt.plot(x, x_t[:,0], '-')
+        plt.plot(x, x_t[:,1], '--')
+        plt.legend()
+        plt.show()
