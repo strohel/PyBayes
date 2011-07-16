@@ -61,6 +61,9 @@ class PfOptionsA(object):
         a_t, b_t = pb.RVComp(1, 'a_t'), pb.RVComp(1, 'b_t')  # state in t
         a_tp, b_tp = pb.RVComp(1, 'a_{t-1}'), pb.RVComp(1, 'b_{t-1}')  # state in t-1
 
+        # arguments to Kalman filter part of the marginalized particle filter
+        self.kalman_args = {}
+
         # prepare callback functions
         sigma_sq = np.array([0.0001])
         def f(cond):  # log(b_{t-1}) - 1/2 \sigma^2
@@ -70,6 +73,7 @@ class PfOptionsA(object):
 
         # p(a_t | a_{t-1} b_t) density:
         p_at_atpbt = pb.LinGaussCPdf(1., 0., 1., 0., pb.RV(a_t), pb.RV(a_tp, b_t))
+        self.kalman_args['A'] = np.array([[1.]])  # process model
         # p(b_t | b_{t-1}) density:
         self.p_bt_btp = pb.GaussCPdf(1, 1, f, g, rv=pb.RV(b_t), cond_rv=pb.RV(b_tp), base_class=pb.LogNormPdf)
         # p(x_t | x_{t-1}) density:
@@ -77,6 +81,7 @@ class PfOptionsA(object):
 
         # prepare p(y_t | x_t) density:
         self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
+        self.kalman_args['C'] = np.array([[1.]])  # observation model
 
         # Initial [a_t, b_t] from .. to:
         self.init_range = np.array([[-18., 0.3], [-14., 0.7]])
@@ -127,7 +132,7 @@ def run_pf(options, timer, pf_opts, nr_particles, pf_class):
     if pf_class is pb.ParticleFilter:
         pf = pf_class(nr_particles, init_pdf, pf_opts.p_xt_xtp, pf_opts.p_yt_xt)
     elif pf_class is pb.MarginalizedParticleFilter:
-        pf = pf_class(nr_particles, init_pdf, pf_opts.p_bt_btp)
+        pf = pf_class(nr_particles, init_pdf, pf_opts.p_bt_btp, pf_opts.kalman_args)
     else:
         raise NotImplementedError("This switch case not handled")
 

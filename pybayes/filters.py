@@ -85,26 +85,28 @@ class KalmanFilter(Filter):
     pdf (**state_pdf**) has to be Gaussian.
     """
 
-    def __init__(self, A, B, C, D, Q, R, state_pdf):
+    def __init__(self, A, B = None, C = None, D = None, Q = None, R = None, state_pdf = None):
         r"""Initialise Kalman filter.
 
-        :param A: process model matrix :math:`A_t` from :class:`class description <KalmanFilter>`.
+        :param A: process model matrix :math:`A_t` from :class:`class description <KalmanFilter>`
         :type A: 2D :class:`numpy.ndarray`
-        :param B: process control model matrix :math:`B_t` from :class:`class description <KalmanFilter>`.
+        :param B: process control model matrix :math:`B_t` from :class:`class description
+           <KalmanFilter>`; may be None or unspecified for control-less systems
         :type B: 2D :class:`numpy.ndarray`
-        :param C: observation model matrix :math:`C_t` from :class:`class description <KalmanFilter>`.
-           Must be full-ranked.
+        :param C: observation model matrix :math:`C_t` from :class:`class description
+           <KalmanFilter>`; must be full-ranked
         :type C: 2D :class:`numpy.ndarray`
-        :param D: observation control model matrix :math:`D_t` from :class:`class description <KalmanFilter>`.
+        :param D: observation control model matrix :math:`D_t` from :class:`class description
+           <KalmanFilter>`; may be None or unspecified for control-less systems
         :type D: 2D :class:`numpy.ndarray`
-        :param Q: process noise covariance matrix :math:`Q_t` from :class:`class description <KalmanFilter>`.
-           Must be positive definite.
+        :param Q: process noise covariance matrix :math:`Q_t` from :class:`class description
+           <KalmanFilter>`; must be positive definite
         :type Q: 2D :class:`numpy.ndarray`
-        :param R: observation noise covariance matrix :math:`R_t` from :class:`class description <KalmanFilter>`.
-           Must be positive definite.
+        :param R: observation noise covariance matrix :math:`R_t` from :class:`class description
+           <KalmanFilter>`; must be positive definite
         :type R: 2D :class:`numpy.ndarray`
-        :param state_pdf: initial state pdf. This object is referenced and used throughout whole
-           life of KalmanFilter, so it is not safe to reuse state pdf for other purposes.
+        :param state_pdf: initial state pdf; this object is referenced and used throughout whole
+           life of KalmanFilter, so it is not safe to reuse state pdf for other purposes
         :type state_pdf: :class:`~pybayes.pdfs.GaussPdf`
 
         All matrices can be time-varying - you can modify or replace all above stated matrices
@@ -112,8 +114,8 @@ class KalmanFilter(Filter):
         hand, you **should not modify state_pdf** unless you really know what you are doing.
 
         >>> # initialise control-less Kalman filter:
-        >>> kf = pb.KalmanFilter(A=np.array([[1.]]), B=np.zeros((1,0)),
-                                 C=np.array([[1.]]), D=np.zeros((1,0)),
+        >>> kf = pb.KalmanFilter(A=np.array([[1.]]),
+                                 C=np.array([[1.]]),
                                  Q=np.array([[0.7]]), R=np.array([[0.3]]),
                                  state_pdf=pb.GaussPdf(...))
         """
@@ -126,12 +128,16 @@ class KalmanFilter(Filter):
         matrices = {"A":A, "B":B, "C":C, "D":D, "Q":Q, "R":R}
         for name in matrices:
             matrix = matrices[name]
+            if name == 'B' and matrix is None:  # we allow B to be unspecified
+                matrices['B'] = matrix = B = np.empty((A.shape[0], 0))
+            if name == 'D' and matrix is None:  # we allow D to be unspecified
+                matrices['D'] = matrix = D = np.empty((C.shape[0], 0))
+
             if not isinstance(matrix, np.ndarray):
-                raise TypeError(name + " must be (exactly) numpy.ndarray, " +
-                                str(type(matrix)) + " given")
+                raise TypeError("{0} must be numpy.ndarray, {1} given".format(name, type(matrix)))
             if matrix.ndim != 2:
-                raise ValueError(name + " must have 2 dimensions (thus forming a matrix), " +
-                                 str(matrix.ndim) + " given")
+                raise ValueError("{0} must have 2 dimensions (forming a matrix) {1} given".format(
+                                 name, matrix.ndim))
 
         # remember vector shapes
         self.n = state_pdf.shape()  # dimension of state vector
@@ -193,11 +199,11 @@ class KalmanFilter(Filter):
         return ret
 
     def bayes(self, yt, cond = np.empty(0)):
-        """Perform exact bayes rule.
+        r"""Perform exact bayes rule.
 
         :param yt: observation at time t
         :type yt: 1D :class:`numpy.ndarray`
-        :param cond: control (intervention) vector at time t. May be :obj:`None` if filter is
+        :param cond: control (intervention) vector at time t. May be unspecified if the filter is
            control-less.
         :type cond: 1D :class:`numpy.ndarray`
         :return: always returns True (see :meth:`~Filter.posterior` to get posterior density)
@@ -235,7 +241,9 @@ class KalmanFilter(Filter):
 
 
 class ParticleFilter(Filter):
-    r"""A filter whose posterior density takes the form
+    r"""Standard particle filter implementation with resampling.
+
+    Posterior pdf is represented using :class:`~pybayes.pdfs.EmpPdf` and takes following form:
 
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
     """
@@ -300,22 +308,30 @@ class ParticleFilter(Filter):
 
 
 class MarginalizedParticleFilter(Filter):
-    r"""Marginalized particle filter implementation. Assume that state variable :math:`x`
-    can be divided into two parts: :math:`x_t = [a_t, b_t]`, then posterior pdf can be denoted as:
+    r"""Simple marginalized particle filter implementation. Assume that tha state vector :math:`x`
+    can be divided into two parts :math:`x_t = (a_t, b_t)` and that the pdf representing the process
+    model can be factorised as follows:
 
-    TODO: better description of Marginalized Particle Filter class
+    .. math:: p(x_t|x_{t-1}) = p(a_t|a_{t-1}, b_t) p(b_t | b_{t-1})
+
+    and that the :math:`a_t` part (given :math:`b_t`) can be estimated with (a subbclass of) the
+    :class:`KalmanFilter`. Such system may be suitable for the marginalized particle filter, whose
+    posterior pdf takes the form
 
     .. math::
 
-       p &= \sum_{i=1}^n \omega_i p^{(i)}(a_t | b_{1:t}, y_{1:t}) \delta(b_t - b_t^{(i)}) \\
-       p^{(i)}(a_t | b_{1:t}, y_{1:t}) &= \mathcal{N} (\hat{a}_t^{(i)}, P_t^{(i)}) \\
-       \text{where } \quad \hat{a}_t^{(i)} &\text{ and } P_t^{(i)} \text{ is mean and
-       covariance of i}^{th} \text{ gauss pdf} \\
+       p &= \sum_{i=1}^n \omega_i p(a_t | y_{1:t}, b_{1:t}^{(i)}) \delta(b_t - b_t^{(i)}) \\
+       p(a_t | y_{1:t}, b_{1:t}^{(i)}) &\text{ is posterior pdf of i}^{th} \text{ Kalman filter} \\
+       \text{where } \quad \quad \quad \quad \quad
        b_t^{(i)} &\text{ is value of the (b part of the) i}^{th} \text{ particle} \\
        \omega_i \geq 0 &\text{ is weight of the i}^{th} \text{ particle} \quad \sum \omega_i = 1
+
+    *Note: currently :math:`b_t` is hard-coded to be process and observation noise covariance of the
+    :math:`a_t` part. This will be changed soon and :math:`b_t` will be passed as condition to
+    :meth:`KalmanFilter.bayes`.*
     """
 
-    def __init__(self, n, init_pdf, p_bt_btp):
+    def __init__(self, n, init_pdf, p_bt_btp, kalman_args, kalman_class = KalmanFilter):
         r"""Initialise marginalized particle filter.
 
         :param int n: number of particles
@@ -325,11 +341,17 @@ class MarginalizedParticleFilter(Filter):
         :param p_bt_btp: :math:`p(b_t|b_{t-1})` cpdf of the (b part of the) state in *t* given
            state in *t-1*
         :type p_bt_btp: :class:`~pybayes.pdfs.CPdf`
+        :param dict kalman_args: arguments for the Kalman filter, passed as dictionary; *state_pdf*
+           key should not be speficied as it is supplied by the marginalized particle filter
+        :param class kalman_class: class of the filter used for the :math:`a_t` part of the system;
+            defaults to :class:`KalmanFilter`
         """
         if not isinstance(n, int) or n < 1:
             raise TypeError("n must be a positive integer")
         if not isinstance(init_pdf, Pdf) or not isinstance(p_bt_btp, CPdf):
             raise TypeError("init_pdf must be a Pdf and p_bt_btp must be a CPdf")
+        if not issubclass(kalman_class, KalmanFilter):
+            raise TypeError("kalman_class must be a subclass (not an instance) of KalmanFilter")
         b_shape = p_bt_btp.shape()
         if p_bt_btp.cond_shape() != b_shape:
             raise ValueError("p_bt_btp's shape ({0}) and cond shape ({1}) must both be {2}".format(
@@ -337,11 +359,9 @@ class MarginalizedParticleFilter(Filter):
         self.p_bt_btp = p_bt_btp
         a_shape = init_pdf.shape() - b_shape
 
-        # current limitation:
-        if b_shape != 1:
-            raise NotImplementedError("multivariate b_t not yet implemented (but planned)")
-        if a_shape != 1:
-            raise NotImplementedError("multivariate a_t not yet implemented (but planned)")
+        # this will be removed when hardcoding Q,R into kalman filter will be removed
+        kalman_args['Q'] = np.array([[-123.]])
+        kalman_args['R'] = np.array([[-494658.]])
 
         # generate both initial parts of particles
         init_particles = init_pdf.samples(n)
@@ -351,10 +371,8 @@ class MarginalizedParticleFilter(Filter):
         gausses = np.empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
         for i in range(n):
             gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]]))
-            self.kalmans[i] = KalmanFilter(A=np.array([[1.]]), B=np.empty((1,0)),
-                                           C=np.array([[1.]]), D=np.empty((1,0)),
-                                           Q=np.array([[123.]]), R=np.array([[123.]]), # set to b_t in each step
-                                           state_pdf=gausses[i])
+            kalman_args['state_pdf'] = gausses[i]
+            self.kalmans[i] = kalman_class(**kalman_args)
         # construct apost pdf. Important: reference to ith GaussPdf is shared between ith Kalman
         # filter's state_pdf and ith memp't gauss
         self.memp = MarginalizedEmpPdf(gausses, init_particles[:,a_shape:])
