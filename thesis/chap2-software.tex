@@ -222,7 +222,7 @@ compiled, respectively interpreted.
 There exists a historic link between statically typed and compiled languages, respectively
 dynamically typed and interpreted languages. Java which is itself statically typed and it's major
 implementation is interpreted and Erlang's (which is dynamically typed) compiled
-HiPE\footnote{The High-Performance Erlang Project: http://www.it.uu.se/research/group/hipe/}
+HiPE\footnote{The High-Performance Erlang Project: \url{http://www.it.uu.se/research/group/hipe/}}
 implementation are some examples of languages that break the rule. We believe that this historic
 link is the source of a common misconception that interpreted languages are inherently slow. Our
 findings (see also Python/Cython/C benchmark on p. \pageref{sec:CythonPerformace}) indicate that
@@ -324,7 +324,7 @@ have identified potential advantages of the C++ language:
 \begin{description}
 	\item[low overhead] \hfill \\
 		C++ was designed to incur minimal overhead possible. In all benchmarks we've seen (e.g. The
-		Computer Language Benchmarks Game\footnote{http://shootout.alioth.debian.org/}), it is
+		Computer Language Benchmarks Game\footnote{\url{http://shootout.alioth.debian.org/}}), it is
 		hard to outperform C++ by a significant margin (Fortran and assembly code would be
 		candidates for that).
 	\item[widespread] \hfill \\
@@ -351,7 +351,7 @@ However, using C++ would, in our opinion, bring following major drawbacks:
 		standard data types for e.g. vectors and matrices --- many libraries use their own.
 	\item[learning curve] \hfill \\
 		C++ takes longer to learn and even when mastered, programmer productivity is subjectively
-		lower compared to very high level languages. We also fear that many members of out intended
+		lower compared to very high-level languages. We also fear that many members of out intended
 		audience are simply unwilling to learn or use C++.
 \end{description}
 Moreover, discussion about statically-typed, compiled and non-garbage-collected languages from
@@ -365,7 +365,7 @@ Kalman filter, see \autoref{sec:PyBayesPerformance} on page \pageref{sec:PyBayes
 
 \section{MATLAB language}
 
-MATLAB language is a very high level language used exclusively by the
+MATLAB language is a very high-level language used exclusively by the
 MATLAB\footnote{\url{http://www.mathworks.com/products/matlab/}} environment, a~proprietary platform
 developed by MathWorks.\footnote{\url{http://www.mathworks.com/}} MATLAB language extensively
 supports procedural programming paradigm and since version 7.6 (R2008a) class-based object oriented
@@ -385,11 +385,11 @@ desired library for Bayesian filtering:
 		available from third parties. This makes associated tasks such as data visualisation
 		particularly straightforward.
 	\item[rapid development] \hfill \\
-		Being a very high level language, we expect programmer productivity in the MATLAB language being
+		Being a very high-level language, we expect programmer productivity in the MATLAB language being
 		fairly high. MATLAB environment is itself a good IDE and its interactive shell fosters rapid
 		prototyping.
 \end{description}
-Disadvantages [TODO]:
+Following disadvantages of the MATLAB language were identified:
 \begin{description}
 	\item[vendor lock-in] \hfill \\
 		MATLAB is commercial software; free alternatives such as GNU
@@ -427,13 +427,96 @@ implementation in \autoref{sec:PyBayesPerformance}.
 
 \section{Python}
 
-Python\footnote{} is 
+Python\footnote{\url{http://www.python.org/}} is a very high level programming language designed for
+outstanding code readability and high programmer productivity actively developed by the
+Python Software Foundation.\footnote{\url{http://www.python.org/psf/}} Python extensively supports
+procedural and class-based object-oriented programming paradigms and some features of the functional
+programming. Python is dynamically-typed language with automatic memory management that exclusively employs
+call-by-object function call parameter passing convention; elementary numeric types, strings and
+tuples are immutable\footnote{\url{http://docs.python.org/reference/datamodel.html}} so that this
+approach doesn't become inconvenient.
 
-NumPy.... parallelisation (approaches, improvements in Py 3.2) - GIL.. Py3k
+Principal Python
+implementation, CPython, is written in C, is cross-platform and of interpreted type: it translates
+Python code into bytecode which is subsequently executed in a virtual machine. Many alternative
+implementations are available, to name a few: Jython\footnote{\url{http://www.jython.org/}} that
+translates Python code into Java bytecode (itself written in Java),
+IronPython\footnote{\url{http://ironpython.net/}} itself implemented on top of the .NET Framework,
+just-in-time compiling PyPy\footnote{\url{http://pypy.org/}} written in Python itself or
+Cython which is described in greater detail in the next section. All the
+mentioned implementations qualify as free/open-source software.
 
-PyMC - konkurenci knihovna? -- spise ne
+Python language is bundled with a comprehensive standard library so that writing new projects is quick
+from the beginning. Two major Python versions exists: Python 2, considered legacy and receiving only
+bugfix updates, and Python 3, actively developed and endorsed version that brings a few incompatible
+changes to the language syntax and to the standard library. Porting Python 2 code to version 3 is
+however usually straightforward and can be automated to a great extent with tools bundled with
+Python 3.
+
+In our belief, Python shows following favourable attributes when used for the desired Bayesian
+filtering library:
+\begin{description}
+	\item[development convenience, readability, rapid prototyping] \hfill \\
+		Python developers claim that Python in an easy to learn, powerful programming language and
+		our experience confirms their claims. Python code is easy to prototype, understand and
+		modify in our opinion; prototyping is  with bundled interactive Python shell.
+		While all these statements are subjective, they are shared among
+		many.\footnote{\url{http://python.org/about/quotes/}} For example a statement \verb|x <= y <= z|
+		has its mathematical meaning, which is unusual for programming languages.
+	\item[NumPy, SciPy, Matplotlib] \hfill \\
+		NumPy\footnote{\url{http://www.numpy.org/}} is the de facto standard Python library for
+		numeric computing; NumPy provides N-dimensional array type that is massively supported in
+		very high number of projects. Parts of NumPy are written in C and Cython for speed.
+		SciPy\footnote{\url{http://www.scipy.org/}} extends NumPy with more numerical routines.
+		Matplotlib\footnote{\url{http://matplotlib.sourceforge.net/}} is powerful plotting library
+		that natively supports SVG output. Combining these three and Python gives a very vital
+		MATLAB alternative.
+	\item[interoperability with C] \hfill \\
+		CPython makes it possible to write modules\footnote{module in python sense is a code unit with
+		its own namespace, normally each module corresponds to a .py file.} in
+		C\footnote{\url{http://docs.python.org/extending/index.html}} (that are then called \emph{extension modules}).
+		Cython makes it easy and convenient to write extension modules. Sadly, alternative
+		implementations PyPy, Jython and IronPython don't currently fully support extension modules
+		and are therefore ruled-out for our purposes because they in turn don't support
+		NumPy.\footnote{PyPy and IronPython are nonetheless interesting for future consideration as
+		both have NumPy support actively worked on.}
+	\item[interoperability with MATLAB] \hfill \\
+		SciPy contains procedures to load and save data in MATLAB .mat format; Matplotlib includes
+		programming interface that resembles MATLAB's plotting procedures.
+\end{description}
+On the other hand, a few downsides exist:
+\begin{description}
+	\item[overhead] \hfill \\
+		CPython implementation shows significant computational overhead, especially for numerical
+		computations; CPython doesn't currently utilise any form of just-in-time compiling.
+		NumPy is often used to trade off computational overhead for memory overhead:
+		The Computer Language Benchmarks Game\footnote{\url{http://shootout.alioth.debian.org/}}
+		contains an~example where a program heavily using NumPy is 20\(\times\) faster but consumes
+		12\(\times\) more memory than a program that performed the same task and used solely the
+		Python standard library. We have reproduced the benchmark with similar results; mentioned
+		programs can me found in the
+		\href{http://github.com/strohel/PyBayes/tree/master/examples/benchmark_py_numpy}{\nolinkurl{examples/benchmark_py_numpy}}
+		directory in the PyBayes source code repository. We still consider this workaround suboptimal.
+	\item[peculiar parallelisation] \hfill \\
+		While Python natively supports threads and they are useful for tasks such as background I/O
+		operations, Python threads don't scale on multiprocessor systems for CPU-bound processing;
+		such code often runs at single-processor speed (when run in CPython). The reason behind that
+		is that CPython employs a global-interpreter-lock to to assure that only one thread executes
+		Python bytecode at a time.\footnote{\url{http://docs.python.org/glossary.html}} This
+		restriction can be worked around by using multiple python interpreters that communicate with
+		each other; Python module \emph{multiprocessing} makes it almost as convenient as using
+		threads.
+\end{description}
+Python compares favourably to other implementation environments presented before in our view; sole
+major obstacle being excessive overhead of the CPython interpreter. It is discussed how this issue
+can be solved using Cython in the next section.
+
+We haven't found any Python library for recursive Bayesian estimation that would fulfil the
+requirements presented at the beginning of this chapter.
 
 \section{Cython}
+
+TODO
 
 general info etc... extension types, building, ease of interfacing C (and F) code, .pxd files,
 NumPy support
