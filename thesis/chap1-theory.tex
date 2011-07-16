@@ -315,4 +315,51 @@ outperforms general particle filter in terms of speed and accuracy.
 
 \section{Marginalized Particle Filter}
 
-TODO: MPF. If in lack of time, write short mention and merge into PF section. % TODO: MPF
+Main sources of this section are \cite{SchGusNor:05} and \cite{SchKarGus:06}.
+
+The marginalized particle filter (sometimes \emph{Rao-Blackwellized particle filter}) is an
+extension to the particle filter that more accurately approximates the optimal Bayesian solution
+provided that the {\pdf} representing the process model \(p(x_t|x_{t-1})\) can be obtained in
+a special form. Suppose that the state vector can be divided into two parts \(a_t\) and \(b_t\)
+\eqref{eq:MPFStateVec} and that the process model {\pdf} can be expressed as a product of two
+{\pdfs} \eqref{eq:MPFProcessMod}, where \(p(a_t|a_{t-1} b_t)\) is analytically tractable (in general).
+We present a simple variant of the marginalized particle filter where, given \(b_t\), process and
+observation model of the \(a_t\) part are linear with normally-distributed noise. The Kalman filter
+can be used to estimate \(a_t\) part of the state vector in this case.
+\begin{align}
+	x_t &= (a_t, b_t) \label{eq:MPFStateVec} \\
+	p(x_t|x_{t-1}) &= p(a_t, b_t|a_{t-1}, b_{t-1}) = p(a_t|a_{t-1}, b_t) p(b_t | b_{t-1}) \label{eq:MPFProcessMod}
+\end{align}
+
+Posterior {\pdf} \eqref{eq:MPFPosterior} can be represented as a product of a weighted empirical
+distribution and a normal distribution. Each (i-th) particle is thus associated with its Kalman filter
+(representing \(a_t^{(i)}\) part) and \(b_t^{(i)}\) quantity.
+\begin{equation} \label{eq:MPFPosterior}
+	p(a_t, b_t | y_t) = \sum_{i=1}^N \omega_i p(a_t|y_{1:t},b_{1:t}^{(i)}) \; \delta(b_t - b_t^{(i)})
+\end{equation}
+
+In \eqref{eq:MPFPosterior} \(N\) denotes the total number of particles, \(\omega_i\) denotes weight
+of i-th particle, \(p(a_t|y_{1:t},b_{1:t}^{(i)})\) is posterior {\pdf} of i-th Kalman
+filter and \(b_t^{(i)}\) is a value of the \(b_t\) part of i-th particle.
+
+The algorithm of the described variant of the marginalized particle filter follows, note the
+similarities with the ordinary particle filter: at first, generate \(N\) \(b_t\) random samples from
+the initial distribution \(p(b_0)\). Then following procedure can be repeated for each measurement
+\(y_t\):
+\begin{enumerate}
+	\item for each \(i\) compute \(b_t^{(i)}\) by random sampling from conditional {\pdf}
+		\(p(b_t|b_{t-1})\) where \(b_{t-1}^{(i)}\) substitutes \(b_{t-1}\) in condition.
+	\item for each \(i\) compute posterior {\pdf} \(p(a_t|y_{1:t},b_{1:t}^{(i)})\) of the i-th
+		Kalman filter using \(y_t\) and \(b_t^{(i)}\).
+	\item for each \(i\) update weight \(\omega_i\) using formula \eqref{eq:MPFWeightUpdate} where
+		marginal likelihood of the i-th Kalman filter is used.
+		\begin{equation} \label{eq:MPFWeightUpdate}
+			\omega_i = p(y_t|y_{1:t},b_{1:t}^{(i)}) \; \omega_i
+		\end{equation}
+	\item normalise weights (as described in the previous section).
+	\item resample particles (as described in the previous section).
+\end{enumerate}
+
+It has been demonstrated in various publications that the marginalised particle filter outperforms
+the ordinary particle filter in both better accuracy and lower computational demands. Where
+applicable, it therefore forms excellent alternative to traditional particle filtering.
