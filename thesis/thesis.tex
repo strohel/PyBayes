@@ -1,7 +1,9 @@
 \documentclass[a4paper,12pt,oneside]{report}
 
-\newif\ifrelease % new boolean variable release. True = include some fancy content
-\releasefalse % and set it
+\newif\ifprint % true = printed version = no colours; false = colours
+\printfalse
+\newif\ifattachements % true = include fancy start pages and appendices
+\attachementsfalse
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
@@ -11,7 +13,7 @@
 \usepackage{epsfig}
 \usepackage{graphicx}
 \usepackage{enumitem} % so that spacing for lists can be easily set, resume option etc
-\ifrelease
+\ifattachements
 	\usepackage{pdfpages}
 \fi
 \usepackage[hyphens]{url} % the package is not needed, it needes just to set the parameter
@@ -37,7 +39,7 @@
 \setlist{nolistsep}
 \setlist[1]{leftmargin=\parindent} % set indentation to level 1 lists to be same as paragraph indent
 
-\ifrelease
+\ifprint
 	\hypersetup{pdfborder={0 0 0}} % no borders around links
 \else
 	\hypersetup{colorlinks=true} % colour links instead of borders
@@ -52,7 +54,7 @@
 
 \begin{document}
 
-\ifrelease
+\ifattachements
 	\input{startpages.tex} % include some fancy start pages
 \fi
 
@@ -123,7 +125,7 @@ na co se nezamerujeme: MCMC, Bayes networks
 \bibliographystyle{plain}
 \bibliography{bibliography}
 
-\ifrelease
+\ifattachements
 	% přílohy
 	\appendix % aby LaTeX cisloval jinak
 	\clearpage % so that the contents link mentions correct page
