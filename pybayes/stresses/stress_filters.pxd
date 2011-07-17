@@ -13,8 +13,9 @@ cimport pybayes as pb
 @cython.locals(kalman = pb.KalmanFilter,
                y = np.ndarray,
                u = np.ndarray,
-               Mu_py = np.ndarray,
-               t = int)
+               mean = np.ndarray,
+               t = int,
+               N = int)
 cpdef run_kalman_on_mat_data(input_file, output_file, timer)
 
 @cython.locals(nr_steps = int,

@@ -35,22 +35,36 @@ def run_kalman_on_mat_data(input_file, output_file, timer):
     P0 = d.pop('P0')
     y = d.pop('y').T
     u = d.pop('u').T
+    #x = d.pop('x').T
+    x = None
 
     gauss = pb.GaussPdf(mu0, P0)
     kalman = pb.KalmanFilter(d['A'], d['B'], d['C'], d['D'], d['Q'], d['R'], gauss)
 
     N = y.shape[0]
     n = mu0.shape[0]
-    Mu_py = np.zeros((N, n))
+    mean = np.zeros((N, n))
+    var = np.zeros((N, n))
 
     timer.start()
     for t in xrange(1, N):  # the 1 start offset is intentional
         kalman.bayes(y[t], u[t])
-        Mu_py[t] = kalman.posterior().mu
+        mean[t] = kalman.posterior().mean()
+        #var[t]  = kalman.posterior().variance()
     timer.stop()
 
-    Mu_py = Mu_py.T
-    savemat(output_file, {"Mu_py":Mu_py, "exec_time_pybayes":timer.spent[0]}, oned_as='row')
+    var = np.sqrt(var)  # to get standard deviation
+    plt = None  # turn off plotting for now
+    if plt:
+        axis = np.arange(N)
+        plt.plot(axis, x[:,0], 'k-', label='x_1')
+        plt.plot(axis, x[:,1], 'k--', label='x_2')
+        plt.errorbar(axis, mean[:,0], fmt='s', label='mu_1')  # yerror=var[:,0]
+        plt.errorbar(axis, mean[:,1], fmt='D', label='mu_2')  # yerror=var[:,1]
+        plt.legend()
+        plt.show()
+
+    savemat(output_file, {"Mu_py":mean.T, "exec_time_pybayes":timer.spent[0]}, oned_as='row')
 
 class PfOptionsA(object):
     """Class that represents options for a particle filter"""
