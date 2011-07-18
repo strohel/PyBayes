@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright (c) 2010 Matej Laitl <matej@laitl.cz>
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
@@ -108,15 +109,43 @@ options = parse_cmdline_options()
 configure_build(options)
 
 # generic distutils parameters
-params = {'name':'PyBayes',
-          'version':'0.2',
-          'description':'Library for convenient and fast Bayesian decision making',
-          'author':'Matej Laitl',
-          'author_email':'matej@laitl.cz',
-          'url':'http://github.com/strohel/PyBayes',
-          #'package_data':{'pybayes.tests':['stress_kalman_data.mat']}  # this unfortunately
-          # does not work in cython build, as params['packages'] is empty then
-         }
+version = '0.2'
+params = {
+    # meta-data; see http://docs.python.org/distutils/setupscript.html#additional-meta-data
+    'name':'PyBayes',
+    'version':version,
+    'author':u'Matěj Laitl',
+    'author_email':'matej@laitl.cz',
+    'maintainer':u'Matěj Laitl',
+    'maintainer_email':'matej@laitl.cz',
+    'url':'https://github.com/strohel/PyBayes',
+    'description':'Python library for recursive Bayesian estimation (Bayesian filtering)',
+    'long_description':'PyBayes is an object-oriented Python library for recursive Bayesian ' +
+        'estimation (Bayesian filtering) that is convenient to use. Already implemented are ' +
+        'Kalman filter, particle filter and marginalized particle filter, all built atop of ' +
+        'a light framework of probability density functions. PyBayes can optionally use Cython ' +
+        'for lage speed gains (Cython build is several times faster).',
+    # Note to myself: must manually upload on each release!
+    'download_url':'https://github.com/downloads/strohel/PyBayes/PyBayes-v'+version+'.tar.gz',
+    'platforms':'cross-platform',
+    'license':'GNU GPL v2+',
+    'classifiers':[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Cython',
+        'Programming Language :: Python',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ]
+
+    #'package_data':{'pybayes.tests':['stress_kalman_data.mat']}  # this unfortunately
+    # does not work in cython build, as params['packages'] is empty then
+}
 
 if options.use_cython is True:
     params['cmdclass'] = {'build_ext': options.build_ext}
