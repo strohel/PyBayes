@@ -11,14 +11,14 @@ import time
 
 # Edit parameters here:
 
-params = 0.0, 3.0, 100*10**6  # from, to, N (number of steps)
+params = 0.0, 3.0, 200*10**6  # from, to, N (number of steps)
 
 # Comment/Uncomment individual tests here>
 
 tests = []
 if c:
     tests += [("c_omp", c.integrate_c_omp),
-              ("cython_typed_openmp", c.integrate_omp),
+              ("cy_typed_omp", c.integrate_omp),
               ("c", c.integrate_c),
               ("cython_typed", c.integrate_typed),
               ("cython", c.integrate)]
@@ -37,7 +37,7 @@ for (name, func) in tests:
     start_clock = time.clock()
     result = func(*params)
     times[name] = (time.time() - start_time, time.clock() - start_clock)
-    print "{0:>19}: result = {1}; real time = {2}s; cpu time = {3}s".format(name, result, times[name][0], times[name][1])
+    print "{0:>12}: result = {1}; real time = {2}s; cpu time = {3}s".format(name, result, times[name][0], times[name][1])
 
 print
 print "Relative speedups:"
@@ -45,6 +45,6 @@ print "Relative speedups:"
 for i in range(len(tests) - 1, 0, -1):
     print
     iname = tests[i][0]
-    for j in range(0, i):
+    for j in range(i-1, -1, -1):
         jname = tests[j][0]
         print jname + "/" + iname + ":", times[iname][0]/times[jname][0]
