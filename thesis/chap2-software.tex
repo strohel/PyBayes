@@ -215,7 +215,7 @@ compiled, respectively interpreted.
 		5\%~faster than equivalent C program. We have reproduced the test with following results:
 		Java program was 10\% slower (for second and subsequent iterations) than C program and 1600\%
 		slower when just-in-time compilation was disabled. Complete test environment along with
-		instructions how to reproduce it be found in
+		instructions how to reproduce it be found in the
 		\href{http://github.com/strohel/PyBayes/tree/master/examples/benchmark_c_java}{\nolinkurl{examples/benchmark_c_java}}
 		directory in the PyBayes source code repository.
 \end{description}
@@ -464,7 +464,7 @@ filtering library:
 		many.\footnote{\url{http://python.org/about/quotes/}} For example a statement \verb|x <= y <= z|
 		has its mathematical meaning, which is unusual for programming languages.
 	\item[NumPy, SciPy, Matplotlib] \hfill \\
-		NumPy\footnote{\url{http://www.numpy.org/}} is the de facto standard Python library for
+		NumPy project\footnote{\url{http://www.numpy.org/}} is the de facto standard Python library for
 		numeric computing; NumPy provides N-dimensional array type that is massively supported in
 		very high number of projects. Parts of NumPy are written in C and Cython for speed.
 		SciPy\footnote{\url{http://www.scipy.org/}} extends NumPy with more numerical routines.
@@ -501,8 +501,8 @@ On the other hand, a few downsides exist:
 		While Python natively supports threads and they are useful for tasks such as background I/O
 		operations, Python threads don't scale on multiprocessor systems for CPU-bound processing;
 		such code often runs at single-processor speed (when run in CPython). The reason behind that
-		is that CPython employs a global-interpreter-lock to to assure that only one thread executes
-		Python bytecode at a time.\footnote{\url{http://docs.python.org/glossary.html}} This
+		is that CPython employs a global-interpreter-lock (GIL) to to assure that only one thread
+		executes Python bytecode at a time.\footnote{\url{http://docs.python.org/glossary.html}} This
 		restriction can be worked around by using multiple python interpreters that communicate with
 		each other; Python module \emph{multiprocessing} makes it almost as convenient as using
 		threads.
@@ -516,44 +516,259 @@ requirements presented at the beginning of this chapter.
 
 \section{Cython}
 
-TODO
+Cython~\cite{BehBraCitDalSelSmi:11} is both an extension to the Python language and an implementation
+of it (a compiler). Cython works by translating Cython modules (.pyx or .py files) into the C language which is
+then compiled to form binary Python extension modules (dynamically loaded libraries --- .dll files
+on Windows and .so files on UNIX platforms). Cython aims to be a strict superset of Python in a way
+that a valid Python module is also a valid Cython module that behaves equally. Current development
+snapshot of Cython virtually achieves this goal as it successfully passes 97.6\% of the Python 2.7.1
+regression test suite. Additionally, interpreted Python modules and Cython-compiled modules can be
+mixed and interchanged freely as Cython-compiled code can transparently interact with interpreted
+Python code and vice-versa. However, Cython is not a replacement of CPython --- Cython-compiled
+modules need to be executed by CPython because they make heavy use of CPython internals written in C
+(C code emitted by the Cython compiler is largely composed of calls to functions from CPython C API);
+Cython-compiled modules merely circumvent the virtual machine (bytecode interpreter) part of CPython,
+thus virtually eliminating interpreter overhead. This is in fact probably the most serious
+limitation of Cython --- it is tightly bound to one specific (although the most prevalent) Python
+implementation, CPython.
 
-general info etc... extension types, building, ease of interfacing C (and F) code, .pxd files,
-NumPy support
+Another key feature Cython supports is static typing of variables, function parameters and object
+attributes. In addition, Cython allows statically typed variables to be native C types such as
+\verb|int|, \verb|char *| or \verb|struct sockaddr| in addition to Python types; automatic
+conversion on Python/C boundary is provided by Cython for C types with Python equivalents, C
+\verb|double| is wrapped as Python \verb|float| and C \verb|long| is wrapped as Python
+\verb|int| for example. The main purpose of static typing are impressive speed gains; an extreme
+case exploited by our test case showed 65\(\times\) speed increase of typed Cython code compared
+to untyped Cython code. In important thing to mention is that static typing is completely
+\emph{voluntary} for the programmer; recent Cython versions also support experimental basic type
+inference\footnote{a way to guess and prove type of certain variable using code analysis} (that
+is guaranteed not to change semantics). Simply put, static typing prevents significant overhead
+caused by highly dynamic nature of Python.
 
-[citations:\cite{BehBraSel:09,Sel:09,BehBraCitDalSelSmi:11}]
+\subsection{Cython Features}
 
-\subsection{Gradual Optimisation}
+We continue by a brief technical description of some Cython extensions to Python and other features
+so that Cython's benefits can be evaluated as a whole later:
+\begin{description}
+	\item[cdef variables] \hfill \\
+		Cython supports so-called \emph{cdef variables} in both global (module) scope and function
+		(method) scope that can be typed; in addition to Python types, they can also have native
+		C types. Cdef variables aren't visible to Python code, but some overhead is eliminated as they
+		are, for example, not reference-counted.
+	\item[cdef and cpdef functions] \hfill \\
+		In addition to traditional Python functions that are defined in code as \verb|def function(x)|
+		and use rather expensive calling convention (e.g. all their positional arguments are packed
+		into a tuple and all their keyword arguments are packed into a dictionary on each call)
+		Cython supports so-called \emph{cdef functions} and \emph{cpdef functions}. Cdef functions
+		(defined as \verb|cdef function(x)|, hence the name) use native C calling convention and
+		are only callable from Cython code, with greatly reduced overhead; their return value can
+		be typed (parameters can be typed even for traditional Python functions). Cpdef functions
+		(defined as \verb|cpdef function(x)|) are same as cdef functions but in addition a Python
+		wrapper around the C function with the same name is generated; such function is callable
+		from Python (with overhead) and fast to call from Cython, cpdef functions therefore combine
+		the benefits of both.
+		Neither cdef or cpdef functions can be Python class methods, but see the next entry.
+	\item[extension types (cdef classes)] \hfill \\
+		In addition to traditional Python classes (defined as \verb|class ClassName(SuperClass)|) that
+		store their attributes and methods in a class dictionary, which leads to inefficient attribute
+		lookups and method calls, Cython supports so-called \emph{cdef classes} (or extension types)
+		that are defined as \verb|cdef class ClassName(SuperClass)| and use C structs to store their
+		attributes and method table, a significantly faster approach than Python dictionary. Cdef
+		classes can also have cdef and cpdef methods as their members; they can also contain cdef
+		variables as attributes with optional additional modifiers \verb|public| (read-write from
+		Python) or \verb|readonly| (read-only from Python). Cdef classes are, in contrast to similarly
+		named cdef functions, visible to Python code where they appear as built-in types. Compared
+		to traditional Python classes, cdef classes are however subject to 2 major limitations: all
+		their attributes have to be statically declared (as opposed to dynamically created at
+		runtime) plus multiple inheritance cannot be used. One can overcome both these limitations
+		by subclassing them in Python, which is indeed possible.
+	\item[interfacing C/C++ code] \hfill \\
+		As described in \cite{BehBraSel:09}, Cython can be used to conveniently call C or
+		C++\footnote{C code emitted by the Cython compiler is compilable also when treated as C++,
+		thus allows interfacing with C++ code.} library functions. Suppose we want to call the
+		\verb|sin()| function form the C standard library that is defined in \verb|math.h|. Following
+		Cython module accomplishes that:
+		\vspace{\parskip}
+		\begin{Verbatim}[samepage=true,gobble=3,label=sin\_wrapper.pyx,frame=single]
+			cdef extern from math.h:
+			    double sin(double x)
 
-how can optimisaion be approached (gradually) and why this approach is superior
+			sin(0.123)  # call C function directly from Cython
 
-[see c\_cy\_py...]
+			cpdef double sin_wrapper(double x):
+			    return sin(x)
+		\end{Verbatim}
+		In the example above, \verb|sin_wrapper()| can be called from Python code. Cython is
+		therefore an excellent tool to create Python wrappers around C/C++ libraries or use them
+		directly.
+	\item[NumPy support] \hfill \\
+		As was noted above, many core parts of NumPy are written in C (or Cython), including the
+		crucial data-type, N-dimensional array. Cython provides explicit support for NumPy
+		data-types and core functions allowing the programmer to take advantage of the speed gains
+		of both.~\cite{Sel:09}
+	\item[pure Python mode] \hfill \\
+		It is clear that in order to make use of all important features of Cython, one has to use
+		syntax that is no longer valid Python code; this can be disadvantageous in many cases. To
+		combat this, Cython offers so-called \emph{pure Python mode} where Cython-specific syntax
+		is wrapped in Python constructs, e.g. \verb|cdef int i| can be alternatively formulated
+		as \verb|x = cython.declare(cython.int)| --- such constructs are implemented by Cython
+		shadow code to be no-ops when interpreted by Python and treated accordingly when compiled
+		by Cython.
 
-\subsection{Parallelisation}
-
-integrate\_python\_cython patched with OpenMP (13x speedup in 16-core system)
-
-prange CEP -- implemented!
-
-[see c\_cy\_py...]
-
-\subsection{Pure Python mode}
-
-About it and why it should be used in a hypothetical bayesian python library
-
-\subsection{Limitations}
-
-2 types:
-
-	not-supported code (few cases, but bad, ongoing work)
-
-	not-optimised code (much more work needed, but not hard to fix in most cases)
-
-		- exception handling (functions returning void etc)
-
-		- limitations of pure python mode in regards to traditional .pyx files
+		Another variant of pure Python mode is to use so-called \emph{augmenting files}, .pxd files
+		that accompany equally-named .py files. Such augmenting file can contain declarations of
+		variables, functions and classes that appear in associated .py files and add Cython-specific
+		features to them. For example, suppose that it is desired to have a function that is
+		inexpensive to call from Cython but still providing full Python compatibility, one can write
+		following Python module:
+		\vspace{\parskip}
+		\begin{Verbatim}[samepage=true,gobble=3,label=module.py,frame=single]
+			def f(x):
+			    return x*x
+		\end{Verbatim}
+		And associated augmenting file:
+		\vspace{\parskip}
+		\begin{Verbatim}[samepage=true,gobble=3,label=module.pxd,frame=single]
+			cdef double f(double x)
+		\end{Verbatim}
+		It is forbidden to provide implementation in .pxd files. This alternative approach is
+		advantageous to the first one because it doesn't require Cython to be installed on a target
+		machine (on the other hand, some very special Cython features currently cannot be expressed
+		in augmenting files). .pxd files also serve for sharing declarations between Cython modules
+		in a way similar to C header (.h)
+		files.\footnote{\url{http://docs.cython.org/src/userguide/sharing_declarations.html}}
+	\item[parallelisation] \hfill \\
+		One recent feature of current development snapshots of Cython is a native support for C-level
+		parallelisation through OpenMP\footnote{The OpenMP API specification for parallel
+		programming: \url{http://openmp.org/}} --- Cython adds new \verb|prange()| function that is
+		similar to the Python \verb|range()| function except that loop statements are executed in
+		parallel. Currently only loops whose statements can be called without holding the
+		GIL\footnote{global-interpreter lock \url{http://docs.python.org/glossary.html}} can be
+		efficiently parallelised. Our tests have shown that such parallel loops scale well with the
+		number of processors, see \autoref{sec:CythonPerformace} on page \pageref{sec:CythonPerformace}.
+	\item[Python 3 compatibility] \hfill \\
+		Cython provides full compatibility with Python 3 in particularly robust way: Cython modules
+		can be written in both Python 2 or Python 3 and C files that Cython produces can be compiled
+		against both CPython 2 or CPython 3, independently from the source file
+		version.\footnote{\url{http://wiki.cython.org/FAQ}}
+		This effectively makes Cython a 2-way compatibility bridge between Python 2 and Python 3.
+\end{description}
+There are many areas where Cython can get better, however most of them are just missed optimisation
+possibilities. We mention 2 major cases where Cython currently doesn't accept valid Python constructs:
+the \emph{yield} statement\footnote{\url{http://docs.python.org/reference/simple_stmts.html}}
+used to create generator functions is currently unsupported and
+\emph{generator expressions}\footnote{\url{http://docs.python.org/reference/expressions.html}}
+are supported only in special cases. Other minor inconveniences exist but we don't consider them
+worth discussing here. Another important attribute of Cython is, in our belief, its active developer
+community, for example we've discovered a bug related to Cython's pure Python mode capability that
+was fixed upon providing a test-case.\footnote{\url{http://trac.cython.org/cython_trac/ticket/583}}
 
 \subsection{Performance comparison with C and Python} \label{sec:CythonPerformace}
 
-benchmark\_c\_cy\_py
+In order to evaluate performance of Cython, we've conducted a benchmark where equivalent Python,
+Cython-compiled Python, Cython and C programs are compared. Inspired by the Cython tutorial, the
+test program performs simple numerical integration of the function \(x^2\) from 0 to 3. Python
+version of the test program is shown here, complete test environment along with instructions how
+to reproduce can be found in the
+\href{http://github.com/strohel/PyBayes/tree/master/examples/benchmark_c_cy_py}{\nolinkurl{examples/benchmark_c_cy_py}}
+directory in the PyBayes source code repository.
+\begin{Verbatim}[samepage=true,gobble=1,label=integrate\_python.py,frame=single]
+	def f(x):
+	    return x*x
 
+	def integrate(a, b, N):
+	    s = 0
+	    dx = (b-a)/N
+	    for i in xrange(N):
+	        s += f(a + (i + 1./2.)*dx)*dx
+	    return s
+\end{Verbatim}
+The test was performed on a 64-bit dual-core Intel Core i5-2520M CPU clocked at 2.50 Ghz with Intel Turbo
+Boost and Hyper-threading enabled, giving the total of 4 logical processor cores (each physical core
+being able to execute 2 CPU threads); operating system is Gentoo Linux compiled for the x86\_64
+platform. Versions of relevant software packages are listed below:
+\begin{description}
+	\item[Python] 2.7.1
+	\item[GNU C Compiler] 4.4.5; \verb|-O2| optimisation flag used when compiling C files
+	\item[Cython] 0.14.1+ (git revision 0.14.1-1002-g53e4c10)
+	\item[PyPy] 1.5.0-alpha0 with JIT compiler enabled
+\end{description}
+Program abbreviations used in benchmark results:
+
+\begin{tabular}{rl}
+	c\_omp         & C version, for loop parallelised using OpenMP \\
+	cy\_typed\_omp & Cython version with all variables typed, parallelised \\
+	pypy           & PyPy-executed Python version, single-threaded \\
+	c              & C version, single-threaded \\
+	cython\_typed  & Cython version with all variables typed, single-threaded \\
+	cython         & Cython-compiled Python version, single-threaded \\
+	python         & Python version, single-threaded \\
+\end{tabular}
+
+\begin{Verbatim}[label=typical benchmark run,frame=single]
+Numerical integration from 0.0 to 3.0 of x^2 with 200000000 steps:
+
+       c_omp: result = 9.0; real time = 0.446s; cpu time = 1.72s
+cy_typed_omp: result = 9.0; real time = 0.447s; cpu time = 1.73s
+        pypy: result = 9.0; real time = 0.851s; cpu time = 0.84s
+           c: result = 9.0; real time = 1.597s; cpu time = 2.00s
+cython_typed: result = 9.0; real time = 1.590s; cpu time = 1.58s
+      cython: result = 9.0; real time = 33.26s; cpu time = 33.2s
+      python: result = 9.0; real time = 95.05s; cpu time = 94.8s
+
+Relative speedups:
+      cython/python:       2.8571203030
+cython_typed/cython:       20.9136660253
+           c/cython_typed: 0.99693008347
+
+cy_typed_omp/cython_typed: 3.55556994329
+       c_omp/c:            3.57674225915
+
+       c_omp/cy_typed_omp: 1.00186053812
+\end{Verbatim}
+The \verb|cpu time| quantity is not reliable in our belief and is mentioned only for illustration;
+all measurements are based on the \verb|real time| quantity that measures wall-clock time needed to
+perform the algorithm.
+The benchmark had little variance in results across runs, the relative sample standard deviation
+\eqref{eq:RelStdDev} was under 3\% for all measured quantities (run times) with \(N = 10\).
+\begin{equation} \label{eq:RelStdDev}
+	s_{\text{rel}} = \frac{1}{\overline{x}} \; \sqrt{\frac{1}{N-1} \sum_{i=1}^N (x_i - \overline{x})^2}
+\end{equation}
+The test produced a couple of interesting results: the same Python code was 2.9\(\times\) faster
+when compiled by Cython; we are convinced that this is due to the Python interpreter overhead. Adding
+static type declarations to the Cython code resulted in additional 21-fold speed-up giving the total
+60\(\times\) increase in performance of a statically-typed Cython procedure compared to the dynamically
+typed Python one, forming a very impressive result. Somewhat surprising results were obtained from
+parallelisation tests --- parallelised Cython version was 3.5\(\times\) faster than equivalent
+singe-threaded code on a system with only 2 physical processor cores, we speculate that this is due
+to the Hyper-threading technology employed by the processor that reduced wasted CPU cycles (where
+the CPU waits for memory fetches). Nonetheless this shows that Cython (and C) parallelisation techniques
+using OpenMP scale very well. C and Cython versions of the algorithm performed virtually equally
+in both singe-threaded and multi-threaded cases giving an indication that Cython performs a very good
+job at optimising Python code in such simple cases. Another surprise was PyPy (operating on
+unmodified Python code) performance --- it was considerably faster that both C and optimised Cython
+code making it a very interesting option once it supports NumPy.
+
+We should however note that these extreme Cython performance gains are specific for such simple and
+highly numeric algorithms. We expect smaller benefits for more high-level code; Kalman filter tests
+(\autoref{sec:PyBayesPerformance} on page \pageref{sec:PyBayesPerformance}) support our claims.
+
+\subsection{Discussion}
+
+Cython, in our view, fixes the last possible barrier (the CPython overhead) before Python can be used
+for the desired library for Bayesian filtering. We consider especially important that optimisation
+can be approached \emph{gradually} --- one can write code purely in Python and add static type
+definitions only for performance critical parts (that show up as bottlenecks during profiling) and
+only once the high performance is needed; Cython developers even discourage adding static types
+everywhere. Second key feature of Cython, as identified by us and for
+out purposes, is the pure Python mode. Employing Cython brings the disadvantages of compiled languages,
+mainly a prolonged write-build-run-debug cycle. When the pure Python mode\footnote{specifically, the
+variant where only augmenting files are used} is used all these shortcomings
+are effectively voided (as the code works also under plain Python) at the cost of very minor loss
+of programming convenience. We expect that many potential library users don't have high performance
+requirements, these could ignore Cython entirely and use the library as any other plain python
+modules.
+
+Python/Cython combination was therefore chosen as the implementation environment for the desired
+library for recursive Bayesian estimation; the library was named \emph{PyBayes} and is presented in
+the next chapter.
