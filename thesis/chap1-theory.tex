@@ -331,7 +331,7 @@ can be used to estimate \(a_t\) part of the state vector in this case.
 	p(x_t|x_{t-1}) &= p(a_t, b_t|a_{t-1}, b_{t-1}) = p(a_t|a_{t-1}, b_t) p(b_t | b_{t-1}) \label{eq:MPFProcessMod}
 \end{align}
 
-Posterior {\pdf} \eqref{eq:MPFPosterior} can be represented as a product of a weighted empirical
+The posterior {\pdf} \eqref{eq:MPFPosterior} can be represented as a product of a weighted empirical
 distribution and a normal distribution. Each (i-th) particle is thus associated with its Kalman filter
 (representing \(a_t^{(i)}\) part) and \(b_t^{(i)}\) quantity.
 \begin{equation} \label{eq:MPFPosterior}
@@ -344,15 +344,15 @@ filter and \(b_t^{(i)}\) is a value of the \(b_t\) part of i-th particle.
 
 The algorithm of the described variant of the marginalized particle filter follows, note the
 similarities with the ordinary particle filter: at first, generate \(N\) \(b_t\) random samples from
-the initial distribution \(p(b_0)\). Then following procedure can be repeated for each measurement
+the initial distribution \(p(b_0)\). Then the following procedure can be repeated for each measurement
 \(y_t\):
 \begin{enumerate}
 	\item for each \(i\) compute \(b_t^{(i)}\) by random sampling from conditional {\pdf}
 		\(p(b_t|b_{t-1})\) where \(b_{t-1}^{(i)}\) substitutes \(b_{t-1}\) in condition.
-	\item for each \(i\) compute posterior {\pdf} \(p(a_t|y_{1:t},b_{1:t}^{(i)})\) of the i-th
+	\item for each \(i\) compute the posterior {\pdf} \(p(a_t|y_{1:t},b_{1:t}^{(i)})\) of the i-th
 		Kalman filter using \(y_t\) and \(b_t^{(i)}\).
-	\item for each \(i\) update weight \(\omega_i\) using formula \eqref{eq:MPFWeightUpdate} where
-		marginal likelihood of the i-th Kalman filter is used.
+	\item for each \(i\) update weight \(\omega_i\) using the formula \eqref{eq:MPFWeightUpdate} where
+		marginal likelihood of the i-th Kalman filter \eqref{eq:KalmanEvidence} is used.
 		\begin{equation} \label{eq:MPFWeightUpdate}
 			\omega_i = p(y_t|y_{1:t},b_{1:t}^{(i)}) \; \omega_i
 		\end{equation}
@@ -362,4 +362,4 @@ the initial distribution \(p(b_0)\). Then following procedure can be repeated fo
 
 It has been demonstrated in various publications that the marginalised particle filter outperforms
 the ordinary particle filter in both better accuracy and lower computational demands. Where
-applicable, it therefore forms excellent alternative to traditional particle filtering.
+applicable, it therefore forms an excellent alternative to traditional particle filtering.
