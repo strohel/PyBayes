@@ -759,15 +759,15 @@ Cython, in our view, fixes the last possible barrier (the CPython overhead) befo
 for the desired library for Bayesian filtering. We consider especially important that optimisation
 can be approached \emph{gradually} --- one can write code purely in Python and add static type
 definitions only for performance critical parts (that show up as bottlenecks during profiling) and
-only once the high performance is needed; Cython developers even discourage adding static types
+only once the high performance is needed; Cython developers soundly discourage adding static types
 everywhere. Second key feature of Cython, as identified by us and for
 out purposes, is the pure Python mode. Employing Cython brings the disadvantages of compiled languages,
 mainly a prolonged write-build-run-debug cycle. When the pure Python mode\footnote{specifically, the
-variant where only augmenting files are used} is used all these shortcomings
+variant where only augmenting files are used} is used, all these shortcomings
 are effectively voided (as the code works also under plain Python) at the cost of very minor loss
 of programming convenience. We expect that many potential library users don't have high performance
 requirements, these could ignore Cython entirely and use the library as any other plain python
-modules.
+module.
 
 Python/Cython combination was therefore chosen as the implementation environment for the desired
 library for recursive Bayesian estimation; the library was named \emph{PyBayes} and is presented in
