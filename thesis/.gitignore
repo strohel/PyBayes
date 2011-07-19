@@ -3,7 +3,6 @@
 *.backup
 *.aux
 *.toc
-*.pdf
 *.out
 *.brf
 *.bbl
@@ -11,3 +10,5 @@
 *.nav
 *.snm
 *.dvi
+
+thesis.pdf

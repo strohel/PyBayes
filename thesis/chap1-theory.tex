@@ -191,6 +191,14 @@ been reduced to tractable algebraic operations, computing inverse matrix\footnot
 that \(S_{t|t-1}\) is positive definite given that \(C_t\) is full-ranked,
 therefore the inverse in \eqref{eq:KalmanGain} exists.} being the most costly one.
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth,keepaspectratio=true]{KF.pdf}
+	\caption[Example run of the Kalman filter]{Example run of the Kalman filter. Lines are actual
+	(hidden) state, dots estimation means of various implementations (all yielding the same values).}
+	\label{fig:KF}
+\end{figure}
+
 It should be further noted that the Kalman filter and described algorithm can be easily enhanced to
 additionally cope with an \emph{intervention} (or control) vector applied to the system, making it
 suitable for the theory of decision-making. Numerous generalisations of the Kalman filter exist, for
