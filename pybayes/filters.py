@@ -243,6 +243,7 @@ class KalmanFilter(Filter):
 class ParticleFilter(Filter):
     r"""Standard particle filter implementation with resampling.
 
+    Specifying proposal density is currently unsupported, but planned; speak up if you want it!
     Posterior pdf is represented using :class:`~pybayes.pdfs.EmpPdf` and takes following form:
 
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )

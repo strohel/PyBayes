@@ -14,6 +14,8 @@ for lage speed gains (Cython build is several times faster).
 Future plans include more specialised variants of Kalman/particle filters and
 speed optimisations.
 
+PyBayes is being developed by Matěj Laitl, feel free to send me a mail to matej at laitl dot cz.
+
 Automatically generated **documentation** can be found at
 http://strohel.github.com/PyBayes-doc/
 
