@@ -604,8 +604,14 @@ so that Cython's benefits can be evaluated as a whole later:
 	\item[NumPy support] \hfill \\
 		As was noted above, many core parts of NumPy are written in C (or Cython), including the
 		crucial data-type, N-dimensional array. Cython provides explicit support for NumPy
-		data-types and core functions allowing the programmer to take advantage of the speed gains
-		of both.~\cite{Sel:09}
+		data-types and core array-manipulation methods and functions allowing the programmer to
+		take advantage of the speed gains of both.~\cite{Sel:09}
+
+		On the other hand, NumPy support in Cython (or Cython support in NumPy) is far from complete,
+		for example matrix multiplication, linear system solving and matrix decomposition functions
+		are usually speeded up using C (and BLAS, LAPACK) internally, but to our knowledge it is
+		presently impossible to call these functions from Cython without Python overhead (the overhead
+		is however significant only for small matrix sizes).
 	\item[pure Python mode] \hfill \\
 		It is clear that in order to make use of all important features of Cython, one has to use
 		syntax that is no longer valid Python code; this can be disadvantageous in many cases. To
