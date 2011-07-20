@@ -10,6 +10,48 @@ import sys
 from distutils.core import setup
 
 
+# generic distutils parameters
+version = '0.2'
+params = {
+    # meta-data; see http://docs.python.org/distutils/setupscript.html#additional-meta-data
+    'name':'PyBayes',
+    'version':version,
+    'author':u'Matěj Laitl',
+    'author_email':'matej@laitl.cz',
+    'maintainer':u'Matěj Laitl',
+    'maintainer_email':'matej@laitl.cz',
+    'url':'https://github.com/strohel/PyBayes',
+    'description':'Python library for recursive Bayesian estimation (Bayesian filtering)',
+    'long_description':'PyBayes is an object-oriented Python library for recursive Bayesian ' +
+        'estimation (Bayesian filtering) that is convenient to use. Already implemented are ' +
+        'Kalman filter, particle filter and marginalized particle filter, all built atop of ' +
+        'a light framework of probability density functions. PyBayes can optionally use Cython ' +
+        'for lage speed gains (Cython build is several times faster).',
+    # Note to myself: must manually upload on each release!
+    'download_url':'https://github.com/downloads/strohel/PyBayes/PyBayes-v'+version+'.tar.gz',
+    'platforms':'cross-platform',
+    'license':'GNU GPL v2+',
+    'classifiers':[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: OS Independent',
+        'Programming Language :: Cython',
+        'Programming Language :: Python',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ]
+
+    #'package_data':{'pybayes.tests':['stress_kalman_data.mat']}  # this unfortunately
+    # does not work in cython build, as params['packages'] is empty then
+}
+
+
+# building code starts here
+
 class Options(object):
     def __init__(self):
         self.use_cython = None
@@ -103,99 +145,62 @@ def configure_build(options):
             options.numpy_include_dir = numpy.get_include()
             del numpy
 
+def main():
+    options = parse_cmdline_options()
+    configure_build(options)
 
-# main code starts here
-options = parse_cmdline_options()
-configure_build(options)
+    if options.use_cython is True:
+        params['cmdclass'] = {'build_ext': options.build_ext}
+        params['py_modules'] = ['pybayes.__init__', 'pybayes.stresses.__init__',
+                                'pybayes.tests.__init__', 'pybayes.wrappers.__init__']
+        params['ext_modules'] = []
 
-# generic distutils parameters
-version = '0.2'
-params = {
-    # meta-data; see http://docs.python.org/distutils/setupscript.html#additional-meta-data
-    'name':'PyBayes',
-    'version':version,
-    'author':u'Matěj Laitl',
-    'author_email':'matej@laitl.cz',
-    'maintainer':u'Matěj Laitl',
-    'maintainer_email':'matej@laitl.cz',
-    'url':'https://github.com/strohel/PyBayes',
-    'description':'Python library for recursive Bayesian estimation (Bayesian filtering)',
-    'long_description':'PyBayes is an object-oriented Python library for recursive Bayesian ' +
-        'estimation (Bayesian filtering) that is convenient to use. Already implemented are ' +
-        'Kalman filter, particle filter and marginalized particle filter, all built atop of ' +
-        'a light framework of probability density functions. PyBayes can optionally use Cython ' +
-        'for lage speed gains (Cython build is several times faster).',
-    # Note to myself: must manually upload on each release!
-    'download_url':'https://github.com/downloads/strohel/PyBayes/PyBayes-v'+version+'.tar.gz',
-    'platforms':'cross-platform',
-    'license':'GNU GPL v2+',
-    'classifiers':[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
-        'Operating System :: OS Independent',
-        'Programming Language :: Cython',
-        'Programming Language :: Python',
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Topic :: Scientific/Engineering :: Physics',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
+        pxd_deps = ['__init__.pxd',
+                    'filters.pxd',
+                    'pdfs.pxd',
+                    'stresses/stress_filters.pxd',
+                    'wrappers/_linalg.pxd',
+                    'wrappers/_numpy.pxd',
+                    ]
+        deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
+        deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
+        # TODO: add cython's numpy.pxd as a dependency
+        extensions = ['filters.py',
+                    'pdfs.py',
+                    'stresses/stress_filters.py',
+                    'tests/support.py',
+                    'tests/test_filters.py',
+                    'tests/test_wrappers_numpy.py',
+                    'tests/test_wrappers_linalg.py',
+                    'tests/test_pdfs.py',
+                    'wrappers/_linalg.pyx',
+                    'wrappers/_numpy.pyx',
+                    ]
+        ext_options = {}  # options common to all extensions
+        ext_options['include_dirs'] = [options.numpy_include_dir]
+        ext_options['extra_compile_args'] = ["-O2"]
+        ext_options['extra_link_args'] = ["-Wl,-O1"]
+        ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
+        ext_options['pyrex_directives'] = {'profile':options.profile, 'infer_types':True}
+        ext_options['pyrex_include_dirs'] = ["tokyo"]  # find tokyo.pxd from bundled tokyo
+        for extension in extensions:
+            module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
+            paths = ["pybayes/" + extension]
+            paths += deps  # simple "every module depends on all pxd files" logic
+            params['ext_modules'].append(options.Extension(module, paths, **ext_options))
 
-    #'package_data':{'pybayes.tests':['stress_kalman_data.mat']}  # this unfortunately
-    # does not work in cython build, as params['packages'] is empty then
-}
+        # build and install bundled tokyo
+        params['ext_modules'].append(options.Extension(
+            'tokyo',  # module name
+            ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
+            libraries=['cblas', 'lapack'],
+            **ext_options
+        ))
 
-if options.use_cython is True:
-    params['cmdclass'] = {'build_ext': options.build_ext}
-    params['py_modules'] = ['pybayes.__init__', 'pybayes.stresses.__init__',
-                            'pybayes.tests.__init__', 'pybayes.wrappers.__init__']
-    params['ext_modules'] = []
+    else:  # options.use_cython is False
+        params['packages'] = ['pybayes', 'pybayes.stresses', 'pybayes.tests', 'pybayes.wrappers']
 
-    pxd_deps = ['__init__.pxd',
-                'filters.pxd',
-                'pdfs.pxd',
-                'stresses/stress_filters.pxd',
-                'wrappers/_linalg.pxd',
-                'wrappers/_numpy.pxd',
-                ]
-    deps = ['pybayes/' + pxd_file for pxd_file in pxd_deps]  # dependency list
-    deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
-    # TODO: add cython's numpy.pxd as a dependency
-    extensions = ['filters.py',
-                  'pdfs.py',
-                  'stresses/stress_filters.py',
-                  'tests/support.py',
-                  'tests/test_filters.py',
-                  'tests/test_wrappers_numpy.py',
-                  'tests/test_wrappers_linalg.py',
-                  'tests/test_pdfs.py',
-                  'wrappers/_linalg.pyx',
-                  'wrappers/_numpy.pyx',
-                 ]
-    ext_options = {}  # options common to all extensions
-    ext_options['include_dirs'] = [options.numpy_include_dir]
-    ext_options['extra_compile_args'] = ["-O2"]
-    ext_options['extra_link_args'] = ["-Wl,-O1"]
-    ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
-    ext_options['pyrex_directives'] = {'profile':options.profile, 'infer_types':True}
-    ext_options['pyrex_include_dirs'] = ["tokyo"]  # find tokyo.pxd from bundled tokyo
-    for extension in extensions:
-        module = "pybayes." + os.path.splitext(extension)[0].replace("/", ".")
-        paths = ["pybayes/" + extension]
-        paths += deps  # simple "every module depends on all pxd files" logic
-        params['ext_modules'].append(options.Extension(module, paths, **ext_options))
+    setup(**params)
 
-    # build and install bundled tokyo
-    params['ext_modules'].append(options.Extension(
-        'tokyo',  # module name
-        ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
-        libraries=['cblas', 'lapack'],
-        **ext_options
-    ))
-
-else:  # options.use_cython is False
-    params['packages'] = ['pybayes', 'pybayes.stresses', 'pybayes.tests', 'pybayes.wrappers']
-
-setup(**params)
+if __name__ == '__main__':
+    main()
