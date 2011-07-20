@@ -548,7 +548,9 @@ caused by highly dynamic nature of Python.
 \subsection{Cython Features}
 
 We continue by a brief technical description of some Cython extensions to Python and other features
-so that Cython's benefits can be evaluated as a whole later:
+so that Cython's benefits can be evaluated as a whole later. Unless noted otherwise, Cython version
+0.14.1 is described here; please note that Cython is a rapidly evolving project and some of the
+mentioned features or limitations may well change in future versions.
 \begin{description}
 	\item[cdef variables] \hfill \\
 		Cython supports so-called \emph{cdef variables} in both global (module) scope and function
@@ -627,13 +629,13 @@ so that Cython's benefits can be evaluated as a whole later:
 		features to them. For example, suppose that it is desired to have a function that is
 		inexpensive to call from Cython but still providing full Python compatibility, one can write
 		following Python module:
-		\vspace{\parskip}
+		\vspace*{4pt} % \parskip does not work here
 		\begin{Verbatim}[samepage=true,gobble=3,label=module.py,frame=single]
 			def f(x):
 			    return x*x
 		\end{Verbatim}
 		And associated augmenting file:
-		\vspace{\parskip}
+		\vspace*{4pt} % \parskip does not work here
 		\begin{Verbatim}[samepage=true,gobble=3,label=module.pxd,frame=single]
 			cdef double f(double x)
 		\end{Verbatim}
@@ -698,12 +700,14 @@ platform. Versions of relevant software packages are listed below:
 	\item[GNU C Compiler] 4.4.5; \verb|-O2| optimisation flag used when compiling C files
 	\item[Cython] 0.14.1+ (git revision 0.14.1-1002-g53e4c10)
 	\item[PyPy] 1.5.0-alpha0 with JIT compiler enabled
+	\item[PyBayes] 0.3 (contains test program sources)
 \end{description}
 Program abbreviations used in benchmark results:
 
 \begin{tabular}{rl}
 	c\_omp         & C version, for loop parallelised using OpenMP \\
 	cy\_typed\_omp & Cython version with all variables typed, parallelised \\
+	               & using \verb|prange()| \\
 	pypy           & PyPy-executed Python version, single-threaded \\
 	c              & C version, single-threaded \\
 	cython\_typed  & Cython version with all variables typed, single-threaded \\
@@ -734,7 +738,8 @@ cy_typed_omp/cython_typed: 3.55556994329
 \end{Verbatim}
 The \verb|cpu time| quantity is not reliable in our belief and is mentioned only for illustration;
 all measurements are based on the \verb|real time| quantity that measures wall-clock time needed to
-perform the algorithm. The number of steps was chosen artificially high to get better measurable timings.
+perform the algorithm. The number of steps was chosen artificially high to get timings that are
+easier to measure.
 The benchmark had little variance in results across runs, the relative sample standard deviation
 \eqref{eq:RelStdDev} was under 3\% for all measured quantities (run times) with \(N = 10\).
 \begin{equation} \label{eq:RelStdDev}
