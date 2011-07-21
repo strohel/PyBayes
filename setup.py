@@ -4,14 +4,24 @@
 # Distributed under the terms of the GNU General Public License v2 or any
 # later version of the license, at your option.
 
-import os.path
-import sys
-
 from distutils.core import setup
+import os
+import os.path
+import subprocess
+import sys
 
 
 # generic distutils parameters
-version = '0.2'
+version = '0.2-post-nongit'
+try: # try to get current version from git
+    orig_dir = os.getcwd()
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    version = str(subprocess.check_output(['git', 'describe', '--dirty'])).lstrip('v').rstrip()
+    os.chdir(orig_dir)
+    del orig_dir
+except StandardError as e:
+    print "Failed to determine version using git:", e
+
 params = {
     # meta-data; see http://docs.python.org/distutils/setupscript.html#additional-meta-data
     'name':'PyBayes',
