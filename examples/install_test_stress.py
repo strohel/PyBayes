@@ -12,6 +12,7 @@ import os
 import shutil
 from string import join
 from subprocess import call, check_call
+import sys
 
 
 def parse_options():
@@ -82,7 +83,7 @@ def install(mode, options):
     if not os.path.isdir(options.pybayes_dir):
         raise RuntimeError('{0} does not exist!'.format(setup_py))
 
-    args = ['./setup.py']
+    args = [sys.executable, 'setup.py']
     args.extend(modes[mode])
     args.extend(profiles[options.profile])
 
@@ -101,14 +102,14 @@ def install(mode, options):
     os.chdir(orig_dir)
 
 def run_tests(options):
-    run_tests = os.path.join(options.pybayes_dir, 'examples', 'run_tests.py')
-    args = [run_tests]
+    script = os.path.join(options.pybayes_dir, 'examples', 'run_tests.py')
+    args = [sys.executable, script]
     print(join(args, ' '))
     call(args)
 
 def run_stresses(options):
-    run_tests = os.path.join(options.pybayes_dir, 'examples', 'run_stresses.py')
-    args = [run_tests, '-d', options.data_dir]
+    script = os.path.join(options.pybayes_dir, 'examples', 'run_stresses.py')
+    args = [sys.executable, script, '-d', options.data_dir]
     print(join(args, ' '))
     call(args)
 
