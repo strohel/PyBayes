@@ -10,7 +10,7 @@ chosen for implementation.
 In whole chapter, the term \emph{user} refers to someone (a programmer) who uses the library in
 order to implement higher-level functionality (such as simulation of dynamic systems).
 
-\section{Requirements}
+\section{Requirements} \label{sec:Requirements}
 
 Our intended audience is a broad scientific community interested in the field of the recursive
 Bayesian estimation and decision-making. Keeping this in mind and in order to formalise expectations for
@@ -47,7 +47,7 @@ Usability:
 		For example a necessity to install third-party libraries from sources is considered
 		infeasible.
 	\item Implementation environment used for the library should allow for high programmer
-		productivity; prototyping new solutions should be quick and cheap (in terms of effort)
+		productivity; prototyping new solutions should be a quick and cheap (in terms of effort)
 		operation. This requirement effectively biases towards higher-level programming
 		languages.
 \end{itemize}
@@ -340,7 +340,7 @@ have identified potential advantages of the C++ language:
 		and fixed function), higher-level IT++\footnote{\url{http://itpp.sourceforge.net/}} built
 		atop of BLAS/LAPACK or independent template-based library
 		Eigen.\footnote{\url{http://eigen.tuxfamily.org/}} Additionally,
-		OpenMP\footnote{Open Multi-Processing API and libraries: \url{http://openmp.org/}}
+		OpenMP\footnote{The OpenMP API specification for parallel programming: \url{http://openmp.org/}}
 		can be used to parallelise existing algorithms without rewriting them.
 \end{description}
 However, using C++ would, in our opinion, bring following major drawbacks:
