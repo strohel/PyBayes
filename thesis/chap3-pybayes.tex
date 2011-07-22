@@ -18,6 +18,9 @@ and openly using the git\footnote{\url{http://git-scm.com/}} version control sys
 GitHub\footnote{\url{http://github.com}} source-code hosting service at the address
 \url{http://github.com/strohel/PyBayes} that also serves as the home page of the project; PyBayes is
 also accessible from the Python Package Index (PyPI).\footnote{\url{http://pypi.python.org/pypi/PyBayes}}
+\ifattachements
+	Additionally, the snapshot of version 0.3 is available on the enclosed CD-ROM.
+\fi
 PyBayes is a free/open-source software licensed under the GNU GPL\footnote{GNU General Public
 License: \url{http://www.gnu.org/licenses/gpl.html}}, version 2 or later. Version 0.3 of PyBayes is
 described in this text; we expect PyBayes to evolve in future and thus some claims present this
@@ -26,9 +29,11 @@ appropriate places.
 
 The goal of PyBayes is to provide a Python library that satisfies the posed requirements, is very
 convenient to develop with even when prototyping novel algorithms, but fast enough to be deployed in
-production. In order to achieve both of these usually contradicting demands, PyBayes uses a special
+production. Library design should be object-oriented and very clean to be well comprehensible.
+In order to achieve both of these usually contradicting demands, PyBayes uses a special
 technique where the same source code can be interpreted by Python as usual (giving all advantages
-of Python) or compiled using Cython which uses additional \emph{augmenting files} to provide static
+of Python) or compiled using Cython which makes use of additional \emph{augmenting files} that are present
+in sources to provide static
 type declarations to performance-critical code-paths; PyBayes thus employs Cython's \emph{pure Python
 mode}. The Cython build is currently 50\% to 200\% faster than Python depending on the algorithm and
 level of optimisation applied to it, see \autoref{sec:PyBayesPerformance} (p.~\pageref{sec:PyBayesPerformance})
@@ -36,14 +41,84 @@ for example measurements. PyBayes' \verb|setup.py|, the use of which is the stan
 Python packages, automatically detects whether Cython is installed on the system and uses it when
 possible.
 
+PyBayes sources are maintained to be compatible with Python versions 2.5, 2.5 and 2.7; Python 3
+compatibility can achieved using the 2to3\footnote{\url{http://docs.python.org/library/2to3.html}}
+automatic code conversion tool, the sources are kept to be convertible without interaction
+(CPython's \verb|-3| command-line can be used for this task). To promote code readability, coding
+style prescribed by the PEP 8\footnote{Python Enhancement Proposal 8:
+\url{http://www.python.org/dev/peps/pep-0008/}} is followed.
+
+The sections below present the library design and explain some decisions taken during development;
+they complement the PyBayes API Documentation available on-line at \url{http://strohel.github.com/PyBayes-doc/}%
+\ifattachements%
+, in the appendix (p. \pageref{chap:APIDocs}) and on the enclosed CD-ROM
+\fi
+which is a reference guide intended for PyBayes users.
+
+All class diagrams in this text utilise standard UML\footnote{Unified Modelling Language:
+\url{http://www.uml.org/}} notation and are not an exhaustive reference of all classes, members and
+methods --- they rather illustrate the API Documentation; inherited attributes and methods are not
+shown in diagrams. Unless noted otherwise, all references to
+files and folders in this chapter refer to the respective files/folders in the PyBayes source code
+repository.\footnote{\url{http://github.com/strohel/PyBayes}} Python software nomenclature is used,
+most notably the following terms:
+\begin{description}
+	\item[module] a file with .py extension (but denoted without it) that contains Python code and
+		has its own namespace.
+	\item[package] a folder that contains above modules and possibly other packages; package
+		namespace is identical with its \verb|__init__| module that has to be present.
+\end{description}
+
 \section{Library Layout}
+
+The source code of PyBayes is arranged as follows:
+
+\noindent\begin{tabular}{rp{\textwidth-92pt}}
+\verb|doc/|      & control files for generating documentation (see also \autoref{sec:PyBayesDocsTests}) \\
+\verb|examples/| & auxiliary scripts and benchmark sources \\
+\verb|pybayes/|  & PyBayes Python package; the actual implementation is located in this package \\
+\verb|scratch/|  & miscellaneous and temporary files \\
+\verb|thesis/|   & source code of this text \\
+\verb|tokyo/|    & TODO \\
+\verb|COPYING|   & the text of GNU GPL v2, the PyBayes license \\
+\verb|HACKING.rst| & a guide for PyBayes developers; can be viewed as plain-text \\
+\verb|README.rst|  & general information and installation instructions \\
+\verb|setup.py|    & setup script, a tool to build and install PyBayes \\
+\end{tabular}
+
+The \verb|pybayes| package, the most important part that forms the actual PyBayes library, contains
+2 modules (\verb|pdfs| and \verb|filters|) that form the public API of the library (overview shown in
+\autoref{fig:DiaPyBayes}) and 3 supportive packages that are considered private to PyBayes and may
+change without notice.
+\begin{description}
+	\item[pdfs] module contains a framework of {\pdfs} and related classes
+	\item[filters] module contains Bayesian filters
+\end{description}
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 196mm 3cm 3cm]{./diagrams/PyBayes.pdf}
 	\vspace{-8mm}
 	\caption{High-level overview of the PyBayes library; simplified}
+	\label{fig:DiaPyBayes}
 \end{figure}
+
+\subsection{Probability Density Function Prototypes}
+
+Probability density functions have central role in the theory of Bayesian filtering and thus should
+receive great attention during library design. Probability density functions should be both flexible
+and lightweight as copying them is needed for example in marginalized particle filter; it was
+decided that {\pdfs} should be multivariate 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 204mm 3cm 3cm]{./diagrams/pdfs.pdf}
+	\vspace{-8mm}
+	\caption{Class diagram of the {\pdf} prototypes}
+	\label{fig:DiaPdfs}
+\end{figure}
+
+... why pdfs from scipy weren't used
 
 \subsection{Random Variable Meta-representation}
 
@@ -52,32 +127,38 @@ possible.
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 218mm 3cm 3cm]{./diagrams/rvs.pdf}
 	\vspace{-8mm}
 	\caption{Class diagram of the random variable framework}
+	\label{fig:DiaRvs}
 \end{figure}
 
 Why it is needed (ref to ProdCPdf)
 
-\subsection{Probability Density Function Prototypes}
+\subsection{Gaussian Probability Density Functions}
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 204mm 3cm 3cm]{./diagrams/pdfs.pdf}
+	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 173mm 3cm 3cm]{./diagrams/gaussian_pdfs.pdf}
 	\vspace{-8mm}
-	\caption{Class diagram of the {\pdf} prototypes}
+	\caption{Class diagram of Gaussian and related distributions}
+	\label{fig:DiaGaussPdfs}
 \end{figure}
 
-... why pdfs from scipy weren't used
-
-uniform pdf not mentioned elsewhere
-
-\subsection{Gaussian Probability Density Functions}
-
 \subsection{Empirical Probability Density Functions}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 210mm 3cm 3cm]{./diagrams/emp_pdfs.pdf}
+	\vspace{-8mm}
+	\caption{Class diagram of empirical distributions}
+	\label{fig:DiaEmpPdfs}
+\end{figure}
 
 and their use in Particle filters
 
 and in testing!
 
-\subsection{Product Probability Density Functions}
+\subsection{Other Probability Density Functions}
+
+|uniform pdf not mentioned elsewhere|
 
 \subsection{Bayesian Filters}
 
@@ -91,7 +172,7 @@ similar of marginalized particle filter? (gausses would be plotted vertically)
 
 [mention this:\cite{Smi:10}]
 
-\subsection{Wrappers}
+\subsection{Wrappers} \label{sec:PyBayesWrappers}
 
 about numpy, linalg wrappers, Tokyo...
 
@@ -120,6 +201,6 @@ Python/Cython KalmanFilter, MATLAB oo / imperative / BDM
 
 |see \autoref{fig:KF} (p. \pageref{fig:KF})|
 
-\section{Future Plans}
+\section{Discussion, Future Plans}
 
 jo?

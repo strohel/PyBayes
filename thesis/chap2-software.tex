@@ -704,15 +704,14 @@ platform. Versions of relevant software packages are listed below:
 \end{description}
 Program abbreviations used in benchmark results:
 
-\begin{tabular}{rl}
-	c\_omp         & C version, for loop parallelised using OpenMP \\
-	cy\_typed\_omp & Cython version with all variables typed, parallelised \\
-	               & using \verb|prange()| \\
-	pypy           & PyPy-executed Python version, single-threaded \\
-	c              & C version, single-threaded \\
-	cython\_typed  & Cython version with all variables typed, single-threaded \\
-	cython         & Cython-compiled Python version, single-threaded \\
-	python         & Python version, single-threaded \\
+\noindent\begin{tabular}{rp{\textwidth-99pt}}
+	\verb|c_omp|        & C version, for loop parallelised using OpenMP \\
+	\verb|cy_typed_omp| & Cython version with all variables typed, parallelised using \verb|prange()| \\
+	\verb|pypy|         & PyPy-executed Python version, single-threaded \\
+	\verb|c|            & C version, single-threaded \\
+	\verb|cython_typed| & Cython version with all variables typed, single-threaded \\
+	\verb|cython|       & Cython-compiled Python version, single-threaded \\
+	\verb|python|       & Python version, single-threaded \\
 \end{tabular}
 
 \begin{Verbatim}[label=typical benchmark run,frame=single]
