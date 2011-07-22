@@ -25,13 +25,12 @@
 	pdftitle={Implementation environment for Bayesian filtering algorithms}
 }
 
-%% Nastavení zrcadla sazby
+%% Nastavení okraju
 \usepackage{calc}
-\setlength{\textheight}{9in}
-\setlength{\textwidth}{6in}
-\setlength\oddsidemargin{(\paperwidth-\textwidth)/2 - 1in}
-\setlength\evensidemargin{(\paperwidth-\textwidth)/2 - 1in}
-\setlength\topmargin{(\paperheight-\textheight-\headheight-\headsep-\footskip)/2 - 1in}
+\setlength{\textheight}{\paperheight -3cm -3cm}  % horni a dolni okraje 3cm, do tech se musi vejit header a footer
+\setlength{\textwidth}{\paperwidth -3.5cm -2.5cm}  % levy okraj 3,5cm (na vazbu), pravy okraj 2,5cm
+\setlength{\oddsidemargin}{3.5cm -1in}
+\setlength{\topmargin}{(\paperheight-\textheight-\headheight-\headsep-\footskip)/2 - 1in}
 
 %\parindent=0pt % odsazení 1. řádku odstavce
 \parskip=4pt   % mezera mezi odstavci
@@ -58,7 +57,6 @@
 \ifattachements
 	\input{startpages.tex} % include some fancy start pages
 \fi
-
 
 % obsah
 \newpage
@@ -129,12 +127,12 @@ na co se nezamerujeme: MCMC, Bayes networks
 \ifattachements
 	% přílohy
 	\appendix % aby LaTeX cisloval jinak
-	\clearpage % so that the contents link mentions correct page
-	\phantomsection % so that hyperref makes correct reference
-	\addcontentsline{toc}{chapter}{\appendixname}
 
-	\part*{\appendixname}
+	\chapter{Contents of the Enclosed CD-ROM}
 
+	\clearpage
+	\phantomsection
+	\addcontentsline{toc}{chapter}{\numberline {B}PyBayes API Documentation} \label{chap:APIDocs}
 	\includepdf[pages=-]{../doc/_build/latex/PyBayes.pdf}
 \fi
 
