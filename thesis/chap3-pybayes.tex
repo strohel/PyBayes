@@ -39,14 +39,16 @@ mode}. The Cython build is currently 50\% to 200\% faster than Python depending 
 level of optimisation applied to it, see \autoref{sec:PyBayesPerformance} (p.~\pageref{sec:PyBayesPerformance})
 for example measurements. PyBayes' \verb|setup.py|, the use of which is the standard way to install
 Python packages, automatically detects whether Cython is installed on the system and uses it when
-possible.
+possible. NumPy's \verb|ndarray| (N-dimensional array) of Python \verb|floats|\footnote{Python
+\verb|float| (\verb|numbers.Real|) corresponds to C \verb|double|} is used as principal
+numeric type for vectors and matrices for its low overhead, convenience and interoperability.
 
 PyBayes sources are maintained to be compatible with Python versions 2.5, 2.5 and 2.7; Python 3
 compatibility can achieved using the 2to3\footnote{\url{http://docs.python.org/library/2to3.html}}
 automatic code conversion tool, the sources are kept to be convertible without interaction
 (CPython's \verb|-3| command-line can be used for this task). To promote code readability, coding
 style prescribed by the PEP 8\footnote{Python Enhancement Proposal 8:
-\url{http://www.python.org/dev/peps/pep-0008/}} is followed.
+\url{http://www.python.org/dev/peps/pep-0008/}} is followed when feasible.
 
 The sections below present the library design and explain some decisions taken during development;
 they complement the PyBayes API Documentation available on-line at \url{http://strohel.github.com/PyBayes-doc/}%
@@ -74,25 +76,24 @@ most notably the following terms:
 The source code of PyBayes is arranged as follows:
 
 \noindent\begin{tabular}{rp{\textwidth-92pt}}
-\verb|doc/|      & control files for generating documentation (see also \autoref{sec:PyBayesDocsTests}) \\
-\verb|examples/| & auxiliary scripts and benchmark sources \\
-\verb|pybayes/|  & PyBayes Python package; the actual implementation is located in this package \\
-\verb|scratch/|  & miscellaneous and temporary files \\
-\verb|thesis/|   & source code of this text \\
-\verb|tokyo/|    & TODO \\
-\verb|COPYING|   & the text of GNU GPL v2, the PyBayes license \\
-\verb|HACKING.rst| & a guide for PyBayes developers; can be viewed as plain-text \\
-\verb|README.rst|  & general information and installation instructions \\
-\verb|setup.py|    & setup script, a tool to build and install PyBayes \\
+\verb|doc/|      & control files for generating documentation (see also \autoref{sec:PyBayesDocsTests}). \\
+\verb|examples/| & auxiliary scripts and benchmark sources. \\
+\verb|pybayes/|  & PyBayes Python package; the actual implementation is located in this package. \\
+\verb|scratch/|  & miscellaneous and temporary files. \\
+\verb|thesis/|   & source code of this text. \\
+\verb|tokyo/|    & source code of the Tokyo project, bundled with PyBayes (see \autoref{sec:PyBayesWrappers}). \\
+\verb|COPYING|   & the text of GNU GPL v2, the PyBayes license. \\
+\verb|HACKING.rst| & a guide for PyBayes developers; can be viewed as plain-text. \\
+\verb|README.rst|  & general information and installation instructions. \\
+\verb|setup.py|    & setup script, a tool to build and install PyBayes. \\
 \end{tabular}
 
 The \verb|pybayes| package, the most important part that forms the actual PyBayes library, contains
-2 modules (\verb|pdfs| and \verb|filters|) that form the public API of the library (overview shown in
-\autoref{fig:DiaPyBayes}) and 3 supportive packages that are considered private to PyBayes and may
-change without notice.
+3 supportive packages that are considered private to PyBayes (that may change without notice), and
+2 following modules that form the public API of the library (overview shown in \autoref{fig:DiaPyBayes}):
 \begin{description}
-	\item[pdfs] module contains a framework of {\pdfs} and related classes
-	\item[filters] module contains Bayesian filters
+	\item[pdfs] module contains a framework of {\pdfs} and related classes.
+	\item[filters] module contains Bayesian filters.
 \end{description}
 
 \begin{figure}[h]
@@ -103,14 +104,46 @@ change without notice.
 	\label{fig:DiaPyBayes}
 \end{figure}
 
-\subsection{Probability Density Function Prototypes}
+\subsection{Probability Density Functions}
 
 Probability density functions have central role in the theory of Bayesian filtering and thus should
 receive great attention during library design. Probability density functions should be both flexible
-and lightweight as copying them is needed for example in marginalized particle filter; it was
-decided that {\pdfs} should be multivariate 
+and lightweight as copying them is needed for example in the marginalized particle filter. In PyBayes
+{\pdfs} are multivariate (even distributions that cannot be generalised to multiple dimensions take
+singe-valued vectors as parameters for consistency and easier static typing).
 
-\begin{figure}[h]
+2 basic categories of {\pdfs} can be distinguished from the implementation point of view:
+unconditional ones whose statistics are fixed once the distribution is constructed and conditional
+{\pdfs} whose statistics depend on a free parameter; depending on one's standpoint, unconditional
+{\pdfs} may be viewed as a subclass of unconditional ones (that would have additional method
+\verb|set_condition(cond)| or similar) or the other way around where unconditional {\pdf} is viewed
+as a specialisation of the conditional ones with a restriction that condition is empty.
+The latter approach is used by PyBayes for being less error-prone in our belief.
+Alternatively, conditional and unconditional densities could be unrelated (impractical in our case)
+or unified in one class without specifying conditionality (in fact, PyBayes is not far from this).
+
+% TODO: note about random variables with associated pdfs?
+% TODO: maybe why pdfs from scipy weren't used  (heavy-weight, unsuitable)
+
+All {\pdfs} are represented using an abstract class \emph{CPdf} that provides interface for querying
+random variable and conditioning variable dimensions (methods \verb|shape()| and \verb|cond_shape()|),
+for computing expected value and variance (methods \verb|mean()| and \verb|varience()|) that take
+condition as a parameter, for computing natural logarithm of the {\pdf} value in a given point
+(\verb|eval_log()|) and for drawing random samples (\verb|sample()|), both also accepting condition
+in parameters. A few support methods for use by subclasses not are provided to reduce code
+duplication, these aren't discussed here. The CPdf class also holds references to random variable
+and conditioning variable descriptions (attributes \verb|rv| and \verb|cond_rv|) which are talked 
+bout in the next chapter. By convention \verb|rv| and \verb|cond_rv| to a valid \emph{RV} object
+that can, however, signify ``empty random variable''.
+
+The \emph{Pdf} is a very thin subclass of CPdf providing an implementation of the \verb|cond_shape()|
+that returns zero to signify empty condition; by convention, Pdf subclasses also should set
+\verb|cond_rv| to ``empty random variable''. The function of the Pdf class is therefore rather
+semantic than technical distinction between conditional and unconditional {\pdfs}.
+
+Outline of {\pdf} prototypes is shown in the \autoref{fig:DiaPdfs}.
+
+\begin{figure}[h!]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 204mm 3cm 3cm]{./diagrams/pdfs.pdf}
 	\vspace{-8mm}
@@ -118,9 +151,50 @@ decided that {\pdfs} should be multivariate
 	\label{fig:DiaPdfs}
 \end{figure}
 
-... why pdfs from scipy weren't used
-
 \subsection{Random Variable Meta-representation}
+
+In mathematics, the relation between random variables and {\pdfs} is follows: a {\pdf} is associated
+to a random variable, e.g. ``random variable \(X\) is normally distributed''. This is impractical in
+software (should drawing a million bare samples produce a million copies of a random variable?) but
+the relation between random variables and {\pdfs} couldn't be entirely dropped without a substitution,
+as illustrated in the following example.
+
+The chain rule for {\pdfs} is heavily used in Bayesian filtering and should be adequately supported
+by software. While simple cases can be represented without problems, when for example \(p(a,b|c,d)\)
+from \eqref{eq:ProdCPdf} is desired to be represented, additional information have to be supplied by
+the user (programmer) so that correct data-flow can be established (e.g. the order of conditioning
+variables of \(p_1\) cannot be determined automatically).
+\begin{equation} \label{eq:ProdCPdf}
+	p(a,b|c,d) = p_1(a|c,b) p_2(b|d)
+\end{equation}
+
+The first option would be to force the user to specify the relations between distributions manually
+(for example using a form of directed acyclic graph); we believe that it is however error-prone
+and inconvenient. The other method is to make the association the other way around --- random
+variables would be associated to {\pdfs}, in our example above \(p_1\) would contain an information
+that it has random variable \(a\) and conditioning variables \(c,b\).
+
+The second approach is used in PyBayes even though it brings some computational overhead (that we
+think is worth the simplicity it brings). As mentioned in the previous section, the CPdf class has
+\verb|rv| and \verb|cond_rv| attributes that hold instances of the \emph{RV} class.
+
+The RV class is essentially a list of ``random vector components'' represented using the
+\emph{RVComp} class. RV provides a few methods to test relationships between 2 random vectors
+(whether a RV is subset of another RV etc.) and one notable method, \verb|indexed_in()|. Suppose
+that RV \(x\) has components \(x_1, x_2 \dots x_n\) and RV \(y\) is a subset of \(x\) and contains
+components \(x_{i_1}, x_{i_2} \dots x_{i_m}\); \verb|y.indexed_in(x)| then returns an index array
+\((i_1, i_2 \dots i_m)\) which is suitable for NumPy array indexing methods.
+
+The RVComp class is a simple container for the optional \verb|name| and \verb|dimension| (which must
+be greater than zero) attributes; RV caches aggregate name and dimension. An important principle in
+PyBayes is that RVComp comparisons are \emph{instance-based}: 2 RVComp objects are considered equal
+if and only if they refer to the same instance.\footnote{the name attribute thus serves only for
+aesthetic purposes.} This is fast (compared to for example name-based equality), saves memory,
+prevents collisions and is convenient in Python thanks to its call-by-object semantics. A RVComp
+without name (\verb|name| attribute set to None) that can be called \emph{anonymous component} is
+created in CPdf when the user doesn't pass RV to the constructor, but is otherwise insignificant.
+
+Overview of RV and RVComp classes can be seen in the \autoref{fig:DiaRvs}.
 
 \begin{figure}[h]
 	\centering
@@ -129,8 +203,6 @@ decided that {\pdfs} should be multivariate
 	\caption{Class diagram of the random variable framework}
 	\label{fig:DiaRvs}
 \end{figure}
-
-Why it is needed (ref to ProdCPdf)
 
 \subsection{Gaussian Probability Density Functions}
 
