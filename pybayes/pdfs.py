@@ -755,7 +755,6 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
        for each particle; shape: (n) where n is the number of particles
     :var numpy.ndarray particles: 2D array of particles; shape: (n, m) where n
        is the number of particles, m dimension of the "empirical" part of random variable
-    :var numpy.ndarray weights: 1D array of particle weights
 
     You may alter particles and weights, but you must ensure that their shapes
     match and that weight constraints still hold. You can use
