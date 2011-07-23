@@ -61,12 +61,13 @@
 
 % obsah
 \newpage
+\pagenumbering{roman}
 \tableofcontents
 
 
 \chapter*{Notation} \addcontentsline{toc}{chapter}{Notation}
 
-Throughout this text, following notation is used
+Following notation is used throughout this text:
 
 \bigskip
 
@@ -78,7 +79,7 @@ Throughout this text, following notation is used
 	\(a_t\) & value of quantity \(a\) at time \(t\); \(a_t \in \mathbb{R}^n, n \in \mathbb{N}\) \\
 	\(a_{t|t'}\) & quantity with two indices: \(t\) and \(t'\) \\
 		& there is no implicit link between \(a_{t}\), \(a_{t|t'}\) and \(a_{t'}\) \\
-	\(a_{t:t'}\) & sequence of quantities \((a_t, a_{t+1} \dots a_{t'-1}, a_{t'})\) \\
+	\(a_{t:t'}\) & sequence of quantities \((a_t, a_{t+1}, \dotsc, a_{t'-1}, a_{t'})\) \\
 	\(p(a_t)\) & probability density function{\footnotemark[1]} of quantity \(a\) at time \(t\) (unless
 		noted otherwise) \\
 	\(p(a_t|b_{t'})\) & conditional {\pdf} of quantity \(a\) at time \(t\) given value of quantity
@@ -91,7 +92,7 @@ Throughout this text, following notation is used
 
 % \footnote does not work in tabular environment, - this can be worked around with this
 \footnotetext[1]{for the purpose of this text, {\pdf} \(p\) is multivariate non-negative function
-\(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2 \dots x_n) \; \dx_1 \dx_2 \dots \dx_n = 1\)}
+\(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2, \dotsc, x_n) \; \dx_1 \dx_2 \dotsb \dx_n = 1\)}
 
 \footnotetext[2]{so that \(\int_{-\infty}^{\infty} f(x) \delta(x - \mu) \; \dx = f(\mu)\) and more
 complex expressions can be derived using integral linearity and Fubini's theorem.}
@@ -100,6 +101,7 @@ complex expressions can be derived using integral linearity and Fubini's theorem
 \clearpage % so that table of contents mentions correct page
 \phantomsection % so that hyperref makes correct reference
 \addcontentsline{toc}{chapter}{Introduction}
+\pagenumbering{arabic}
 \chapter*{Introduction}
 
 TODO motivatin for bayes filtering + a need for a convenient library (rapid prototyping vs. speed)

@@ -100,7 +100,8 @@ The \verb|pybayes| package, the most important part that forms the actual PyBaye
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 196mm 3cm 3cm]{./diagrams/PyBayes.pdf}
 	\vspace{-8mm}
-	\caption{High-level overview of the PyBayes library; simplified}
+	\caption[High-level overview of the PyBayes library]{High-level overview of the PyBayes library;
+	simplified}
 	\label{fig:DiaPyBayes}
 \end{figure}
 
@@ -178,9 +179,9 @@ think is worth the simplicity it brings). As mentioned in the previous section, 
 The RV class is essentially a list of ``random vector components'' represented using the
 \emph{RVComp} class. RV provides a few methods to test relationships between 2 random vectors
 (whether a RV is subset of another RV etc.) and one notable method, \verb|indexed_in()|. Suppose
-that RV \(x\) has components \((x_1, x_2 \dots x_n)\) and RV \(y\) is a subset of \(x\) and contains
-components \((x_{i_1}, x_{i_2} \dots x_{i_m})\); \verb|y.indexed_in(x)| then returns an index array
-\((i_1, i_2 \dots i_m)\) which is suitable for NumPy array indexing methods.
+that RV \(x\) has components \((x_1, x_2, \dotsc, x_n)\) and RV \(y\) is a subset of \(x\) and contains
+components \((x_{i_1}, x_{i_2}, \dotsc, x_{i_m})\); \verb|y.indexed_in(x)| then returns an index array
+\((i_1, i_2, \dotsc, i_m)\) which is suitable for NumPy array indexing methods.
 
 The RVComp class is a simple container for the optional \verb|name| and \verb|dimension| (which must
 be greater than zero) attributes; RV caches aggregate name and dimension. An important principle in
@@ -274,7 +275,7 @@ densities implement \verb|eval_log()| or \verb|sample()| --- while the latter wo
 are yet to find a valid use-case for it (resampling particles being implemented differently).
 
 The \emph{AbstractEmpPdf} class holds the \verb|weights| parameter, a vector of particle weights denoted as
-\(\omega = (\omega_1, \omega_2 \dots \omega_n)\) in formulas. The usual constraints
+\(\omega = (\omega_1, \omega_2, \dotsc, \omega_n)\) in formulas. The usual constraints
 \eqref{eq:AbstractEmpPdfConstraints} must hold. A simple method \verb|normalise_weights()| normalises
 weights according to \eqref{eq:AbstractEmpPdfNormalise}.
 \begin{align}
