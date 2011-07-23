@@ -122,9 +122,6 @@ The latter approach is used by PyBayes for being less error-prone in our belief.
 Alternatively, conditional and unconditional densities could be unrelated (impractical in our case)
 or unified in one class without specifying conditionality (in fact, PyBayes is not far from this).
 
-% TODO: note about random variables with associated pdfs?
-% TODO: maybe why pdfs from scipy weren't used  (heavy-weight, unsuitable)
-
 All {\pdfs} are represented using an abstract class \emph{CPdf} that provides interface for querying
 random variable and conditioning variable dimensions (methods \verb|shape()| and \verb|cond_shape()|),
 for computing expected value and variance (methods \verb|mean()| and \verb|varience()|) that take
@@ -181,8 +178,8 @@ think is worth the simplicity it brings). As mentioned in the previous section, 
 The RV class is essentially a list of ``random vector components'' represented using the
 \emph{RVComp} class. RV provides a few methods to test relationships between 2 random vectors
 (whether a RV is subset of another RV etc.) and one notable method, \verb|indexed_in()|. Suppose
-that RV \(x\) has components \(x_1, x_2 \dots x_n\) and RV \(y\) is a subset of \(x\) and contains
-components \(x_{i_1}, x_{i_2} \dots x_{i_m}\); \verb|y.indexed_in(x)| then returns an index array
+that RV \(x\) has components \((x_1, x_2 \dots x_n)\) and RV \(y\) is a subset of \(x\) and contains
+components \((x_{i_1}, x_{i_2} \dots x_{i_m})\); \verb|y.indexed_in(x)| then returns an index array
 \((i_1, i_2 \dots i_m)\) which is suitable for NumPy array indexing methods.
 
 The RVComp class is a simple container for the optional \verb|name| and \verb|dimension| (which must
@@ -194,7 +191,10 @@ prevents collisions and is convenient in Python thanks to its call-by-object sem
 without name (\verb|name| attribute set to None) that can be called \emph{anonymous component} is
 created in CPdf when the user doesn't pass RV to the constructor, but is otherwise insignificant.
 
-Overview of RV and RVComp classes can be seen in the \autoref{fig:DiaRvs}.
+The concept of random variables might be used also for some Bayesian filters in future should there
+be a need for it. On the other hand, documented conventions (such as ordering of vector components)
+are used rather than RVs where feasible. Overview of RV and RVComp classes can be seen in the
+\autoref{fig:DiaRvs}.
 
 \begin{figure}[h]
 	\centering
@@ -206,6 +206,55 @@ Overview of RV and RVComp classes can be seen in the \autoref{fig:DiaRvs}.
 
 \subsection{Gaussian Probability Density Functions}
 
+We continue by a brief mention of implemented {\pdfs}; our policy is to add new distributions on
+as-needed basis rather than trying to have exhaustive set from the beginning. Every user of
+PyBayes can create its own distributions by subclassing Pdf of CPdf and implementing meaningful
+methods (there is no requirement for implementing unused methods).
+
+PyBayes ships standard multivariate normal (Gaussian) {\pdf} through the \emph{GaussPdf} class;
+related log-normal {\pdf} \emph{LogNormPdf} is also provided and shares common abstract superclass,
+\emph{AbstractGaussPdf} with GaussPdf. The AbstractGaussPdf class only holds mean attribute \verb|mu|
+and covariance matrix attribute \verb|R| and is useful mainly for the family of conditional Gaussian
+{\pdfs} described below.
+
+The most general conditional Gaussian distribution is the \emph{GaussCPdf} class that takes two
+functions \verb|f| and \verb|g| as parameters plus the optional \verb|base_class| parameter in
+constructor. The \verb|base_class| parameter defaults to GaussPdf, but can be set tu LogNormPdf (to
+any AbstractGaussPdf subclass in general); the base class parameter determines resulting density ---
+both conditional normal and log-normal distributions can be obtained without any code duplication,
+thanks to abstraction provided by AbstractGaussPdf. GaussPdf transforms supplied condition \(c\)
+using \eqref{eq:GaussCPdf}, substitutes to AbstractGaussPdf and calls respective \verb|base_class|
+method.
+\begin{equation} \label{eq:GaussCPdf}
+	\begin{aligned}
+		\mu &= f(c) \\
+		R &= g(c)
+	\end{aligned}
+\end{equation}
+
+First specialisation of GaussCPdf is the \emph{LinGaussCPdf} class that assumes that \verb|f| and
+\verb|g| functions are linear, the transformation is thus according to \eqref{eq:LinGaussCPdf} where
+condition is divided into parts \((c_1, c_2)\). The \verb|A|, \verb|C| (matrices), \verb|b| and
+\verb|d| (vector) parameters are passed to the constructor. LinGaussCPdf exists mainly for
+performance reasons and slightly higher convenience when passing arrays compared to functions;
+LinGaussCPdf also benefits from generalisation offered AbstractGaussPdf.
+\begin{equation} \label{eq:LinGaussCPdf}
+	\begin{aligned}
+		\mu &= A c_1 + b \\
+		R &= C c_2 + d
+	\end{aligned}
+\end{equation}
+
+The last GaussCPdf specialisation is the MLinGaussCPdf class which works almost identically as
+LinGaussCPdf with the exception that the \verb|R| (covariance) parameter is fixed. Transformation
+used by MLinGaussCPdf is thus defined by \eqref{eq:MLinGaussCPdf} where \(c\) is the conditioning
+variable. MLinGaussCPdf also supports setting \verb|base_class| as usual.
+\begin{equation} \label{eq:MLinGaussCPdf}
+	\mu = A c + b
+\end{equation}
+
+See the \autoref{fig:DiaGaussPdfs} for a survey of Gaussian and related {\pdfs}.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 173mm 3cm 3cm]{./diagrams/gaussian_pdfs.pdf}
@@ -216,6 +265,54 @@ Overview of RV and RVComp classes can be seen in the \autoref{fig:DiaRvs}.
 
 \subsection{Empirical Probability Density Functions}
 
+Another very useful set of distributions is the empirical family suitable for particle filters.
+Weighted empirical distribution named EmpPdf in PyBayes is the posterior {\pdf} of the
+particle filter while a special product of weighted empirical distribution and a mixture of Gaussian
+distributions is the posterior {\pdf} of the marginalized particle filter and is thus named
+MarginalizedEmpPdf. Both inherit from AbstractEmpPdf in order to reuse code. Neither of the empirical
+densities implement \verb|eval_log()| or \verb|sample()| --- while the latter would be possible, we
+are yet to find a valid use-case for it (resampling particles being implemented differently).
+
+The \emph{AbstractEmpPdf} class holds the \verb|weights| parameter, a vector of particle weights denoted as
+\(\omega = (\omega_1, \omega_2 \dots \omega_n)\) in formulas. The usual constraints
+\eqref{eq:AbstractEmpPdfConstraints} must hold. A simple method \verb|normalise_weights()| normalises
+weights according to \eqref{eq:AbstractEmpPdfNormalise}.
+\begin{align}
+	\omega_i >= 0 \quad \forall i \quad \quad & \quad \quad \sum_{i=1}^n \omega_i = 1 \label{eq:AbstractEmpPdfConstraints} \\
+	\omega_i' &= \frac{\omega_i}{\sum_{i=1}^n \omega_i} \label{eq:AbstractEmpPdfNormalise}
+\end{align}
+AbstractEmpPdf provides one more method, \verb|get_resample_indices()| which
+(given that there are \(n\) particles) draws \(n\) random samples from itself and returns their
+indices. The algorithm is however optimised in a way that only one random sampling is performed; the
+results are thus more predictable (or, ``less random''), but this is desired when used for resampling
+in particle filters --- its primary (and currently only) use.
+
+The \emph{EmpPdf} class is the standard weighted empirical distribution \eqref{eq:EmpPdf} that extends
+AbstractEmpPdf with the \verb|particles| attribute (a matrix) where each row \(x^{(i)}\) represents
+one particle. It also provides the \verb|resample()| method that resamples particles using
+\verb|get_resample_indices()| and resets weights to be uniformly distributed. EmpPdf has an extra
+role in PyBayes, it is used to test \verb|sample()| of other {\pdfs} using the moment method
+(sufficient number of samples is generated and sample mean and variance is compared with theoretical
+results).
+\begin{equation} \label{eq:EmpPdf}
+	p(x) = \sum_{i=1}^n \omega_i \delta(x - x^{(i)})
+\end{equation}
+
+Related to the empirical density is the \emph{MarginalizedEmpPdf} that exists solely to form the
+posterior {\pdf} of the marginalized particle filter. It extends AbstractEmpPdf with a vector of
+GaussPdf objects \verb|gausses|, i-th GaussPdf is denoted as \(\mathcal{N}\left(\hat{a}^{(i)},
+P^{(i)}\right)\) and a matrix \verb|particles| where i-th row is denoted as \(b^{(i)}\) in
+\eqref{eq:MarginalizedEmpPdf}.
+\begin{equation} \label{eq:MarginalizedEmpPdf}
+	p(a, b) = \sum_{i=1}^n \omega_i \Big[ \mathcal{N}\left(\hat{a}^{(i)}, P^{(i)}\right) \Big]_a
+		\delta(b - b^{(i)})
+\end{equation}
+
+MarginalizedEmpPdf doesn't provide a method for resampling as this task have to be done in the
+particle filter implementation anyway at it has to deal also with the Kalman filters.
+
+The class diagram of empirical {\pdfs} and related is displayed in the \autoref{fig:DiaEmpPdfs}.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 210mm 3cm 3cm]{./diagrams/emp_pdfs.pdf}
@@ -224,12 +321,9 @@ Overview of RV and RVComp classes can be seen in the \autoref{fig:DiaRvs}.
 	\label{fig:DiaEmpPdfs}
 \end{figure}
 
-and their use in Particle filters
-
-and in testing!
-
 \subsection{Other Probability Density Functions}
 
+We conclude the discussion about the implemented {\pdfs} with the ones that don't fit elsewhere.
 |uniform pdf not mentioned elsewhere|
 
 \subsection{Bayesian Filters}
@@ -249,8 +343,6 @@ similar of marginalized particle filter? (gausses would be plotted vertically)
 about numpy, linalg wrappers, Tokyo...
 
 \section{Documentation, Testing and Profiling} \label{sec:PyBayesDocsTests}
-
-TODO: move above Library Layout?
 
 Documenting PyBayes using Sphinx, approach to documentation (mathematician-oriented), math in documentation
 
@@ -275,4 +367,4 @@ Python/Cython KalmanFilter, MATLAB oo / imperative / BDM
 
 \section{Discussion, Future Plans}
 
-jo?
+pypy + pure python mode
