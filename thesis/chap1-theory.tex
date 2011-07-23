@@ -362,7 +362,7 @@ the initial distribution \(p(b_0)\). Then the following procedure can be repeate
 	\item for each \(i\) update weight \(\omega_i\) using the formula \eqref{eq:MPFWeightUpdate} where
 		marginal likelihood of the i-th Kalman filter \eqref{eq:KalmanEvidence} is used.
 		\begin{equation} \label{eq:MPFWeightUpdate}
-			\omega_i = p(y_t|y_{1:t},b_{1:t}^{(i)}) \; \omega_i
+			\omega_i = p(y_t|y_{1:t-1},b_{1:t}^{(i)}) \; \omega_i
 		\end{equation}
 	\item normalise weights (as described in the previous section).
 	\item resample particles (as described in the previous section).

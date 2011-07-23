@@ -44,7 +44,7 @@ class Filter(object):
         raise NotImplementedError("Derived classes must implement this method")
 
     def evidence_log(self, yt):
-        """Return the logarithm of *evidence* function (also known as *marginal likehood*) evaluated
+        """Return the logarithm of *evidence* function (also known as *marginal likelihood*) evaluated
         in point yt.
 
         :param yt: point which to evaluate the evidence in
@@ -54,7 +54,7 @@ class Filter(object):
         This is typically computed after :meth:`bayes` with the same observation:
 
         >>> filter.bayes(yt)
-        >>> log_likehood = filter.evidence_log(yt)
+        >>> log_likelihood = filter.evidence_log(yt)
         """
         raise NotImplementedError("Derived classes should implement this method, if feasible")
 
@@ -393,8 +393,8 @@ class MarginalizedParticleFilter(Filter):
         2. :math:`\text{set } Q_i = b_t^{(i)} \quad R_i = b_t^{(i)}` where :math:`Q_i, R_i` is
            covariance of process (respectively observation) noise in ith Kalman filter.
         3. perform Bayes rule for each Kalman filter using passed observation :math:`y_t`
-        4. recompute weights: :math:`\omega_i = p(y_t | y_{1:t}, b_t^{(i)}) \omega_i` where
-           :math:`p(y_t | y_{1:t}, b_t^{(i)})` is *evidence* (*marginal likehood*) pdf of ith Kalman
+        4. recompute weights: :math:`\omega_i = p(y_t | y_{1:t-1}, b_t^{(i)}) \omega_i` where
+           :math:`p(y_t | y_{1:t-1}, b_t^{(i)})` is *evidence* (*marginal likelihood*) pdf of ith Kalman
            filter.
         5. normalise weights
         6. resample particles
