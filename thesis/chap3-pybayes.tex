@@ -325,7 +325,42 @@ The class diagram of empirical {\pdfs} and related is displayed in the \autoref{
 \subsection{Other Probability Density Functions}
 
 We conclude the discussion about the implemented {\pdfs} with the ones that don't fit elsewhere.
-|uniform pdf not mentioned elsewhere|
+
+The \emph{ProdPdf} class represents unconditional product of \(n\) independent random variables
+\(x_1, x_2, \dotsc, x_n\) as depicted in \eqref{eq:ProdPdf}. As an exception from the general rule,
+ProdPdf constructs its random variable association (the \verb|rv| attribute) using factor random
+variable for convenience.
+\begin{equation} \label{eq:ProdPdf}
+	p(x_1, x_2, \dotsc, x_n) = p_1(x_1) p_2(x_2) \dotsm p_n(x_n)
+\end{equation}
+
+A more sophisticated variant of the ProdPdf is the \emph{ProdCPdf} class that is potentially
+conditional and allows for dependent random variables. In general it can represent a chain rule for
+{\pdfs} shown in \eqref{eq:ProdCPdf} with an additional constraint that the right hand side makes
+sense (that means that there exists a sequence \((p_{j_1}, p_{j_2}, \dotsc, p_{j_m})\) for which
+\eqref{eq:ProdCPdfContraint} holds). The relation ``\(C \subset \{x_i, x_j, x_k, \dotsc\}\)'' denotes
+``random variable \(C\) is composed of the (subset of) \(x_i, x_j, x_k, \dotsc\) random variable components''
+in the following formulas.
+\begin{gather} \label{eq:ProdCPdf}
+	\begin{gathered}
+		p(x_1, x_2, \dotsc, x_m | x_{m+1}, x_{m+2} , \dotsc, x_n) = p_1(x_1 | C_1)
+			p_2(x_2 | C_1) \dotsm p_m(x_m | C_m) \\
+		\text{where} \quad m \leq n; \quad
+			\forall i \in \{1, 2, \dotsc, m\}: C_i \subset \{x_1, x_2, \dotsc, x_n\}
+	\end{gathered}
+\end{gather}
+\begin{equation} \label{eq:ProdCPdfContraint}
+	\forall k \in \{1, 2, \dotsc, m\}: C_{j_k} \subset \{x_1, x_2, \dotsc, x_{k-1}\} \cup \{x_{m+1}, x_{m+2} , \dotsc, x_n\}
+\end{equation}
+
+ProdCPdf makes extensive use of the random variable meta-representation described earlier; it uses
+random variable descriptions of factor densities \(p_1, p_2, \dotsc, p_m\) to construct the
+data-flow (the \((p_{j_1}, p_{j_2}, \dotsc, p_{j_m})\) sequence). Historically, ProdCPdf did not
+require factor random variables to be specified in simple cases, but this functionality is considered
+deprecated and will be removed in future PyBayes versions; random vector components of factor {\pdfs}
+will need to be specified (at least those that are ``shared'' between multiple factor distributions).
+
+PyBayes also provides a multivariate uniform distribution implemented by the \emph{UniPdf} class.
 
 \subsection{Bayesian Filters}
 
