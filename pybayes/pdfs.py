@@ -249,9 +249,9 @@ class CPdf(object):
 
     .. math::
 
-       p(x_t|x_{t-1}) &:= p_1(a_t|a_{t-1}, b_t) p_2(b_t|b_{t-1}) \\
-       p_1(a_t|a_{t-1}, b_t) &:= \mathcal{N}(a_{t-1}, b_t) \\
-       p_2(b_t|b_{t-1}) &:= \mathcal{N}(b_{t-1}, 0.0001)
+       p(x_t|x_{t-1}) &= p_1(a_t|a_{t-1}, b_t) p_2(b_t|b_{t-1}) \\
+       p_1(a_t|a_{t-1}, b_t) &= \mathcal{N}(a_{t-1}, b_t) \\
+       p_2(b_t|b_{t-1}) &= \mathcal{N}(b_{t-1}, 0.0001)
 
     This is done in PyBayes with associated RVs:
 
@@ -744,7 +744,7 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
 
     .. math::
 
-       p &= \sum_{i=1}^n \omega_i \Big[ \mathcal{N}\left(\hat{a}^{(i)}, P^{(i)}\right) \Big]_a
+       p(a, b) &= \sum_{i=1}^n \omega_i \Big[ \mathcal{N}\left(\hat{a}^{(i)}, P^{(i)}\right) \Big]_a
        \delta(b - b^{(i)}) \\
        \text{where } \quad \hat{a}^{(i)} &\text{ and } P^{(i)} \text{ is mean and
        covariance of i}^{th} \text{ gauss pdf} \\
@@ -933,7 +933,7 @@ class MLinGaussCPdf(CPdf):
     .. math::
 
        f(x|c) \propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right)
-       \quad \quad \text{where} ~ \mu := A c + b
+       \quad \quad \text{where} ~ \mu = A c + b
     """
 
     def __init__(self, cov, A, b, rv = None, cond_rv = None, base_class = None):
@@ -1008,8 +1008,8 @@ class LinGaussCPdf(CPdf):
     .. math::
 
        f(x|c_1 c_2) \propto \exp \left( - \frac{\left( x-\mu \right)^2}{2\sigma^2} \right)
-       \quad \quad \text{where} \quad \mu := a c_1 + b \quad \text{and}
-       \quad \sigma^2 := c c_2 + d
+       \quad \quad \text{where} \quad \mu = a c_1 + b \quad \text{and}
+       \quad \sigma^2 = c c_2 + d
     """
 
     def __init__(self, a, b, c, d, rv = None, cond_rv = None, base_class = None):
@@ -1081,8 +1081,8 @@ class GaussCPdf(CPdf):
     .. math::
 
        f(x|c) &\propto \exp \left( - \left( x-\mu \right)' R^{-1} \left( x-\mu \right) \right) \\
-       \text{where} \quad \mu &:= f(c) \text{ (interpreted n-dimensional vector)} \\
-       R &:= g(c) \text{ (interpreted as n*n matrix)}
+       \text{where} \quad \mu &= f(c) \text{ (interpreted as n-dimensional vector)} \\
+       R &= g(c) \text{ (interpreted as n*n matrix)}
     """
 
     def __init__(self, shape, cond_shape, f, g, rv = None, cond_rv = None, base_class = None):
@@ -1090,8 +1090,8 @@ class GaussCPdf(CPdf):
 
         :param int shape: dimension of random vector
         :param int cond_shape: dimension of condition
-        :param callable f: :math:`\mu := f(c)` where c = condition
-        :param callable g: :math:`R := g(c)` where c = condition
+        :param callable f: :math:`\mu = f(c)` where c = condition
+        :param callable g: :math:`R = g(c)` where c = condition
         :param class base_class: class whose instance is created as a base pdf for this
            cpdf. Must be a subclass of :class:`AbstractGaussPdf` and the default is
            :class:`GaussPdf`. One alternative is :class:`LogNormPdf` for example.
@@ -1153,15 +1153,15 @@ class ProdCPdf(CPdf):
 
     .. math::
 
-        f(x_1 x_2 x_3 | c) &= f_1(x_1 | x_2 x_3 c) f_2(x_2 | x_3 c) f_3(x_3 | c) \\
-        \text{or} \quad f(x_1 x_2 x_3) &= f_1(x_1 | x_2 x_3) f_2(x_2 | x_3) f_3(x_3)
+        p(x_1 x_2 x_3 | c) &= p(x_1 | x_2 x_3 c) p(x_2 | x_3 c) p(x_3 | c) \\
+        \text{or} \quad p(x_1 x_2 x_3) &= p(x_1 | x_2 x_3) p(x_2 | x_3) p(x_3)
 
     >>> f = ProdCPdf((f1, f2, f3))
 
     For less simple situations, specifiying random value associations is needed
-    to estabilish data chain:
+    to estabilish data-flow:
 
-    .. math:: p(x_1 x_2 | y_1 y_2) = p_1(x_1 | x_2) p_2(x_2 | y_2 y_1)
+    .. math:: p(x_1 x_2 | y_1 y_2) = p_1(x_1 | y_1) p_2(x_2 | y_2 y_1)
 
     >>> # prepare random variable components:
     >>> x_1, x_2 = RVComp(1), RVComp(1, "name is optional")

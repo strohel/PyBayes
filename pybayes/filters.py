@@ -390,7 +390,7 @@ class MarginalizedParticleFilter(Filter):
 
         1. generate new b parts of particles: :math:`b_t^{(i)} = \text{sample from }
            p(b_t^{(i)}|b_{t-1}^{(i)}) \quad \forall i`
-        2. :math:`\text{set } Q_i := b_t^{(i)} \quad R_i := b_t^{(i)}` where :math:`Q_i, R_i` is
+        2. :math:`\text{set } Q_i = b_t^{(i)} \quad R_i = b_t^{(i)}` where :math:`Q_i, R_i` is
            covariance of process (respectively observation) noise in ith Kalman filter.
         3. perform Bayes rule for each Kalman filter using passed observation :math:`y_t`
         4. recompute weights: :math:`\omega_i = p(y_t | y_{1:t}, b_t^{(i)}) \omega_i` where
