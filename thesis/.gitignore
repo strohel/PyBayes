@@ -10,5 +10,6 @@
 *.nav
 *.snm
 *.dvi
+*.lof
 
 thesis.pdf

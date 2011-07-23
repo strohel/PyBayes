@@ -97,7 +97,10 @@ Throughout this text, following notation is used
 complex expressions can be derived using integral linearity and Fubini's theorem.}
 
 
-\chapter*{Introduction} \addcontentsline{toc}{chapter}{Introduction}
+\clearpage % so that table of contents mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{Introduction}
+\chapter*{Introduction}
 
 TODO motivatin for bayes filtering + a need for a convenient library (rapid prototyping vs. speed)
 
@@ -115,12 +118,18 @@ na co se nezamerujeme: MCMC, Bayes networks
 
 \input{chap3-pybayes.tex}
 
-\chapter*{Conclusion} \addcontentsline{toc}{chapter}{Conclusion}
+\clearpage % so that table of contents mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{Conclusion}
+\chapter*{Conclusion}
 
-\chapter*{List of Figures} \addcontentsline{toc}{chapter}{List of Figures}
+\clearpage % so that table of contents mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
 
 % použitá literatura
-\clearpage % so that the contents link mentions correct page
+\clearpage % so that table of contents mentions correct page
 \phantomsection % so that hyperref makes correct reference
 \addcontentsline{toc}{chapter}{\bibname}
 \bibliographystyle{plain}
