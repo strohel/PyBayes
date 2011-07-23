@@ -141,7 +141,7 @@ semantic than technical distinction between conditional and unconditional {\pdfs
 
 Outline of {\pdf} prototypes is shown in the \autoref{fig:DiaPdfs}.
 
-\begin{figure}[h!]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 204mm 3cm 3cm]{./diagrams/pdfs.pdf}
 	\vspace{-8mm}
@@ -159,10 +159,10 @@ as illustrated in the following example.
 
 The chain rule for {\pdfs} is heavily used in Bayesian filtering and should be adequately supported
 by software. While simple cases can be represented without problems, when for example \(p(a,b|c,d)\)
-from \eqref{eq:ProdCPdf} is desired to be represented, additional information have to be supplied by
+from \eqref{eq:ProdCPdfExample} is desired to be represented, additional information have to be supplied by
 the user (programmer) so that correct data-flow can be established (e.g. the order of conditioning
 variables of \(p_1\) cannot be determined automatically).
-\begin{equation} \label{eq:ProdCPdf}
+\begin{equation} \label{eq:ProdCPdfExample}
 	p(a,b|c,d) = p_1(a|c,b) p_2(b|d)
 \end{equation}
 
@@ -178,7 +178,8 @@ think is worth the simplicity it brings). As mentioned in the previous section, 
 
 The RV class is essentially a list of ``random vector components'' represented using the
 \emph{RVComp} class. RV provides a few methods to test relationships between 2 random vectors
-(whether a RV is subset of another RV etc.) and one notable method, \verb|indexed_in()|. Suppose
+(whether a RV is subset of another RV etc.) and one notable method, \verb|indexed_in()| (that happen
+to be shown in the \autoref{fig:Coverage} on page \pageref{fig:Coverage}). Suppose
 that RV \(x\) has components \((x_1, x_2, \dotsc, x_n)\) and RV \(y\) is a subset of \(x\) and contains
 components \((x_{i_1}, x_{i_2}, \dotsc, x_{i_m})\); \verb|y.indexed_in(x)| then returns an index array
 \((i_1, i_2, \dotsc, i_m)\) which is suitable for NumPy array indexing methods.
@@ -364,15 +365,73 @@ PyBayes also provides a multivariate uniform distribution implemented by the \em
 
 \subsection{Bayesian Filters}
 
-[proposed citation: \cite{Smi:05}]
+Bayesian filters are the \emph{raison d'être} of PyBayes. It turned out however that with a solid
+framework of {\pdfs}, their implementation is rather straightforward. All filters in PyBayes extend
+an abstract class \emph{Filter} that acts as a prototype of all filters. Filter defines following
+methods that can/should be implemented by subclasses:
+\begin{itemize}
+	\item \verb|bayes(yt : vector, cond : vector = None)| \\
+		compute posterior {\pdf} given
+		the observation \verb|yt|; semantics of the optional \verb|cond| parameter are defined
+		by filter implementations. The method name comes from the fact that computing the posterior
+		{\pdf} involves applying (exact or approximate) Bayes rule; see \eqref{eq:PosteriorPdfRaw}
+		on page \pageref{eq:PosteriorPdfRaw}.
+	\item \verb|posterior() : Pdf| \\
+		return a reference to the posterior {\pdf} \(p(x_t | y_{1:t})\) \eqref{eq:PosteriorPdf}
+		(p.~\pageref{eq:PosteriorPdf}).
+	\item \verb|evidence_log(yt : vector) : float| \\
+		return logarithm of the marginal likelihood \(p(y_t | y_{1:t-1})\) \eqref{eq:MargLikelihood}
+		(p.~\pageref{eq:MargLikelihood}) evaluated in point \verb|yt|. Implementations may choose
+		not to implement this method if it is not feasible.
+\end{itemize}
+Fists subclass of Filter is the \emph{KalmanFilter} class that implements slightly extended version
+of the Kalman filter presented in the first chapter --- KalmanFilter can optionally accept control
+vector in its \verb|bayes| method (passed though the \verb|cond| parameter) making it suitable also
+for the theory of Bayesian decision-making.
 
-UML
+Speaking about the particle filter family, it has been suggested in \cite{Smi:10} that the particle
+filter and the marginalized particle filter can be merged into one general class using recursive
+structure of classes representing the Bayes rule (e.g. Filter in PyBayes). This approach has not
+been used in PyBayes for performance and simplicity reasons. On the other hand, particle filters in
+PyBayes offload much work to {\pdfs} in PyBayes where code is reused thanks to AbstractEmpPdf.
 
-Nice graph of a run of a particle filter (Mirda has the plotting code)
+The \emph{ParticleFilter} class implements a simple version of the particle filter as presented in
+the first chapter. Particle filter takes the process model \(p(x_t|x_{t-1})\) and the observation
+model \(p(y_t|x_t)\) distributions in constructor (along with the initial density and number of
+particles) and employs \verb|resample()| and \verb|normalise_weights()| of the EmpPdf class that it
+uses for the posterior distribution. ParticleFilter currently doesn't support specifying the
+proposal density, although it is planned in future.
 
-similar of marginalized particle filter? (gausses would be plotted vertically)
+\emph{MarginalizedParticleFilter} also implements the respective algorithm shown in the first
+chapter; it also offloads some work to its posterior {\pdf}, MarginalizedEmpPdf, but has to provide its
+array of KalmanFilter objects. The MarginalizedParticleFilter class ensures that the i-th Kalman
+filter shares its posterior Gaussian distribution with MarginalizedEmpPdf's i-th particle. This is
+the reason why resampling cannot be done in MarginalizedEmpPdf and is instead performed in the
+\verb|_resample()| method of MarginalizedParticleFilter that makes use of the
+\verb|get_resample_indices()| method of AbstractEmpPdf.
 
-[mention this:\cite{Smi:10}]
+In constructor MarginalizedEmpPdf accepts initial distribution of the state vector
+\(p(x_0) = p(a_0, b_0)\), process model of the empirical part of the state vector \(p(b_t|b_{t-1})\),
+the class of the desired Kalman filter implementation (that has to be a subclass of KalmanFilter)
+and its parameters in form of a Python dictionary. That way, thanks to Python capabilities,
+MarginalizedEmpPdf will support other variants of the Kalman filter in future without a need to be
+changed. It also means that the observation model is specified using the Kalman filter implementation
+and parameters for it, which makes MarginalizedParticleFilter more flexible. The process model is
+given by the combination of \(p(b_t|b_{t-1})\) and supplied Kalman filter implementation (and its
+parameters). Current implementation hard-codes \(b_t\) to be the observation and process noise of
+the modelled system; this silly limitation will be lifted in future where MarginalizedParticleFilter
+will pass the \(b_t\) vector as the \verb|cond| argument to the \verb|bayes()| method of the
+specified Kalman filter implementation.
+
+A diagram of filtering classes in shown in the \autoref{fig:DiaFilters}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 192mm 3cm 3cm]{./diagrams/filters.pdf}
+	\vspace{-8mm}
+	\caption{Class diagram of Bayesian filters}
+	\label{fig:DiaFilters}
+\end{figure}
 
 \subsection{Wrappers} \label{sec:PyBayesWrappers}
 
