@@ -16,10 +16,27 @@
 \newcommand{\konzultant}{---}
 \newcommand{\pracovisteKonz}{}
 
-\newcommand{\klicova}{TODO, klíčová slova, max. 5}
-\newcommand{\keyword}{TODO, key, words}
-\newcommand{\abstrCZ}{TODO Abstrakt práce (cca 7 vět, min. 80 slov)}
-\newcommand{\abstrEN}{TODO English abstract}
+\newcommand{\klicova}{Bayesovská filtrace, softwarová analýza, Python, Cython} % TODO: dalsi?
+\newcommand{\keyword}{Bayesian filtering, software analysis, Python, Cython}
+% Abstrakt práce: (cca 7 vět, min. 80 slov)
+\newcommand{\abstrCZ}{Bayesovská filtrace je velmi použitelný přístup k odhadování dynamických
+systémů, který má mnoho aplikací v robotice, environmentálních simulacích a dalších oborech. Tato
+práce předkládá popis Kalmanova filtru, částicového filtru a marginalizovaného částicového filtru,
+který využívá myšlenky obou předchozích. Poté je provedena softwarová analýza, která má za úkol
+určit nejvhodnější implementační prostředí pro softwarovou knihovnu poskytující metody Bayesovské
+filtrace. Nejprve jsou posouzeny obecné přístupy k vývoji software, z nichž je jako nejpoužitelnější
+zvolen objektově orientovaný, následuje porovnání programovacích jazyků C++, MATLAB a Python.
+Python zvítězí a v je něm napsána knihovna pro Bayesovskou filtraci nazvaná PyBayes; nakonec je
+dosaženo výrazného zrychlení Pythonového kódu použitím Cythonu.}
+\newcommand{\abstrEN}{Bayesian filtering is a vital approach to dynamic system estimation that has
+wide applications in robotics, environmental simulations and much more. This text briefly introduces
+the Kalman filter, the particle filter and the marginalized particle filter which combines ideas of
+both. Software analysis is performed with the aim to identify the most suitable implementation
+environment for a software library for Bayesian filtering. Various paradigms of software development
+and are discussed among which the object-oriented programming is chosen; C++, MATLAB and Python
+languages are evaluated. Python is determined most appropriate and a Python software library named
+PyBayes is developed; dramatic performance gains are measured when Cython is used to speed up
+Python.}
 
 %%% zde zacina kresleni dokumentu
 
@@ -95,8 +112,9 @@ Prohlašuji, že jsem svou bakalářskou práci vypracoval samostatně a použil
 {\bf Poděkování}
 
 \vspace{5mm}
-Děkuji Ing. Václavu Šmídlovi, Ph.D. za vedení mé bakalářské práce a za podnětné návrhy, které ji
-obohatily.
+Děkuji Ing. Václavu Šmídlovi, Ph.D. za vedení mé bakalářské práce, velmi prozíravě položené
+softwarové otázky a za poukázání na softwarové projekty (Cython, Sphinx, \ldots), které se ukázaly
+být klíčové pro moji bakalářskou práci a softwarový projekt.
 
 \begin{flushright}
 \autor
@@ -115,20 +133,20 @@ obohatily.
     \box\odstavecbox}
 \newcommand{\delka}{120mm}
 
-\begin{tabular}{ll}
+\noindent\begin{tabular}{@{}ll}
   {\em Název práce:} & ~ \\
-  \multicolumn{2}{l}{\odstavec{\textwidth}{\bf \nazevcz}} \\[5mm]
+  \multicolumn{2}{@{}l}{\odstavec{\textwidth}{\bf \nazevcz}} \\[5mm]
   {\em Autor:} & \autor \\[5mm]
   {\em Obor:} & \obor \\
   {\em Druh práce:} & Bakalářská práce \\[5mm]
   {\em Vedoucí práce:} & \odstavec{\delka}{\vedouci \\ \pracovisteVed} \\[5mm]
   {\em Konzultant:} & \odstavec{\delka}{\konzultant \\ \pracovisteKonz} \\[5mm]
-  \multicolumn{2}{l}{\odstavec{\textwidth}{{\em Abstrakt:} ~ \abstrCZ \\ }} \\[5mm]
-  {\em Klíčová slova:} & \odstavec{\delka}{\klicova} \\[20mm]
+  \multicolumn{2}{@{}l}{\odstavec{\textwidth}{{\em Abstrakt:} ~ \abstrCZ \\ }} \\[5mm]
+  {\em Klíčová slova:} & \odstavec{\delka}{\klicova} \\[10mm]
 
   {\em Title:} & ~\\
-  \multicolumn{2}{l}{\odstavec{\textwidth}{\bf \nazeven}}\\[5mm]
+  \multicolumn{2}{@{}l}{\odstavec{\textwidth}{\bf \nazeven}}\\[5mm]
   {\em Author:} & \autor \\[5mm]
-  \multicolumn{2}{l}{\odstavec{\textwidth}{{\em Abstract:} ~ \abstrEN \\ }} \\[5mm]
+  \multicolumn{2}{@{}l}{\odstavec{\textwidth}{{\em Abstract:} ~ \abstrEN \\ }} \\[5mm]
   {\em Key words:} & \odstavec{\delka}{\keyword}
 \end{tabular}
