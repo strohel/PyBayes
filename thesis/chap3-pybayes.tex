@@ -137,13 +137,6 @@ and conditioning variable descriptions (attributes \verb|rv| and \verb|cond_rv|)
 bout in the next chapter. By convention \verb|rv| and \verb|cond_rv| to a valid \emph{RV} object
 that can, however, signify ``empty random variable''.
 
-The \emph{Pdf} is a very thin subclass of CPdf providing an implementation of the \verb|cond_shape()|
-that returns zero to signify empty condition; by convention, Pdf subclasses also should set
-\verb|cond_rv| to ``empty random variable''. The function of the Pdf class is therefore rather
-semantic than technical distinction between conditional and unconditional {\pdfs}.
-
-Outline of {\pdf} prototypes is shown in the \autoref{fig:DiaPdfs}.
-
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 204mm 3cm 3cm]{./diagrams/pdfs.pdf}
@@ -151,6 +144,13 @@ Outline of {\pdf} prototypes is shown in the \autoref{fig:DiaPdfs}.
 	\caption{Class diagram of the {\pdf} prototypes}
 	\label{fig:DiaPdfs}
 \end{figure}
+
+The \emph{Pdf} is a very thin subclass of CPdf providing an implementation of the \verb|cond_shape()|
+that returns zero to signify empty condition; by convention, Pdf subclasses also should set
+\verb|cond_rv| to ``empty random variable''. The function of the Pdf class is therefore rather
+semantic than technical distinction between conditional and unconditional {\pdfs}.
+
+Outline of {\pdf} prototypes is shown in the \autoref{fig:DiaPdfs}.
 
 \subsection{Random Variable Meta-representation}
 
@@ -187,8 +187,8 @@ that RV \(x\) has components \((x_1, x_2, \dotsc, x_n)\) and RV \(y\) is a subse
 components \((x_{i_1}, x_{i_2}, \dotsc, x_{i_m})\); \verb|y.indexed_in(x)| then returns an index array
 \((i_1, i_2, \dotsc, i_m)\) which is suitable for NumPy array indexing methods.
 
-The RVComp class is a simple container for the optional \verb|name| and \verb|dimension| (which must
-be greater than zero) attributes; RV caches aggregate name and dimension. An important principle in
+The RVComp class is a simple container for the \verb|dimension| (which must be greater than zero)
+and \verb|name| (which is optional) attributes; RV caches aggregate name and dimension. An important principle in
 PyBayes is that RVComp comparisons are \emph{instance-based}: 2 RVComp objects are considered equal
 if and only if they refer to the same instance.\footnote{the name attribute thus serves only for
 aesthetic purposes.} This is fast (compared to for example name-based equality), saves memory,
@@ -384,30 +384,30 @@ methods that can/should be implemented by subclasses:
 		(p.~\pageref{eq:PosteriorPdf}).
 	\item \verb|evidence_log(yt : vector) : float| \\
 		return logarithm of the marginal likelihood \(p(y_t | y_{1:t-1})\) \eqref{eq:MargLikelihood}
-		(p.~\pageref{eq:MargLikelihood}) evaluated in point \verb|yt|. Implementations may choose
-		not to implement this method if it is not feasible.
+		(p.~\pageref{eq:MargLikelihood}) evaluated in point \verb|yt|. Subclasses may choose not to
+		implement this method if it is not feasible.
 \end{itemize}
 Fists subclass of Filter is the \emph{KalmanFilter} class that implements slightly extended version
 of the Kalman filter presented in the first chapter --- KalmanFilter can optionally accept control
-vector in its \verb|bayes| method (passed though the \verb|cond| parameter) making it suitable also
+vector in its \verb|bayes| method (passed through the \verb|cond| parameter) making it suitable also
 for the theory of Bayesian decision-making.
 
 Speaking about the particle filter family, it has been suggested in \cite{Smi:10} that the particle
-filter and the marginalized particle filter can be merged into one general class using recursive
+filter and the marginalized particle filter can be merged into one general class using a recursive
 structure of classes representing the Bayes rule (e.g. Filter in PyBayes). This approach has not
 been used in PyBayes for performance and simplicity reasons. On the other hand, particle filters in
 PyBayes offload much work to {\pdfs} in PyBayes where code is reused thanks to AbstractEmpPdf.
 
 The \emph{ParticleFilter} class implements a simple version of the particle filter as presented in
-the first chapter. Particle filter takes the process model \(p(x_t|x_{t-1})\) and the observation
+the first chapter. ParticleFilter takes the process model \(p(x_t|x_{t-1})\) and the observation
 model \(p(y_t|x_t)\) distributions in constructor (along with the initial density and number of
 particles) and employs \verb|resample()| and \verb|normalise_weights()| of the EmpPdf class that it
 uses for the posterior distribution. ParticleFilter currently doesn't support specifying the
 proposal density, although it is planned in future.
 
 \emph{MarginalizedParticleFilter} also implements the respective algorithm shown in the first
-chapter; it also offloads some work to its posterior {\pdf}, MarginalizedEmpPdf, but has to provide its
-array of KalmanFilter objects. The MarginalizedParticleFilter class ensures that the i-th Kalman
+chapter and offloads some work to its posterior {\pdf}, MarginalizedEmpPdf, but has to provide its
+own array of KalmanFilter objects. The MarginalizedParticleFilter class ensures that the i-th Kalman
 filter shares its posterior Gaussian distribution with MarginalizedEmpPdf's i-th particle. This is
 the reason why resampling cannot be done in MarginalizedEmpPdf and is instead performed in the
 \verb|_resample()| method of MarginalizedParticleFilter that makes use of the
