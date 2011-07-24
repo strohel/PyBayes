@@ -3,7 +3,7 @@
 \newif\ifprint % true = printed version = no colours; false = colours
 \printfalse
 \newif\ifattachements % true = include fancy start pages and appendices
-\attachementsfalse
+\attachementstrue
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
@@ -150,7 +150,7 @@ Smidl phd thesis: \cite{Smi:05}
 	\clearpage
 	\phantomsection
 	\addcontentsline{toc}{chapter}{\numberline {B}PyBayes API Documentation} \label{chap:APIDocs}
-	\includepdf[pages=-]{../doc/_build/latex/PyBayes.pdf}
+	\includepdf[pages=-]{PyBayes.pdf}
 \fi
 
 \end{document}
