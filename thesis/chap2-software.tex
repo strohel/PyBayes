@@ -229,7 +229,7 @@ findings (see also Python/Cython/C benchmark on p. \pageref{sec:CythonPerformace
 the source of heavy overhead is likely to be the dynamic type system rather than overhead of modern
 just-in-time interpreters. In accordance with these findings, we may conclude that choice of language
 implementation type should rather be based on development and distribution convenience than on
-expected performance. % TODO: je tato veta dostatecne jasna?
+expected performance.
 
 Each programming language may support one or more following function call conventions that determine
 how function parameters are passed:
@@ -418,7 +418,6 @@ Following disadvantages of the MATLAB language were identified:
 		copying overhead which we believe is the main source of grave performance regression of
 		object-oriented code with regards to imperative code; see \autoref{sec:PyBayesPerformance}
 		on page \pageref{sec:PyBayesPerformance}.
-%	\item[hard to integrate] \hfill \\ % TODO: matlab call C code, c code call matlab; matlab compiler
 \end{description}
 We consider presented drawbacks significant and therefore decided not to use the MATLAB language for
 the desired Bayesian filtering library. BDM library~\cite{BDM} contains both object oriented and
@@ -491,8 +490,8 @@ On the other hand, a few downsides exist:
 		computations; CPython doesn't currently utilise any form of just-in-time compiling.
 		NumPy is often used to trade off computational overhead for memory overhead:
 		The Computer Language Benchmarks Game\footnote{\url{http://shootout.alioth.debian.org/}}
-		contains an~example where a program heavily using NumPy is 20\(\times\) faster but consumes
-		12\(\times\) more memory than a program that performed the same task and used solely the
+		contains an~example where a program heavily using NumPy is 20\x\ faster but consumes
+		12\x\ more memory than a program that performed the same task and used solely the
 		Python standard library. We have reproduced the benchmark with similar results; mentioned
 		programs can me found in the
 		\href{http://github.com/strohel/PyBayes/tree/master/examples/benchmark_py_numpy}{\nolinkurl{examples/benchmark_py_numpy}}
@@ -538,7 +537,7 @@ attributes. In addition, Cython allows statically typed variables to be native C
 conversion on Python/C boundary is provided by Cython for C types with Python equivalents, C
 \verb|double| is wrapped as Python \verb|float| and C \verb|long| is wrapped as Python
 \verb|int| for example. The main purpose of static typing are impressive speed gains; an extreme
-case exploited by our test case showed 65\(\times\) speed increase of typed Cython code compared
+case exploited by our test case showed 65\x\ speed increase of typed Cython code compared
 to untyped Cython code. In important thing to mention is that static typing is completely
 \emph{voluntary} for the programmer; recent Cython versions also support experimental basic type
 inference\footnote{a way to guess and prove type of certain variable using code analysis} (that
@@ -744,12 +743,12 @@ The benchmark had little variance in results across runs, the relative sample st
 \begin{equation} \label{eq:RelStdDev}
 	s_{\text{rel}} = \frac{1}{\overline{x}} \; \sqrt{\frac{1}{N-1} \sum_{i=1}^N (x_i - \overline{x})^2}
 \end{equation}
-The test produced a couple of interesting results: the same Python code was 2.9\(\times\) faster
+The test produced a couple of interesting results: the same Python code was 2.9\x\ faster
 when compiled by Cython; we are convinced that this is due to the Python interpreter overhead. Adding
 static type declarations to the Cython code resulted in additional 21-fold speed-up giving the total
-60\(\times\) increase in performance of a statically-typed Cython procedure compared to the dynamically
+60\x\ increase in performance of a statically-typed Cython procedure compared to the dynamically
 typed Python one, forming a very impressive result. Somewhat surprising results were obtained from
-parallelisation tests --- parallelised Cython version was 3.5\(\times\) faster than equivalent
+parallelisation tests --- parallelised Cython version was 3.5\x\ faster than equivalent
 singe-threaded code on a system with only 2 physical processor cores, we speculate that this is due
 to the Hyper-threading technology employed by the processor that reduced wasted CPU cycles (where
 the CPU waits for memory fetches). Nonetheless this shows that Cython (and C) parallelisation techniques
