@@ -96,6 +96,9 @@ The \verb|pybayes| package, the most important part that forms the actual PyBaye
 	\item[filters] module contains Bayesian filters.
 \end{description}
 
+All classes mentioned in this chapter are \emph{Cython extension classes} in the Cython build of
+PyBayes (for smaller overhead) and ordinary Python classes in the Python ``build``.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 196mm 3cm 3cm]{./diagrams/PyBayes.pdf}
@@ -435,7 +438,30 @@ A diagram of filtering classes in shown in the \autoref{fig:DiaFilters}.
 
 \subsection{Wrappers} \label{sec:PyBayesWrappers}
 
-about numpy, linalg wrappers, Tokyo...
+Favourable performance was one of the criteria for the desired library for Bayesian filtering. When
+the performance of the KalmanFilter class was benchmarked with a small system (both state and
+observation vectors were 2-dimensional); it was discovered that a great portion of total run time
+was spent in the boilerplate code of NumPy functions \verb|dot()| (for matrix product) and
+\verb|inv()| (for matrix inversion). Even though NumPy uses BLAS and LAPACK internally, the time
+spent in the intermediate Python code was unacceptable (it was probably made more visible due to
+the small size of the system); see the \autoref{sec:CythonFeatures} on page
+\pageref{sec:CythonFeatures} for information about Cython \(\leftrightarrow \) NumPy co-operation.
+
+Fortunately, a project that approaches popular BLAS and LAPACK functions more directly was found:
+Shane Legg's Tokyo\footnote{\url{http://www.vetta.org/2009/09/tokyo-a-cython-blas-wrapper-for-fast-matrix-math/}}
+wraps BLAS (and a couple of LAPACK) procedures in Cython using NumPy's \verb|ndarray| data-type.
+Quick tests have shown great speed-ups --- the mentioned functions ceased to be performance
+bottle-necks. It was therefore decided that the Tokyo project should be used in the Cython mode of
+PyBayes and it was forked\footnote{\url{https://github.com/strohel/Tokyo}} on github to provide
+a~couple of bug-fixes we made to the public. For convenience, Tokyo is also bundled with PyBayes
+releases and is built along it to reduce dependencies on obscure libraries.
+
+A special approach in PyBayes has been taken in order to support both Python and
+Cython mode: wrapper modules for \verb|numpy| and \verb|numpy.linalg| were created in the
+\verb|pybayes.wrappers| package; Python versions of the wrappers (.py files) just import appropriate
+NumPy modules. Cython versions do nearly the same, but provide own implementations (that call Tokyo)
+of the offending NumPy functions (and delegate the rest to NumPy). Other code then imports
+\verb|wrappers._numpy| instead of \verb|numpy|, likewise for \verb|numpy.linalg|.
 
 \section{Documentation, Testing and Profiling} \label{sec:PyBayesDocsTests}
 
