@@ -1,0 +1,80 @@
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.43 seconds.
+
+   MATLAB: 1.215931
+MATLAB oo: 3.636858
+    C++ 1: 1.981949
+    C++ 2: 1.951031
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.33 seconds.
+
+   MATLAB: 1.238566
+MATLAB oo: 3.534287
+    C++ 1: 1.918337
+    C++ 2: 1.955098
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.37 seconds.
+
+   MATLAB: 1.254767
+MATLAB oo: 3.683088
+    C++ 1: 1.940426
+    C++ 2: 1.938028
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.22 seconds.
+
+   MATLAB: 1.200529
+MATLAB oo: 4.170742
+    C++ 1: 1.893287
+    C++ 2: 1.891578
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.54 seconds.
+
+   MATLAB: 1.308060
+MATLAB oo: 4.648879
+    C++ 1: 2.019786
+    C++ 2: 1.966401
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.54 seconds.
+
+   MATLAB: 1.417822
+MATLAB oo: 4.194540
+    C++ 1: 1.973873
+    C++ 2: 2.003320
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.46 seconds.
+
+   MATLAB: 1.196948
+MATLAB oo: 3.587415
+    C++ 1: 1.963522
+    C++ 2: 1.969432
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.20 seconds.
+
+   MATLAB: 1.375206
+MATLAB oo: 3.831526
+    C++ 1: 1.882542
+    C++ 2: 1.896514
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.42 seconds.
+
+   MATLAB: 1.334835
+MATLAB oo: 3.417624
+    C++ 1: 1.953324
+    C++ 2: 1.954957
+running kalman_stress...
+Success: 1 tests passed.
+Test time: 9.43 seconds.
+
+   MATLAB: 1.193737
+MATLAB oo: 3.783109
+    C++ 1: 1.948582
+    C++ 2: 1.968234

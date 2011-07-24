@@ -1,0 +1,20 @@
+stress_kalman():
+  Time spent: 2.08949303627s real time; 2.07s CPU time
+stress_kalman():
+  Time spent: 2.1090722084s real time; 2.11s CPU time
+stress_kalman():
+  Time spent: 2.13600301743s real time; 2.12s CPU time
+stress_kalman():
+  Time spent: 2.11966204643s real time; 2.11s CPU time
+stress_kalman():
+  Time spent: 2.10386610031s real time; 2.09s CPU time
+stress_kalman():
+  Time spent: 2.14292097092s real time; 2.14s CPU time
+stress_kalman():
+  Time spent: 2.15946602821s real time; 2.15s CPU time
+stress_kalman():
+  Time spent: 2.2303750515s real time; 2.23s CPU time
+stress_kalman():
+  Time spent: 2.05843496323s real time; 2.05s CPU time
+stress_kalman():
+  Time spent: 2.05605220795s real time; 2.05s CPU time
