@@ -134,7 +134,6 @@ Smidl phd thesis: \cite{Smi:05}
 \addcontentsline{toc}{chapter}{\listfigurename}
 \listoffigures
 
-% použitá literatura
 \clearpage % so that table of contents mentions correct page
 \phantomsection % so that hyperref makes correct reference
 \addcontentsline{toc}{chapter}{\bibname}
@@ -150,7 +149,7 @@ Smidl phd thesis: \cite{Smi:05}
 	\clearpage
 	\phantomsection
 	\addcontentsline{toc}{chapter}{\numberline {B}PyBayes API Documentation} \label{chap:APIDocs}
-	\includepdf[pages=-]{PyBayes.pdf}
+	\includepdf[pages={1-2,4-}]{PyBayes.pdf} % skip the blank page
 \fi
 
 \end{document}
