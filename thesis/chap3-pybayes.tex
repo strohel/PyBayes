@@ -463,21 +463,64 @@ NumPy modules. Cython versions do nearly the same, but provide own implementatio
 of the offending NumPy functions (and delegate the rest to NumPy). Other code then imports
 \verb|wrappers._numpy| instead of \verb|numpy|, likewise for \verb|numpy.linalg|.
 
-\section{Documentation, Testing and Profiling} \label{sec:PyBayesDocsTests}
+\section{Documentation and Testing} \label{sec:PyBayesDocsTests}
 
-Documenting PyBayes using Sphinx, approach to documentation (mathematician-oriented), math in documentation
+Second pillar of each well-written software library is, in our belief, its \emph{documentation}; the
+first one being the library design and the actual implementation being no better than the third
+pillar (in our view, the implementation can be easily modified in a well-designed library). PyBayes
+reflects that and puts great emphasis on the API Documentation, that is
+\ifattachements included in appendix on page \pageref{chap:APIDocs}, on the bundled CD-ROM and \fi
+accessible on-line at \url{http://strohel.github.com/PyBayes-doc/}.
 
-Testing - the separation of
+Documentation is generated almost solely from the documenting comments --- Python ``Docstrings'' as
+defined in PEP 257,\footnote{Python Enhancement Proposal 257: \url{http://www.python.org/dev/peps/pep-0257/}}
+using the Sphinx Python documentation generator.\footnote{\url{http://sphinx.pocoo.org/}} Sphinx
+supports additional syntax in Docstrings and is able to generate documentation in a wide range of
+formats including HTML, Qt Help,\footnote{\url{http://doc.qt.nokia.com/qthelp-framework.html}}
+Devhelp,\footnote{\url{http://live.gnome.org/devhelp}} \LaTeX, PDF, man-pages and many others. One
+very valuable feature of Sphinx is the ability to parse {\LaTeX}-encoded mathematics embedded
+directly into Docstrings; these are then rendered to images in HTML output for example.
 
-- tests: test one class in isolation, quick, determinism (would be good, not achievable)
+Every publicly available class and method in PyBayes is extensively documented and enhanced with
+mathematical formulas where appropriate. We believe that this approach makes
+PyBayes more easily usable by mathematicians and eliminates any possible misunderstanding of the textual
+description of classes and methods. An example of how Docstrings look like in code can be seen in
+the \autoref{fig:Coverage}. We must say we are very satisfied with Sphinx can only recommend using
+it.
 
-- stresses: test a great portion of code at once, run longer, non-determinism..
+As noted in the discussion about dynamically-typed languages, almost all programmer errors in such
+languages are only discovered at runtime, therefore a need for a comprehensive test-suite was
+stressed out. PyBayes follows this advice and provides two packages that accomplish testing:
+\begin{itemize}
+	\item \verb|pybayes.tests| \\
+		package contains unit-tests of virtually all PyBayes classes and methods. Unit-testing
+		evaluates classes and methods \emph{in isolation} (to highest possible extent) and therefore
+		forms an excellent tool for finding precise location of possible bugs. Unit-testing should
+		last no longer than a few seconds so that it can be run on per-commit basis. One problem
+		faced in PyBayes are non-deterministic methods such as \verb|CPdf.sample()| or
+		\verb|bayes()| methods of particle filters. \verb|sample()| methods are currently tested
+		by generating high enough number of particles and then comparing their mean and variance
+		with theoretical values.
+		Another option would be mocking the random number generator to force deterministic results,
+		this could however produce false-positives when an implementation of a given \verb|sample()|
+		method changed.
 
-Note about coverage.py!!
-
-Profiling python/cython - how, existing support in PyBayes
-
-- how to correct profiling-induced overhead
+		PyBayes currently contains 99 unit-tests that run in approximately 0.2 seconds.
+	\item \verb|pybayes.stresses| \\
+		package contains so-called stress-tests --- longer-running procedures that test greater
+		portion of code and cooperation if individual modules. Results of stresses are not intended
+		be checked automatically, they rather require human evaluation. PyBayes currently has three
+		stresses, one for each Bayesian filter implementation, that are run with various parameters
+		to ensure that the filters produce valid-looking results, to measure their performance, and
+		(for particle filters) to test their convergence as the number of particles increases.
+\end{itemize}
+To ensure that all code-paths are properly tested, it is advisable to employ a \emph{code coverage}
+tool that shows which code statements were visited during tests. We've used Ned Batchelder's excellent
+\emph{coverage.py}\footnote{\url{http://nedbatchelder.com/code/coverage/}} to discover that 86\%
+statements in the \verb|pdfs| module and 83\% statements in the \verb|filters| module are covered
+by tests and stress-tests combined. An example output of coverage.py is shown in the
+\autoref{fig:Coverage}, where everything except one code-path throwing an exception is covered by
+a test.
 
 \begin{figure}[h]
 	\centering
