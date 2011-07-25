@@ -58,6 +58,7 @@
 \VerbatimFootnotes % this must be AFTER preamble
 
 \ifattachements
+	\pagenumbering{alph} % just that LaTex does not complain there are 2 pages no. 2. not shown anywhere
 	\input{startpages.tex} % include some fancy start pages
 \fi
 
@@ -145,11 +146,6 @@ Smidl phd thesis: \cite{Smi:05}
 	\appendix % aby LaTeX cisloval jinak
 
 	\chapter{Contents of the Enclosed CD-ROM}
-
-	\clearpage
-	\phantomsection
-	\addcontentsline{toc}{chapter}{\numberline {B}PyBayes API Documentation} \label{chap:APIDocs}
-	\includepdf[pages={1-2,4-}]{PyBayes.pdf} % skip the blank page
 \fi
 
 \end{document}

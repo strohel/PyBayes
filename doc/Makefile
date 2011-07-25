@@ -102,8 +102,6 @@ latexpdf:
 	@echo "Running LaTeX files through pdflatex..."
 	make -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
-	@echo "strohel's hack: copying generated file to ../thesis/ directory..."
-	@cp -v $(BUILDDIR)/latex/PyBayes.pdf ../thesis/
 
 text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text

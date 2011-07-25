@@ -51,11 +51,12 @@ style prescribed by the PEP 8\footnote{Python Enhancement Proposal 8:
 \url{http://www.python.org/dev/peps/pep-0008/}} is followed when feasible.
 
 The sections below present the library design and explain some decisions taken during development;
-they complement the PyBayes API Documentation available on-line at \url{http://strohel.github.com/PyBayes-doc/}%
+they complement the \textbf{PyBayes API Documentation}, which is a reference guide intended for
+PyBayes users. API Documentation is available on-line at \url{http://strohel.github.com/PyBayes-doc/}%
 \ifattachements%
-, in the appendix (p. \pageref{chap:APIDocs}) and on the enclosed CD-ROM
-\fi
-which is a reference guide intended for PyBayes users.
+\ and on the enclosed CD-ROM%
+\fi%
+.
 
 All class diagrams in this text utilise standard UML\footnote{Unified Modelling Language:
 \url{http://www.uml.org/}} notation and are not an exhaustive reference of all classes, members and
@@ -360,7 +361,7 @@ particle filter implementation anyway at it has to deal also with the Kalman fil
 
 The class diagram of empirical {\pdfs} and related is displayed in the \autoref{fig:DiaEmpPdfs}.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 210mm 3cm 3cm]{./diagrams/emp_pdfs.pdf}
 	\vspace{-8mm}
@@ -469,6 +470,14 @@ particles) and employs \verb|resample()| and \verb|normalise_weights()| of the E
 uses for the posterior distribution. ParticleFilter currently doesn't support specifying the
 proposal density, although it is planned in future.
 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 192mm 3cm 3cm]{./diagrams/filters.pdf}
+	\vspace{-8mm}
+	\caption{Class diagram of Bayesian filters}
+	\label{fig:DiaFilters}
+\end{figure}
+
 \emph{MarginalizedParticleFilter} also implements the respective algorithm shown in the first
 chapter and offloads some work to its posterior {\pdf}, MarginalizedEmpPdf, but has to provide its
 own array of KalmanFilter objects. The MarginalizedParticleFilter class ensures that the i-th Kalman
@@ -491,14 +500,6 @@ will pass the \(b_t\) vector as the \verb|cond| argument to the \verb|bayes()| m
 specified Kalman filter implementation.
 
 A diagram of filtering classes in shown in the \autoref{fig:DiaFilters}.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 192mm 3cm 3cm]{./diagrams/filters.pdf}
-	\vspace{-8mm}
-	\caption{Class diagram of Bayesian filters}
-	\label{fig:DiaFilters}
-\end{figure}
 
 \subsection{Wrappers} \label{sec:PyBayesWrappers}
 
@@ -533,7 +534,7 @@ Second pillar of each well-written software library is, in our belief, its \emph
 first one being the library design and the actual implementation being no better than the third
 pillar (in our view, the implementation can be easily modified in a well-designed library). PyBayes
 reflects that and puts great emphasis on the API Documentation, that is
-\ifattachements included in appendix on page \pageref{chap:APIDocs}, on the bundled CD-ROM and \fi
+\ifattachements included on the bundled CD-ROM and \fi
 accessible on-line at \url{http://strohel.github.com/PyBayes-doc/}.
 
 Documentation is generated almost solely from the documenting comments --- Python ``Docstrings'' as
@@ -586,7 +587,7 @@ by tests and stress-tests combined. An example output of coverage.py is shown in
 \autoref{fig:Coverage}, where everything except one code-path throwing an exception is covered by
 a test.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=24mm 109mm 60mm 117mm]{./coverage.pdf}
 	\vspace{-8mm}
@@ -639,17 +640,17 @@ illustration. Following versions of Kalman filter/implementation environments we
 		 \url{/library/bdm/estim/kalman.cpp}.
 \end{description}
 Benchmark results are shown in tables \ref{tab:KFSmall} to \ref{tab:KFHuge}. The greatest variance
-in results is achieved in the small (2-dimensional) system, where the C++ version is the fastest,
-outperforming Cython build of PyBayes by 260\% and object-oriented MATLAB version was embarrassingly
+in results is achieved in a small (2-dimensional) system, where the C++ version is the fastest,
+outperforming Cython build of PyBayes by 260\%, and object-oriented MATLAB version is embarrassingly
 15\x\ slower than the PyBayes Cy.
 
-\begin{table}[h!]
+\begin{table}[ht]
 	\centering
 	\begin{tabular}{|r|l|l|l|l|l|} \hline
 		& PyBayes Py & PyBayes Cy & MATLAB imper. & MATLAB o-o & BDM \\ \hline
 		time [s] & 0.254 & 0.091 & 0.069 & 1.378 & 0.026 \\ \hline
 		\(s_{\text{rel}}\) & 4.4\% & 4.2\% & 8.5\% & 4.1\% & 9.3\% \\ \hline
-		speed-up & 0.4\x & 1.0\x & 1.3\x & 0.1\x & 3.6\x \\ \hline
+		speedup & 0.4\x & 1.0\x & 1.3\x & 0.1\x & 3.6\x \\ \hline
 	\end{tabular}
 	\caption{Performance of Kalman filters: 2-dimensional state-space}
 	\label{tab:KFSmall}
@@ -659,7 +660,7 @@ outperforming Cython build of PyBayes by 260\% and object-oriented MATLAB versio
 		& PyBayes Py & PyBayes Cy & MATLAB imper. & MATLAB o-o & BDM \\ \hline
 		time [s] & 0.689 & 0.535 & 0.424 & 1.780 & 0.518 \\ \hline
 		\(s_{\text{rel}}\) & 3.0\% & 5.4\% & 5.9\% & 2.7\% & 5.7\% \\ \hline
-		speed-up & 0.8\x & 1.0\x & 1.3\x & 0.3\x & 1.0\x \\ \hline
+		speedup & 0.8\x & 1.0\x & 1.3\x & 0.3\x & 1.0\x \\ \hline
 	\end{tabular}
 	\caption{Performance of Kalman filters: 30-dimensional state-space}
 	\label{tab:KFBig}
@@ -669,7 +670,7 @@ outperforming Cython build of PyBayes by 260\% and object-oriented MATLAB versio
 		& PyBayes Py & PyBayes Cy & MATLAB imper. & MATLAB o-o & BDM \\ \hline
 		time [s] & 2.120 & 1.816 & 1.274 & 3.849 & 1.948 \\ \hline
 		\(s_{\text{rel}}\) & 2.4\% & 2.6\% & 6.3\% & 9.9\% & 2.1\% \\ \hline
-		speed-up & 0.9\x & 1.0\x & 1.4\x & 0.5\x & 0.9\x \\ \hline
+		speedup & 0.9\x & 1.0\x & 1.4\x & 0.5\x & 0.9\x \\ \hline
 	\end{tabular}
 	\caption{Performance of Kalman filters: 60-dimensional state-space}
 	\label{tab:KFHuge}
@@ -693,10 +694,9 @@ The clear advantage of the imperative MATLAB version can be accounted to its cap
 code behind the scenes, in our belief. Our informal late tests have shown that it performs very
 close to the PyBayes Cy version on uniprocessor systems.
 
-\begin{figure}[h]
+\begin{figure}[h!]
 	\centering
-	\includegraphics[width=14cm,keepaspectratio=true,clip=true,trim=19mm 85mm 20mm 111mm]{./KFPerf.pdf}
-%	\vspace{-8mm}
+	\includegraphics[height=7cm,keepaspectratio=true,clip=true,trim=19mm 85mm 20mm 111mm]{./KFPerf.pdf}
 	\caption{Run time against dimensionality of various Kalman filter implementations}
 	\label{fig:KFPerf}
 \end{figure}
