@@ -532,11 +532,107 @@ a test.
 
 \section{Performance Comparison with BDM} \label{sec:PyBayesPerformance}
 
-[skip if in time press]
-Python/Cython KalmanFilter, MATLAB oo / imperative / BDM
+The chapter about the PyBayes library is concluded by a benchmark of four various Kalman filter
+implementations from PyBayes and BDM~\cite{BDM}. All tested implementations use exactly the same
+algorithm and equivalent data-types, neither is explicitly parallelised (however, see notes about
+MATLAB), operate on the same data and gave exactly the same results as shown in the \autoref{fig:KF}
+on page \pageref{fig:KF}. Following versions of involved software were used:
+\begin{description}
+	\item[Python] 2.7.1
+	\item[GNU C Compiler] 4.4.5; \verb|-O2| optimisation flag used when compiling C files
+	\item[Cython] 0.14.1+ (git revision 0.14.1-1002-g53e4c10)
+	\item[MATLAB] 7.11.0.584 (R2010b) 64-bit (glnxa64)
+	\vspace{1mm}
+	\item[PyBayes] 0.3
+	\item[BDM] SVN revision r1378
+\end{description}
 
-|see \autoref{fig:KF} (p. \pageref{fig:KF})|
+The test was performed on a 64-bit dual-core Intel Core i5-2520M CPU clocked at 2.50 Ghz with Intel Turbo
+Boost and Hyper-threading enabled; operating system is Gentoo Linux compiled for the x86\_64 platform.
 
-\section{Discussion, Future Plans}
+The test consists of running 3000 iterations of the Kalman filter with various state-space dimensions:
+2, 30 and 60; observation vector is has the same dimensionality as the state vector. Wall-clock time
+needed to complete all iterations is measured. Each implementation was tested 10 times, mean values
+are shown; to measure variance across runs, relative sample standard deviation \(s_{\text{rel}}\)
+computed using \eqref{eq:RelStdDev} (page \pageref{eq:RelStdDev}) was measured. Additionally,
+relative speed-up with regards to reference version \textbf{PyBayes Cy} is displayed for
+illustration. Following versions of Kalman filter/implementation environments were under test:
+\begin{description}
+	\item[PyBayes Py] \hfill \\
+		KalmanFiler class from PyBayes \url{pybayes/filters.py}; Python build
+	\item[PyBayes Cy] \hfill \\
+		KalmanFiler class from PyBayes \url{pybayes/filters.py}; Cython build
+	\item[MATLAB imper.] \hfill \\
+		Imperative MATLAB implementation where the whole algorithm is written
+		in a single for loop; comes from BDM, file \url{library/tests/stressuite/kalman_stress.m}.
+		While not explicitly parallelised, later experiments shown that MATLAB implicitly
+		parallelised the code behind curtain at least in higher-dimensional cases.
+	\item[MATLAB o-o] \hfill \\
+		Object-oriented MATLAB implementation from BDM where the filter and Gaussian {\pdf} is
+		represented using MATLAB classes; file \url{applications/bdmtoolbox/mex/mexKalman.m}.
+	\item[BDM] \hfill \\
+		 Object-oriented C++ class KalmanFull from BDM implemented in
+		 \url{/library/bdm/estim/kalman.cpp}.
+\end{description}
+Benchmark results are shown in tables \ref{tab:KFSmall} to \ref{tab:KFHuge}. The greatest variance
+in results is achieved in the small (2-dimensional) system, where the C++ version is the fastest,
+outperforming Cython build of PyBayes by 260\% and object-oriented MATLAB version was embarrassingly
+15\x\ slower than the PyBayes Cy.
 
-pypy + pure python mode
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|r|l|l|l|l|l|} \hline
+		& PyBayes Py & PyBayes Cy & MATLAB imper. & MATLAB o-o & BDM \\ \hline
+		time [s] & 0.254 & 0.091 & 0.069 & 1.378 & 0.026 \\ \hline
+		\(s_{\text{rel}}\) & 4.4\% & 4.2\% & 8.5\% & 4.1\% & 9.3\% \\ \hline
+		speed-up & 0.4\x & 1.0\x & 1.3\x & 0.1\x & 3.6\x \\ \hline
+	\end{tabular}
+	\caption{Performance of Kalman filters: 2-dimensional state-space}
+	\label{tab:KFSmall}
+	\vspace{7mm}
+
+	\begin{tabular}{|r|l|l|l|l|l|} \hline
+		& PyBayes Py & PyBayes Cy & MATLAB imper. & MATLAB o-o & BDM \\ \hline
+		time [s] & 0.689 & 0.535 & 0.424 & 1.780 & 0.518 \\ \hline
+		\(s_{\text{rel}}\) & 3.0\% & 5.4\% & 5.9\% & 2.7\% & 5.7\% \\ \hline
+		speed-up & 0.8\x & 1.0\x & 1.3\x & 0.3\x & 1.0\x \\ \hline
+	\end{tabular}
+	\caption{Performance of Kalman filters: 30-dimensional state-space}
+	\label{tab:KFBig}
+	\vspace{7mm}
+
+	\begin{tabular}{|r|l|l|l|l|l|} \hline
+		& PyBayes Py & PyBayes Cy & MATLAB imper. & MATLAB o-o & BDM \\ \hline
+		time [s] & 2.120 & 1.816 & 1.274 & 3.849 & 1.948 \\ \hline
+		\(s_{\text{rel}}\) & 2.4\% & 2.6\% & 6.3\% & 9.9\% & 2.1\% \\ \hline
+		speed-up & 0.9\x & 1.0\x & 1.4\x & 0.5\x & 0.9\x \\ \hline
+	\end{tabular}
+	\caption{Performance of Kalman filters: 60-dimensional state-space}
+	\label{tab:KFHuge}
+\end{table}
+
+Raising the dimensionality of state-space to 30 produced more even results with object-oriented
+MATLAB still lagging behind, PyBayes Cy and C++ version from BDM being nearly equal and imperative
+MATLAB version taking lead by being approximately 30\% faster.
+
+A huge 60-dimensional system sees PyBayes Py, PyBayes Cy and BDM versions being even closer,
+imperative MATLAB version extending its advantage and object-oriented MATLAB version still largely
+unusable due to its poor performance.
+
+The chart shown in the \autoref{fig:KFPerf} allows for some speculations about possible reasons
+of performance differences. First, it seems that the Python version adds moderate per-statement
+overhead that doesn't raise with number of dimensions (we blame NumPy for Python version being
+on par with the C++ and Cython versions) while object-oriented MATLAB adds \textbf{enormous} overhead
+that worsens slightly with number of dimensions.
+
+The clear advantage of the imperative MATLAB version can be accounted to its capability to parallelise
+code behind the scenes, in our belief. Our informal late tests have shown that it performs very
+close to the PyBayes Cy version on uniprocessor systems.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=14cm,keepaspectratio=true,clip=true,trim=19mm 85mm 20mm 111mm]{./KFPerf.pdf}
+%	\vspace{-8mm}
+	\caption{Run time against dimensionality of various Kalman filter implementations}
+	\label{fig:KFPerf}
+\end{figure}
