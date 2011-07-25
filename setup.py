@@ -12,7 +12,7 @@ import sys
 
 
 # generic distutils parameters
-version = '0.2-post-nongit'
+version = '0.3' # '0.2-post-nongit
 try: # try to get current version from git
     orig_dir = os.getcwd()
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
