@@ -327,9 +327,9 @@ class MarginalizedParticleFilter(Filter):
        b_t^{(i)} &\text{ is value of the (b part of the) i}^{th} \text{ particle} \\
        \omega_i \geq 0 &\text{ is weight of the i}^{th} \text{ particle} \quad \sum \omega_i = 1
 
-    *Note: currently :math:`b_t` is hard-coded to be process and observation noise covariance of the
+    **Note:** currently :math:`b_t` is hard-coded to be process and observation noise covariance of the
     :math:`a_t` part. This will be changed soon and :math:`b_t` will be passed as condition to
-    :meth:`KalmanFilter.bayes`.*
+    :meth:`KalmanFilter.bayes`.
     """
 
     def __init__(self, n, init_pdf, p_bt_btp, kalman_args, kalman_class = KalmanFilter):
