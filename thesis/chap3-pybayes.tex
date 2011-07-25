@@ -157,57 +157,97 @@ Outline of {\pdf} prototypes is shown in the \autoref{fig:DiaPdfs}.
 In mathematics, the relation between random variables and {\pdfs} is follows: a {\pdf} is associated
 to a random variable, e.g. ``random variable \(X\) is normally distributed''. This is impractical in
 software (should drawing a million bare samples produce a million copies of a random variable?) but
-the relation between random variables and {\pdfs} couldn't be entirely dropped without a substitution,
-as illustrated in the following example.
+let us show that the relation between random variables and {\pdfs} couldn't be entirely dropped
+without a substitution, let's look at that following example.
 
 The chain rule for {\pdfs} is heavily used in Bayesian filtering and should be adequately supported
-by software. While simple cases can be represented without problems, when for example \(p(a,b|c,d)\)
-from \eqref{eq:ProdCPdfExample} is desired to be represented, additional information have to be supplied by
-the user (programmer) so that correct data-flow can be established (e.g. the order of conditioning
-variables of \(p_1\) cannot be determined automatically).
-\begin{equation} \label{eq:ProdCPdfExample}
-	p(a,b|c,d) = p_1(a|c,b) p_2(b|d)
-\end{equation}
+by software. While simple cases can be represented without problems, when for example
+\(p(\mathbf{a},\mathbf{b}|\mathbf{c},\mathbf{d})\)
+from \eqref{eq:ProdCPdfExample} is desired to be represented, additional information have to be
+supplied by the user (programmer) so that the implementation ``knows'' how and what parts of involved
+vectors are passed to underlying densities \(p_1\) and \(p_2\). The implementation wouldn't be able
+to guess evaluation order, order of components in \(p_1\) condition etc. without such additional
+information.
+\begin{align}
+	p(\mathbf{a},\mathbf{b}|\mathbf{c},\mathbf{d}) &=
+		p_1(\mathbf{a}|\mathbf{c},\mathbf{b}) p_2(\mathbf{b}|\mathbf{d}) \label{eq:ProdCPdfExample} \\
+	\mathbf{z} &= (\mathbf{a}, \mathbf{b}, \mathbf{c}, \mathbf{d}) =
+		(a_1, a_2, b_1, b_2, c_1, c_2, d_1, d_2)  \label{eq:ProdCPdfCombinedVec}
+\end{align}
 
-The first option would be to force the user to specify the relations between distributions manually
-(for example using a form of directed acyclic graph); we believe that it is however error-prone
-and inconvenient. The other method is to make the association the other way around --- random
-variables would be associated to {\pdfs}, in our example above \(p_1\) would contain an information
-that it has random variable \(a\) and conditioning variables \(c,b\).
+In software it is practical to combine both random and conditioning variable
+of the left hand side of \eqref{eq:ProdCPdfExample} into one vector; let \(\mathbf{z}\)
+\eqref{eq:ProdCPdfCombinedVec} denote such vector (\(\mathbf{a}, \mathbf{b}, \mathbf{c}, \mathbf{d}\)
+are thus all two-dimensional). Now suppose that
+the implementation has to pass the vector representing condition \((\mathbf{c}, \mathbf{b})\) to
+the distribution \(p_1\) assuming that \(p_2\) was already evaluated. The problem that the software
+must solve therefore reduces to the task of finding indexes of the \((\mathbf{c},\mathbf{b})\)
+components within vector \(\mathbf{z}\); the solution is indeed an index vector \((5,6,3,4)\),
+assuming one-based indexing.
+
+The first option of passing such information from the user to the implementation would be to force
+her to specify the relations between distributions manually
+using index vectors (or a similar measure) directly; we believe that it is however error-prone
+and inconvenient. The other method is to make a symbolic association between {\pdfs} and random
+variable descriptions, but the other way around --- {\pdfs} would ``contain'' the description of
+random variables they make use of, in our example above \(p_1\) would contain an information
+that it is associated with random variable \((\mathbf{a}\)) and conditioning variable
+\((\mathbf{c},\mathbf{b})\).
 
 The second approach is used in PyBayes even though it brings some computational overhead (that we
 think is worth the simplicity it brings). As mentioned in the previous section, the CPdf class has
-\verb|rv| and \verb|cond_rv| attributes that hold instances of the \emph{RV} class.
+\verb|rv| and \verb|cond_rv| attributes that hold instances of the RV class. Simply put, the concept
+of random variable meta-representation can be viewed as a kind of \emph{semantic}, or \emph{symbolic
+indexing} that should make the life of the PyBayes user easier.
 
-The RV class is essentially a list of ``random vector components'' represented using the
-\emph{RVComp} class. RV provides a few methods to test relationships between 2 random vectors
+The \emph{RV} class is essentially a list of ``random variable components'' represented using the
+RVComp objects. RV provides a few methods to test relationships between 2 random variables
 (whether a RV is subset of another RV etc.) and one notable method, \verb|indexed_in()| (that happen
 to be shown in the \autoref{fig:Coverage} on page \pageref{fig:Coverage}). Suppose
 that RV \(x\) has components \((x_1, x_2, \dotsc, x_n)\) and RV \(y\) is a subset of \(x\) and contains
 components \((x_{i_1}, x_{i_2}, \dotsc, x_{i_m})\); \verb|y.indexed_in(x)| then returns an index array
-\((i_1, i_2, \dotsc, i_m)\) which is suitable for NumPy array indexing methods.
+\((i_1, i_2, \dotsc, i_m)\) which is suitable for NumPy array indexing methods.\footnote{the notation
+used here is simplified; actual implementation allows for multivariate components \(x_i\) --- \(i_j\)
+in returned index array are therefore ranges of integers.}
 
-The RVComp class is a simple container for the \verb|dimension| (which must be greater than zero)
-and \verb|name| (which is optional) attributes; RV caches aggregate name and dimension. An important principle in
-PyBayes is that RVComp comparisons are \emph{instance-based}: 2 RVComp objects are considered equal
-if and only if they refer to the same instance.\footnote{the name attribute thus serves only for
-aesthetic purposes.} This is fast (compared to for example name-based equality), saves memory,
-prevents collisions and is convenient in Python thanks to its call-by-object semantics. A RVComp
-without name (\verb|name| attribute set to None) that can be called \emph{anonymous component} is
-created in CPdf when the user doesn't pass RV to the constructor, but is otherwise insignificant.
+The \emph{RVComp} class is a simple container for the \verb|dimension| (which must be greater than
+zero) and \verb|name| (which is optional) attributes; RV caches aggregate name and dimension. An
+important principle in PyBayes is that RVComp comparisons are \emph{instance-based}: 2 RVComp
+objects are considered equal if and only if they refer to the same instance.\footnote{the name
+attribute thus serves only for aesthetic purposes.} This is fast (compared to for example
+name-based equality), saves memory, prevents collisions and is convenient in Python thanks to its
+call-by-object semantics. The effects are best demonstrated in the following recording of an
+interactive Python session:
 
-The concept of random variables might be used also for some Bayesian filters in future should there
-be a need for it. On the other hand, documented conventions (such as ordering of vector components)
-are used rather than RVs where feasible. Overview of RV and RVComp classes can be seen in the
-\autoref{fig:DiaRvs}.
+\begin{Verbatim}[samepage=true,gobble=1,label=RV and RVComp demonstration,frame=single]
+	>>> rv = RV(RVComp(1, "a"))
+	>>> rv.contains(RVComp(1, "a"))
+	False
 
-\begin{figure}[h]
+	>>> a = RVComp(1, "pretty name")
+	>>> b = RVComp(1, "pretty name")  # same name, different instance
+	>>> rv = RV(a)
+	>>> rv.contains(a)
+	True
+	>>> rv.contains(b)
+	False
+\end{Verbatim}
+A RVComp without a name (with \verb|name| attribute set to None), that can be called \emph{anonymous
+component}, is created in CPdf when the user doesn't pass RV to the constructor, but is otherwise
+insignificant.
+
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth,keepaspectratio=true,clip=true,trim=3cm 218mm 3cm 3cm]{./diagrams/rvs.pdf}
 	\vspace{-8mm}
 	\caption{Class diagram of the random variable framework}
 	\label{fig:DiaRvs}
 \end{figure}
+
+The concept of random variables might be used also for some Bayesian filters in future should there
+be a need for it. On the other hand, documented conventions (such as ordering of vector components)
+are used rather than RVs where feasible. Overview of RV and RVComp classes can be seen in the
+\autoref{fig:DiaRvs}.
 
 \subsection{Gaussian Probability Density Functions}
 
@@ -223,7 +263,9 @@ and covariance matrix attribute \verb|R| and is useful mainly for the family of 
 {\pdfs} described below.
 
 The most general conditional Gaussian distribution is the \emph{GaussCPdf} class that takes two
-functions \verb|f| and \verb|g| as parameters plus the optional \verb|base_class| parameter in
+functions \verb|f| and \verb|g| as parameters\footnote{currently any Python callable objects are
+accepted; NumPy \verb|ufunc| class will be evaluated for suitability in future.}
+plus the optional \verb|base_class| parameter in
 constructor. The \verb|base_class| parameter defaults to GaussPdf, but can be set tu LogNormPdf (to
 any AbstractGaussPdf subclass in general); the base class parameter determines resulting density ---
 both conditional normal and log-normal distributions can be obtained without any code duplication,
@@ -333,13 +375,18 @@ We conclude the discussion about the implemented {\pdfs} with the ones that don'
 The \emph{ProdPdf} class represents unconditional product of \(n\) independent random variables
 \(x_1, x_2, \dotsc, x_n\) as depicted in \eqref{eq:ProdPdf}. As an exception from the general rule,
 ProdPdf constructs its random variable association (the \verb|rv| attribute) using factor random
-variable for convenience.
+variables for convenience; it however currently doesn't make any use of the random variable
+meta-representation as it would be of limited usability --- only permutation of random variable
+components within \(x_i ~ (\forall i)\) would be additionally possible (the order of factors is
+already specified by the user. ProdPdf implements all abstract methods of Pdf by delegating work to
+factor {\pdfs}.
 \begin{equation} \label{eq:ProdPdf}
 	p(x_1, x_2, \dotsc, x_n) = p_1(x_1) p_2(x_2) \dotsm p_n(x_n)
 \end{equation}
 
 A more sophisticated variant of the ProdPdf is the \emph{ProdCPdf} class that is potentially
-conditional and allows for dependent random variables. In general it can represent a chain rule for
+conditional and allows for conditionally dependent random variables. In general it can represent
+a~chain rule for
 {\pdfs} shown in \eqref{eq:ProdCPdf} with an additional constraint that the right hand side makes
 sense (that means that there exists a sequence \((p_{j_1}, p_{j_2}, \dotsc, p_{j_m})\) for which
 \eqref{eq:ProdCPdfContraint} holds). The relation ``\(C \subset \{x_i, x_j, x_k, \dotsc\}\)'' denotes
@@ -357,13 +404,30 @@ in the following formulas.
 	\forall k \in \{1, 2, \dotsc, m\}: C_{j_k} \subset \{x_1, x_2, \dotsc, x_{k-1}\} \cup \{x_{m+1}, x_{m+2} , \dotsc, x_n\}
 \end{equation}
 
+As in ProdPdf, all abstract methods of CPdf are implemented.
 ProdCPdf makes extensive use of the random variable meta-representation described earlier; it uses
 random variable descriptions of factor densities \(p_1, p_2, \dotsc, p_m\) to construct the
-data-flow (the \((p_{j_1}, p_{j_2}, \dotsc, p_{j_m})\) sequence). Historically, ProdCPdf did not
-require factor random variables to be specified in simple cases, but this functionality is considered
-deprecated and will be removed in future PyBayes versions; random vector components of factor {\pdfs}
-will need to be specified (at least those that are ``shared'' between multiple factor distributions).
+data-flow (the \((p_{j_1}, p_{j_2}, \dotsc, p_{j_m})\) sequence); the order of passed factor
+distributions is therefore insignificant --- ProdCPdf always computes correct evaluation order if
+it exists. For this reason the random variable components of factor {\pdfs} need to be specified
+(at least those that are ``shared'' between multiple factor distributions). Currently, there is also
+a limitation that compound random variable representations have to be additionally passed to ProdCPdf;
+in future, ProdCPdf will be able to infer compound random variables from factor distributions.
+Following code example constructs a simple {\pdf} from \eqref{eq:ProdCPdfSimple}:
+\begin{equation} \label{eq:ProdCPdfSimple}
+	p(a,b) = p_1(a|b) p_2(b)
+\end{equation}
 
+\begin{Verbatim}[samepage=true,gobble=1,label=ProdCPdf example,frame=single]
+	# prepare random variables:
+	a, b = RVComp(m, "name of a"), RVComp(n, "b name")
+	p_1 = SomeCPdf(..., rv=RV(a), cond_rv=RV(b))
+	p_2 = OtherPdf(..., rv=RV(b))
+	p = ProdCPdf((p_1, p_2), rv=RV(a, b), cond_rv=RV()) # empty cond_rv
+
+	# version 0.4 of PyBayes will allow:
+	p = ProdCPdf((p_1, p_2))
+\end{Verbatim}
 PyBayes also provides a multivariate uniform distribution implemented by the \emph{UniPdf} class.
 
 \subsection{Bayesian Filters}
