@@ -1088,8 +1088,8 @@ class GaussCPdf(CPdf):
     def __init__(self, shape, cond_shape, f, g, rv = None, cond_rv = None, base_class = None):
         r"""Initialise general gauss cpdf.
 
-        :param int shape: dimension of random vector
-        :param int cond_shape: dimension of condition
+        :param int shape: dimension of random variable
+        :param int cond_shape: dimension of conditioning variable
         :param callable f: :math:`\mu = f(c)` where c = condition
         :param callable g: :math:`R = g(c)` where c = condition
         :param class base_class: class whose instance is created as a base pdf for this

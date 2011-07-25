@@ -73,7 +73,7 @@ class PfOptionsA(object):
         print "Generating random data for particle filter stresses A..."
         self.nr_steps = nr_steps
 
-        # prepare random vector components:
+        # prepare random variable components:
         a_t, b_t = pb.RVComp(1, 'a_t'), pb.RVComp(1, 'b_t')  # state in t
         a_tp, b_tp = pb.RVComp(1, 'a_{t-1}'), pb.RVComp(1, 'b_{t-1}')  # state in t-1
 
