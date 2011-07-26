@@ -1,0 +1,35 @@
+\clearpage % so that table of contents mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{Introduction}
+\pagenumbering{arabic}
+\chapter*{Introduction}
+
+Bayesian filtering (or, recursive Bayesian estimation) is a very promising approach to estimation
+of dynamic systems; it can be applied to a wide range of real-world problems in areas such as
+robotics~\cite{ThrBurFox:05,Gus:02} (tracking, navigation), environmental simulations ---
+e.g. tracking of the radioactive plume upon nuclear
+accident~\cite{HofSmi:09,HofSmiPech:09,PechHofSmi:09}, econometrics and many more.
+
+While many Bayesian filtering algorithms are simple enough to be implemented in software on
+\emph{ad-hoc} basis, it is proposed that a well designed library can bring many advantages such as
+ability to combine and interchange individual methods, better performance, programmer convenience
+and a tested code-base.
+
+\noindent{}The text is organised as follows:
+\begin{enumerate}
+	\item Theoretical background of Bayesian filtering is presented in the first chapter along with
+	a description of well-known Bayesian filters: the Kalman filter, the particle filter and a
+	simple form of the marginalized particle filter.
+	\item In chapter 2 a software analysis for a desired library for Bayesian filtering is
+	performed: requirements are set up, general approaches to software development are discussed and
+	programming languages C++, MATLAB and Python and their implementations are compared. Interesting
+	results are achieved when Python is combined with Cython.
+	\item The PyBayes library that was developed as a part of this thesis is presented. PyBayes is
+	written in Python with an option to use Cython and implements all algorithms presented in the
+	first chapter. Performance of PyBayes is measured and confronted with concurrent implementations
+	that use different implementation environments.
+\end{enumerate}
+A logical and natural \emph{next-step} of the Bayesian filtering is the theory of Bayesian
+decision-making~\cite{Smi:05}; it is however beyond the scope of text. Related areas of research
+include Bayesian networks and similarly-sounding Bayesian \emph{spam} filtering --- these are not
+covered in this text.

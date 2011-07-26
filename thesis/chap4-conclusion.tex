@@ -1,0 +1,42 @@
+\clearpage % so that table of contents mentions correct page
+\phantomsection % so that hyperref makes correct reference
+\addcontentsline{toc}{chapter}{Conclusion}
+\chapter*{Conclusion}
+\vspace{-3mm} % HACK aby se conclusion veslo na jednu stranku
+The theory of recursive Bayesian estimation is introduced in the first chapter and the \emph{optimal
+Bayesian solution} of the problem of recursive estimation is derived. Continues a survey of
+well-known Bayesian filtering methods --- the Kalman filtering, particle filtering and the
+marginalized particle filtering is described and properties of individual algorithms are discussed.
+
+The second chapter contains a software analysis performed with the aim to identify the best
+approach to software development and programming language for a desired library for Bayesian
+filtering. Object-oriented approach is chosen along with the Python programming language, which is
+found optimal except its potentially significant computational overhead. Cython is evaluated for the
+task to improve Python performance with great success: a simple Python algorithm was 60\x\ faster
+when compiled using Cython.
+
+The last chapters presents the PyBayes library that was developed as a part of this thesis. PyBayes
+builds on the software analysis performed in the previous chapter and is therefore object-oriented
+and uses Python/Cython combination as its implementation environment and implements all presented
+Bayesian filtering methods. To compare performance of Python/Cython combination in a real-world
+example, the Kalman filter form PyBayes is benchmarked against MATLAB and C++ implementations from
+BDM~\cite{BDM} with favourable results.
+
+\noindent{}We believe that the \textbf{key contributions} of this thesis are:
+\begin{itemize}
+	\item The performed software analysis, that can be reused for a wide variety of software
+		projects. In particular, we have shown that the choice of a high-level and convenient
+		language such as Python is \emph{not necessarily} an enemy of speed. The analysis includes
+		benchmarks with quite surprising results that show that Cython and PyPy are great speed
+		boosters of Python.
+	\item The PyBayes library itself. While it is not yet feature-complete, it provides a solid base
+		for future development and is unique due to its dual-mode approach: it can be both treated
+		as ordinary Python package with all the convenience it brings or compiled using Cython for
+		performance gains.
+\end{itemize}
+\textbf{Future work} includes extending PyBayes with more filtering algorithms (non-liner Kalman
+filter variants etc.) in the long term and fixing little inconveniences that currently exist in
+PyBayes in the sort term; version 0.4 that would incorporate all future changes mentioned in the
+third chapter is planned to be released within a few months. We are also looking forward to
+incorporate emerging projects into our software analysis, for example the PyPy project looks very
+promising.

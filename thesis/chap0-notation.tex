@@ -1,0 +1,31 @@
+\chapter*{Notation} \addcontentsline{toc}{chapter}{Notation}
+
+Following notation is used throughout this text:
+
+\bigskip
+
+\begin{tabular}{l p{0.8\textwidth}}
+	\(\mathbb{N}\) & set of natural numbers excluding zero \\
+	\(\mathbb{N}_0\) & set of natural numbers including zero \\
+	\(\mathbb{R}\) & set of real numbers \\
+	\(t\) & discrete time moment; \(t \in \mathbb{N}_0\) \\
+	\(a_t\) & value of quantity \(a\) at time \(t\); \(a_t \in \mathbb{R}^n, n \in \mathbb{N}\) \\
+	\(a_{t|t'}\) & quantity with two indices: \(t\) and \(t'\) \\
+		& there is no implicit link between \(a_{t}\), \(a_{t|t'}\) and \(a_{t'}\) \\
+	\(a_{t:t'}\) & sequence of quantities \((a_t, a_{t+1}, \dotsc, a_{t'-1}, a_{t'})\) \\
+	\(p(a_t)\) & probability density function{\footnotemark[1]} of quantity \(a\) at time \(t\) (unless
+		noted otherwise) \\
+	\(p(a_t|b_{t'})\) & conditional {\pdf} of quantity \(a\) at time \(t\) given value of quantity
+		\(b\) at time \(t'\) \\
+	\(\delta(a)\) & Dirac delta function; used exclusively in context of {\pdfs} to denote discrete
+		distribution within framework of continuous distributions{\footnotemark[2]} \\
+	\(\mathcal{N}(\mu, \Sigma)\) & multivariate normal (Gaussian) {\pdf} with mean vector \(\mu\)
+		and covariance matrix \(\Sigma\) \\
+\end{tabular}
+
+% \footnote does not work in tabular environment, - this can be worked around with this
+\footnotetext[1]{for the purpose of this text, {\pdf} \(p\) is multivariate non-negative function
+\(\mathbb{R}^n \rightarrow \mathbb{R}; \; \int_{\supp p} p(x_1, x_2, \dotsc, x_n) \; \dx_1 \dx_2 \dotsb \dx_n = 1\)}
+
+\footnotetext[2]{so that \(\int_{-\infty}^{\infty} f(x) \delta(x - \mu) \; \dx = f(\mu)\) and more
+complex expressions can be derived using integral linearity and Fubini's theorem.}
