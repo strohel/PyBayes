@@ -1,6 +1,6 @@
 \chapter{Software Analysis}
 
-In this chapter general software development approaches and practices will be confronted with
+In this chapter, general software development approaches and practices will be confronted with
 requirements posed on the desired software library for recursive Bayesian estimation. After stating these
 requirements, feasibility of various programming paradigms applied to our real-world problem is
 discussed. Continues a comparison of suitable features of 3 chosen programming
@@ -557,8 +557,8 @@ mentioned features or limitations may well change in future versions.
 		C types. Cdef variables aren't visible to Python code, but some overhead is eliminated as they
 		are, for example, not reference-counted.
 	\item[cdef and cpdef functions] \hfill \\
-		In addition to traditional Python functions that are defined in code as \verb|def function(x)|
-		and use rather expensive calling convention (e.g. all their positional arguments are packed
+		In addition to traditional Python functions (\verb|def function(x)| in code)
+		that use rather expensive calling convention (e.g. all their positional arguments are packed
 		into a tuple and all their keyword arguments are packed into a dictionary on each call)
 		Cython supports so-called \emph{cdef functions} and \emph{cpdef functions}. Cdef functions
 		(defined as \verb|cdef function(x)|, hence the name) use native C calling convention and
@@ -570,11 +570,16 @@ mentioned features or limitations may well change in future versions.
 		the benefits of both.
 		Neither cdef or cpdef functions can be Python class methods, but see the next entry.
 	\item[extension types (cdef classes)] \hfill \\
-		In addition to traditional Python classes (defined as \verb|class ClassName(SuperClass)|) that
+		In addition to traditional Python classes marked as \eqref{eq:PythonClass} in code that
 		store their attributes and methods in a class dictionary, which leads to inefficient attribute
 		lookups and method calls, Cython supports so-called \emph{cdef classes} (or extension types)
-		that are defined as \verb|cdef class ClassName(SuperClass)| and use C structs to store their
-		attributes and method table, a significantly faster approach than Python dictionary. Cdef
+		that are defined using \eqref{eq:CdefClass} and use C structs to store their
+		attributes and method table, a significantly faster approach than Python dictionary.
+		\begin{align}
+			&\mathtt{class~ClassName(SuperClass):} \label{eq:PythonClass} & ~ & ~ &\\
+			&\mathtt{cdef~class~ClassName(SuperClass):} \label{eq:CdefClass}
+		\end{align}
+		Cdef
 		classes can also have cdef and cpdef methods as their members; they can also contain cdef
 		variables as attributes with optional additional modifiers \verb|public| (read-write from
 		Python) or \verb|readonly| (read-only from Python). Cdef classes are, in contrast to similarly
@@ -599,9 +604,9 @@ mentioned features or limitations may well change in future versions.
 			cpdef double sin_wrapper(double x):
 			    return sin(x)
 		\end{Verbatim}
-		In the example above, \verb|sin_wrapper()| can be called from Python code. Cython is
-		therefore an excellent tool to create Python wrappers around C/C++ libraries or use them
-		directly.
+		In the example above, the \verb|sin_wrapper()| function can be called from Python code.
+		Cython is therefore an excellent tool to create Python wrappers around C/C++ libraries or
+		use them directly.
 	\item[NumPy support] \hfill \\
 		As was noted above, many core parts of NumPy are written in C (or Cython), including the
 		crucial data-type, N-dimensional array. Cython provides explicit support for NumPy
@@ -617,11 +622,14 @@ mentioned features or limitations may well change in future versions.
 		It is clear that in order to make use of all important features of Cython, one has to use
 		syntax that is no longer valid Python code; this can be disadvantageous in many cases. To
 		combat this, Cython offers so-called \emph{pure Python mode} where Cython-specific syntax
-		is wrapped in Python constructs, e.g. \verb|cdef int i| can be alternatively formulated
-		as \verb|x = cython.declare(cython.int)| --- such constructs are implemented by Cython
+		is wrapped in Python constructs, e.g. \eqref{eq:CdefInt} can be alternatively formulated
+		as \eqref{eq:CdefIntPure} --- such constructs are implemented by Cython
 		shadow code to be no-ops when interpreted by Python and treated accordingly when compiled
 		by Cython.
-
+		\begin{align}
+			&\mathtt{cdef~int~i} \label{eq:CdefInt} & ~ & ~ &\\
+			&\mathtt{x~=~cython.declare(cython.int)} \label{eq:CdefIntPure}
+		\end{align}
 		Another variant of pure Python mode is to use so-called \emph{augmenting files}, .pxd files
 		that accompany equally-named .py files. Such augmenting file can contain declarations of
 		variables, functions and classes that appear in associated .py files and add Cython-specific

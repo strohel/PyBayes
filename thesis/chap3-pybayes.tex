@@ -329,7 +329,7 @@ weights according to \eqref{eq:AbstractEmpPdfNormalise}.
 	\omega_i >= 0 \quad \forall i \quad \quad & \quad \quad \sum_{i=1}^n \omega_i = 1 \label{eq:AbstractEmpPdfConstraints} \\
 	\omega_i' &= \frac{\omega_i}{\sum_{i=1}^n \omega_i} \label{eq:AbstractEmpPdfNormalise}
 \end{align}
-AbstractEmpPdf provides one more method, \verb|get_resample_indices()| which
+AbstractEmpPdf provides one more method called \verb|get_resample_indices()| that
 (given that there are \(n\) particles) draws \(n\) random samples from itself and returns their
 indices. The algorithm is however optimised in a way that only one random sampling is performed; the
 results are thus more predictable (or, ``less random''), but this is desired when used for resampling
@@ -429,7 +429,8 @@ Following code example constructs a simple {\pdf} from \eqref{eq:ProdCPdfSimple}
 	# version 0.4 of PyBayes will allow:
 	p = ProdCPdf((p_1, p_2))
 \end{Verbatim}
-PyBayes also provides a multivariate uniform distribution implemented by the \emph{UniPdf} class.
+PyBayes also provides a multivariate uniform distribution which is implemented by the \emph{UniPdf}
+class.
 
 \subsection{Bayesian Filters}
 

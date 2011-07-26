@@ -213,7 +213,8 @@ presented in the next section.
 
 \section{Particle Filter} \label{sec:ParticleFilter}
 
-Particle filters represent approximate solution of the problem of the recursive Bayesian estimation,
+Particle filters represent an approximate solution of the problem of the recursive Bayesian
+estimation,
 thus can be considered \emph{suboptimal} methods. The underlying algorithm described below is most
 commonly named \emph{sequential importance sampling (SIS)}. The biggest advantage of the particle filtering
 is that requirements posed on the modelled system are much weaker than those assumed by optimal methods
@@ -224,7 +225,7 @@ model.\footnote{both {\pdfs} are generally time-varying and their knowledge for 
 but their representation (parametrised by conditioning variable) is frequently constant in time in
 practical applications.}
 
-The sequential importance sampling approximates posterior density by a weighted empirical
+The sequential importance sampling approximates the posterior density by a weighted empirical
 {\pdf} \eqref{eq:PFAPost}.
 \begin{align}
 	p(x_t | y_{1:t}) \approx \sum_{i=1}^N \omega_t^{(i)} \delta(x_t - x_t^{(i)}) \label{eq:PFAPost} \\
