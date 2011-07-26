@@ -12,7 +12,7 @@ import sys
 
 
 # generic distutils parameters
-version = '0.3' # '0.2-post-nongit
+version = '0.3-post-nongit' # '0.2-post-nongit
 try: # try to get current version from git
     orig_dir = os.getcwd()
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -38,7 +38,7 @@ params = {
         'a light framework of probability density functions. PyBayes can optionally use Cython ' +
         'for lage speed gains (Cython build is several times faster).',
     # Note to myself: must manually upload on each release!
-    'download_url':'https://github.com/downloads/strohel/PyBayes/PyBayes-v'+version+'.tar.gz',
+    'download_url':'https://github.com/downloads/strohel/PyBayes/PyBayes-'+version+'.tar.gz',
     'platforms':'cross-platform',
     'license':'GNU GPL v2+',
     'classifiers':[
