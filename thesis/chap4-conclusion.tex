@@ -3,7 +3,7 @@
 \addcontentsline{toc}{chapter}{Conclusion}
 \chapter*{Conclusion}
 \vspace{-3mm} % HACK aby se conclusion veslo na jednu stranku
-The theory of recursive Bayesian estimation is introduced in the first chapter and the \emph{optimal
+The theory of Bayesian filtering is introduced in the first chapter and the \emph{optimal
 Bayesian solution} of the problem of recursive estimation is derived. Continues a survey of
 well-known Bayesian filtering methods --- the Kalman filtering, particle filtering and the
 marginalized particle filtering is described and properties of individual algorithms are discussed.
@@ -19,14 +19,14 @@ The last chapters presents the PyBayes library that was developed as a part of t
 builds on the software analysis performed in the previous chapter and is therefore object-oriented
 and uses Python/Cython combination as its implementation environment and implements all presented
 Bayesian filtering methods. To compare performance of Python/Cython combination in a real-world
-example, the Kalman filter form PyBayes is benchmarked against MATLAB and C++ implementations from
+example, the Kalman filter from PyBayes is benchmarked against MATLAB and C++ implementations from
 BDM~\cite{BDM} with favourable results.
 
 \noindent{}We believe that the \textbf{key contributions} of this thesis are:
 \begin{itemize}
 	\item The performed software analysis, that can be reused for a wide variety of software
 		projects. In particular, we have shown that the choice of a high-level and convenient
-		language such as Python is \emph{not necessarily} an enemy of speed. The analysis includes
+		language such as Python is \emph{not necessarily} the enemy of speed. The analysis includes
 		benchmarks with quite surprising results that show that Cython and PyPy are great speed
 		boosters of Python.
 	\item The PyBayes library itself. While it is not yet feature-complete, it provides a solid base
