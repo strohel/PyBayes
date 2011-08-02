@@ -10,7 +10,7 @@ accelerate performance-critical code-paths.
 You may want to see `my bachelor thesis`_ for introduction to recursice Bayesian estimation,
 underlying software analysis and background information for PyBayes.
 
-.. _my thesis: thesis.pdf
+.. _my bachelor thesis: thesis.pdf
 """
 
 from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
