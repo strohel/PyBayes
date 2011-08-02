@@ -487,7 +487,7 @@ the reason why resampling cannot be done in MarginalizedEmpPdf and is instead pe
 \verb|_resample()| method of MarginalizedParticleFilter that makes use of the
 \verb|get_resample_indices()| method of AbstractEmpPdf.
 
-In constructor MarginalizedEmpPdf accepts initial distribution of the state vector
+In constructor MarginalizedParticleFilter accepts the initial distribution of the state vector
 \(p(x_0) = p(a_0, b_0)\), process model of the empirical part of the state vector \(p(b_t|b_{t-1})\),
 the class of the desired Kalman filter implementation (that has to be a subclass of KalmanFilter)
 and its parameters in form of a Python dictionary. That way, thanks to Python capabilities,
