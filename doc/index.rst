@@ -8,6 +8,7 @@ PyBayes API Documentation
    :maxdepth: 2
 
    README
+   ChangeLog
    pdfs
    filters
    HACKING
