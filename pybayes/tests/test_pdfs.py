@@ -111,14 +111,16 @@ class TestCpdf(PbTestCase):
         self.assertEqual(type(self.cpdf), pb.CPdf)
 
     def test_abstract_methods(self):
-        # this test may fail due to bug in cython [1] that was fixed in 0.13.1
-        # [1] http://trac.cython.org/cython_trac/ticket/583
-        self.assertRaises(NotImplementedError, self.cpdf.shape)
-        self.assertRaises(NotImplementedError, self.cpdf.cond_shape)
         self.assertRaises(NotImplementedError, self.cpdf.mean, np.array([0.]))
         self.assertRaises(NotImplementedError, self.cpdf.variance, np.array([0.]))
         self.assertRaises(NotImplementedError, self.cpdf.eval_log, np.array([0.]), np.array([0.]))
         self.assertRaises(NotImplementedError, self.cpdf.sample, np.array([0.]))
+
+    def test_shape_cond_shape(self):
+        self.cpdf.rv = pb.RV(pb.RVComp(2, "a"))
+        self.cpdf.cond_rv = pb.RV(pb.RVComp(3, "b"))
+        self.assertEqual(self.cpdf.shape(), 2)
+        self.assertEqual(self.cpdf.cond_shape(), 3)
 
 
 class TestPdf(PbTestCase):
@@ -131,9 +133,6 @@ class TestPdf(PbTestCase):
         self.assertEqual(type(self.pdf), pb.Pdf)
 
     def test_abstract_methods(self):
-        # this test may fail due to bug in cython [1]
-        # [1] http://trac.cython.org/cython_trac/ticket/583
-        self.assertRaises(NotImplementedError, self.pdf.shape)
         self.assertRaises(NotImplementedError, self.pdf.mean)
         self.assertRaises(NotImplementedError, self.pdf.variance)
         self.assertRaises(NotImplementedError, self.pdf.eval_log, np.array([0.]))
@@ -141,6 +140,7 @@ class TestPdf(PbTestCase):
 
     def test_cond_shape(self):
         self.assertEqual(self.pdf.cond_shape(), 0)
+
 
 class TestUniPdf(PbTestCase):
     """Test uniform pdf"""

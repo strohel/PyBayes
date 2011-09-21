@@ -270,28 +270,38 @@ class CPdf(object):
     """
 
     def shape(self):
-        """Return shape of the random variable. :meth:`mean` and :meth:`variance` methods must
-        return arrays of this shape.
+        """Return pdf shape = number of dimensions of the random variable.
 
-        :rtype: int"""
-        raise NotImplementedError("Derived classes must implement this function")
+        :meth:`mean` and :meth:`variance` methods must return arrays of this shape.
+        Default implementation (which you should not override) just returns
+        self.rv.dimension.
+
+        :rtype: int
+        """
+        return self.rv.dimension
 
     def cond_shape(self):
-        """Return shape of the condition.
+        """Return condition shape = number of dimensions of the conditioning variable.
 
-        :rtype: int"""
-        raise NotImplementedError("Derived classes must implement this function")
+        Default implementation (which you should not override) just returns
+        self.cond_rv.dimension.
+
+        :rtype: int
+        """
+        return self.cond_rv.dimension
 
     def mean(self, cond = None):
         """Return (conditional) mean value of the pdf.
 
-        :rtype: :class:`numpy.ndarray`"""
+        :rtype: :class:`numpy.ndarray`
+        """
         raise NotImplementedError("Derived classes must implement this function")
 
     def variance(self, cond = None):
         """Return (conditional) variance (diagonal elements of covariance).
 
-        :rtype: :class:`numpy.ndarray`"""
+        :rtype: :class:`numpy.ndarray`
+        """
         raise NotImplementedError("Derived classes must implement this function")
 
     def eval_log(self, x, cond = None):
@@ -299,7 +309,8 @@ class CPdf(object):
 
         :param x: point which to evaluate the function in
         :type x: :class:`numpy.ndarray`
-        :rtype: double"""
+        :rtype: double
+        """
         raise NotImplementedError("Derived classes must implement this function")
 
     def sample(self, cond = None):
@@ -325,7 +336,8 @@ class CPdf(object):
 
         :raises TypeError: cond is not of correct type
         :raises ValueError: cond doesn't have appropriate shape
-        :rtype: bool"""
+        :rtype: bool
+        """
         if cond is None:  # cython-specific
             raise TypeError("cond must be numpy.ndarray")
         if cond.ndim != 1:
@@ -340,7 +352,8 @@ class CPdf(object):
 
         :raises TypeError: cond is not of correct type
         :raises ValueError: cond doesn't have appropriate shape
-        :rtype: bool"""
+        :rtype: bool
+        """
         if x is None:  # cython-specific
             raise TypeError("x must be numpy.ndarray")
         if x.ndim != 1:
@@ -349,30 +362,36 @@ class CPdf(object):
             raise ValueError("x must be of shape ({0},) array of shape ({1},) given".format(self.shape(), x.shape[0]))
         return True
 
-    def _set_rvs(self, rv, cond_rv):
+    def _set_rvs(self, exp_shape, rv, exp_cond_shape, cond_rv):
         """Internal heper to check and set rv and cond_rv.
 
+        :param int exp_shape: expected random variable shape
+        :param RV rv: associated random variable or None to have it auto-created
+        :param int exp_cond_shape: expected conditioning variable shape
+        :param RV cond_rv: associated conditioning variable or None to have it auto-created
+
         :raises TypeError: rv or cond_rv doesnt have right type
-        :raises ValueError: dimensions do not match"""
+        :raises ValueError: dimensions do not match
+        """
         if rv is None:
-            self.rv = RV(RVComp(self.shape()))  # create RV with one anonymous component
+            self.rv = RV(RVComp(exp_shape))  # create RV with one anonymous component
         else:
             if not isinstance(rv, RV):
                 raise TypeError("rv (if specified) must be (a subclass of) RV")
-            if rv.dimension != self.shape():
-                raise ValueError("rv has wrong dimension " + str(rv.dimension) + ", " + str(self.shape()) + " expected")
+            if rv.dimension != exp_shape:
+                raise ValueError("rv has wrong dimension {0}, {1} expected".format(rv.dimension, exp_shape))
             self.rv = rv
 
         if cond_rv is None:
-            if self.cond_shape() is 0:
+            if exp_cond_shape is 0:
                 self.cond_rv = RV()  # create empty RV to denote empty condition
             else:
-                self.cond_rv = RV(RVComp(self.cond_shape()))  # create RV with one anonymous component
+                self.cond_rv = RV(RVComp(exp_cond_shape))  # create RV with one anonymous component
         else:
             if not isinstance(cond_rv, RV):
-                raise TypeError("cond_rv (is specified) must be (a subclass of) RV")
-            if cond_rv.dimension is not self.cond_shape():
-                raise ValueError("cond_rv has wrong dimension " + str(cond_rv.dimension) + ", " + str(self.cond_shape()) + " expected")
+                raise TypeError("cond_rv (if specified) must be (a subclass of) RV")
+            if cond_rv.dimension is not exp_cond_shape:
+                raise ValueError("cond_rv has wrong dimension {0}, {1} expected".format(cond_rv.dimension, exp_cond_shape))
             self.cond_rv = cond_rv
         return True
 
@@ -389,6 +408,10 @@ class Pdf(CPdf):
     def cond_shape(self):
         """Return zero as Pdfs have no condition."""
         return 0
+
+    def _set_rv(self, exp_shape, rv):
+        """Internal helper - shortcut to :meth:`~CPdf._set_rvs`"""
+        return self._set_rvs(exp_shape, rv, 0, None)
 
 
 class UniPdf(Pdf):
@@ -424,10 +447,7 @@ class UniPdf(Pdf):
             raise ValueError("a must have same shape as b")
         if np.any(self.b <= self.a):
             raise ValueError("b must be greater than a in each dimension")
-        self._set_rvs(rv, None)
-
-    def shape(self):
-        return self.a.shape[0]
+        self._set_rv(a.shape[0], rv)
 
     def mean(self, cond = None):
         return (self.a+self.b)/2.  # element-wise division
@@ -522,13 +542,10 @@ class GaussPdf(AbstractGaussPdf):
 
         self.mu = mean
         self.R = cov
-        self._set_rvs(rv, None)
+        self._set_rv(mean.shape[0], rv)
 
     def __str__(self):
         return "<pybayes.pdfs.GaussPdf mu={0} R={1}>".format(self.mu, self.R)
-
-    def shape(self):
-        return self.mu.shape[0]
 
     def mean(self, cond = None):
         return self.mu
@@ -597,10 +614,7 @@ class LogNormPdf(AbstractGaussPdf):
             raise ValueError("cov must be positive")
         self.mu = mean
         self.R = cov
-        self._set_rvs(rv, None)
-
-    def shape(self):
-        return 1
+        self._set_rv(1, rv)
 
     def mean(self, cond = None):
         return np.exp(self.mu + self.R[0]/2.)
@@ -704,10 +718,7 @@ class EmpPdf(AbstractEmpPdf):
         # set n weights to 1/n
         self.weights = np.ones(self.particles.shape[0]) / self.particles.shape[0]
 
-        self._set_rvs(rv, None)
-
-    def shape(self):
-        return self.particles.shape[1]
+        self._set_rv(init_particles.shape[1], rv)
 
     def mean(self, cond = None):
         ret = np.zeros(self.particles.shape[1])
@@ -798,12 +809,9 @@ class MarginalizedEmpPdf(AbstractEmpPdf):
         # set n weights to 1/n
         self.weights = np.ones(self.particles.shape[0]) / self.particles.shape[0]
         self._gauss_shape = self.gausses[0].shape()  # shape of the gaussian component
-        self._part_shape = self.particles.shape[1]  # shape of the empirical component
+        part_shape = self.particles.shape[1]  # shape of the empirical component
 
-        self._set_rvs(rv, None)
-
-    def shape(self):
-        return self._gauss_shape + self._part_shape
+        self._set_rv(self._gauss_shape + part_shape, rv)
 
     def mean(self, cond = None):
         ret = np.zeros(self.shape())
@@ -881,15 +889,12 @@ class ProdPdf(Pdf):
                 rv_comps.extend(self.factors[i].rv.components)  # add components of child rvs
 
         # pre-calclate shape
-        self._shape = sum(self.shapes)
+        shape = sum(self.shapes)
         # associate with a rv (needs to be after _shape calculation)
         if rv_comps is None:
-            self._set_rvs(rv, None)
+            self._set_rv(shape, rv)
         else:
-            self._set_rvs(RV(*rv_comps), None)
-
-    def shape(self):
-        return self._shape
+            self._set_rv(shape, RV(*rv_comps))
 
     def mean(self, cond = None):
         curr = 0
@@ -966,13 +971,7 @@ class MLinGaussCPdf(CPdf):
             raise ValueError("b must have same number of cols as covariance")
         if self.A.shape[0] != self.b.shape[0]:
             raise ValueError("A must have same number of rows as covariance")
-        self._set_rvs(rv, cond_rv)
-
-    def shape(self):
-        return self.b.shape[0]
-
-    def cond_shape(self):
-        return self.A.shape[1]
+        self._set_rvs(self.b.shape[0], rv, self.A.shape[1], cond_rv)
 
     def mean(self, cond = None):
         # note: it may not be true that gauss.mu == gauss.mean() for all AbstractGaussPdf
@@ -1039,13 +1038,7 @@ class LinGaussCPdf(CPdf):
             if not issubclass(base_class, AbstractGaussPdf):
                 raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
             self.gauss = base_class(np.zeros(1), np.array([[1.]]))
-        self._set_rvs(rv, cond_rv)
-
-    def shape(self):
-        return 1
-
-    def cond_shape(self):
-        return 2
+        self._set_rvs(1, rv, 2, cond_rv)
 
     def mean(self, cond = None):
         self._set_gauss_params(cond)
@@ -1099,23 +1092,15 @@ class GaussCPdf(CPdf):
         *Please note that the way of specifying callback function f and g is not yet fixed and may
         be changed in future.*
         """
-        self._shape = shape
-        self._cond_shape = cond_shape
         self.f = f
         self.g = g
         if base_class is None:
-            self.gauss = GaussPdf(np.zeros(self._shape), np.eye(self._shape))
+            self.gauss = GaussPdf(np.zeros(shape), np.eye(shape))
         else:
             if not issubclass(base_class, AbstractGaussPdf):
                 raise TypeError("base_class must be a class (not an instance) and subclass of AbstractGaussPdf")
-            self.gauss = base_class(np.zeros(self._shape), np.ones((self._shape, self._shape)))
-        self._set_rvs(rv, cond_rv)
-
-    def shape(self):
-        return self._shape
-
-    def cond_shape(self):
-        return self._cond_shape
+            self.gauss = base_class(np.zeros(shape), np.ones((shape, shape)))
+        self._set_rvs(shape, rv, cond_shape, cond_rv)
 
     def mean(self, cond = None):
         self._set_gauss_params(cond)
@@ -1136,8 +1121,8 @@ class GaussCPdf(CPdf):
 
     def _set_gauss_params(self, cond):
         self._check_cond(cond)
-        self.gauss.mu = self.f(cond).reshape(self._shape)
-        self.gauss.R = self.g(cond).reshape((self._shape, self._shape))
+        self.gauss.mu = self.f(cond).reshape(self.shape())
+        self.gauss.R = self.g(cond).reshape((self.shape(), self.shape()))
         return True
 
 
@@ -1194,43 +1179,40 @@ class ProdCPdf(CPdf):
         self.out_indeces = []
 
         if rv is None and cond_rv is None:
-            self._init_anonymous(factors)
+            (shape, cond_shape) = self._init_anonymous(factors)
         elif rv is not None and cond_rv is not None:
-            self._init_with_rvs(list(factors), rv, cond_rv)  # needs factors as list
+            # needs factors as list
+            (shape, cond_shape) = self._init_with_rvs(list(factors), rv, cond_rv)
         else:
             raise AttributeError("Please pass both rv and cond_rv or none of them, other combinations not (yet) supported")
-
-        self._set_rvs(rv, cond_rv)
+        self._set_rvs(shape, rv, cond_shape, cond_rv)
 
     def _init_anonymous(self, factors):
         self.factors = np.array(factors, dtype=CPdf)
 
         # overall cond shape equals last factor cond shape:
-        self._cond_shape = factors[-1].cond_shape()
-        self._shape = factors[0].shape() + factors[0].cond_shape() - self._cond_shape
+        cum_cond_shape = factors[-1].cond_shape()
+        cum_shape = factors[0].shape() + factors[0].cond_shape() - cum_cond_shape
 
         start_ind = 0  # current start index in cummulate rv and cond_rv data array
         for i in range(self.factors.shape[0]):
             factor = self.factors[i]
             if not isinstance(factor, CPdf):
                 raise TypeError("all records in factors must be (subclasses of) CPdf")
-
             shape = factor.shape()
             cond_shape = factor.cond_shape()
             # expected (normal + cond) shape:
-            exp_shape = self._shape + self._cond_shape - start_ind
+            exp_shape = cum_shape + cum_cond_shape - start_ind
             if shape + cond_shape != exp_shape:
                 raise ValueError("Expected that pdf {0} will have shape (={1}) + ".
                     format(factor, shape) + "cond_shape (={0}) == {1}".
                     format(cond_shape, exp_shape))
-
             self.in_indeces.append(np.arange(start_ind + shape, start_ind + shape + cond_shape))
             self.out_indeces.append(np.arange(start_ind, start_ind + shape))
-
             start_ind += shape
-
-        if start_ind != self._shape:
+        if start_ind != cum_shape:
             raise ValueError("Shapes do not match")
+        return (cum_shape, cum_cond_shape)
 
     def _init_with_rvs(self, factors, rv, cond_rv):
         """Initialise ProdCPdf using rv components for data chain construction.
@@ -1284,15 +1266,7 @@ class ProdCPdf(CPdf):
             factor = self.factors[i]
             self.in_indeces.append(factor.cond_rv.indexed_in(cummulate_rv))
             self.out_indeces.append(factor.rv.indexed_in(cummulate_rv))
-
-        self._shape = rv.dimension
-        self._cond_shape = cond_rv.dimension
-
-    def shape(self):
-        return self._shape
-
-    def cond_shape(self):
-        return self._cond_shape
+        return(rv.dimension, cond_rv.dimension) # in fact no-op, but we already check RV dimensions
 
     def mean(self, cond = None):
         raise NotImplementedError("Not yet implemented")
@@ -1305,9 +1279,9 @@ class ProdCPdf(CPdf):
         self._check_cond(cond)
 
         # combination of evaluation point and condition:
-        data = np.empty(self._shape + self._cond_shape)
-        data[0:self._shape] = x
-        data[self._shape:] = cond
+        data = np.empty(self.rv.dimension + self.cond_rv.dimension)
+        data[0:self.rv.dimension] = x
+        data[self.rv.dimension:] = cond
         ret = 0.
 
         for i in range(self.factors.shape[0]):
@@ -1318,12 +1292,12 @@ class ProdCPdf(CPdf):
         self._check_cond(cond)
 
         # combination of sampled variables and condition:
-        data = np.empty(self._shape + self._cond_shape)
-        data[self._shape:] = cond  # rest is undefined
+        data = np.empty(self.rv.dimension + self.cond_rv.dimension)
+        data[self.rv.dimension:] = cond  # rest is undefined
 
         # process pdfs from right to left (they are arranged so that data flow
         # is well defined in this case):
         for i in range(self.factors.shape[0] -1, -1, -1):
             data[self.out_indeces[i]] = self.factors[i].sample(data[self.in_indeces[i]])
 
-        return data[:self._shape]  # return right portion of data
+        return data[:self.rv.dimension]  # return right portion of data
