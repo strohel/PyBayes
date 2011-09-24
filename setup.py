@@ -12,7 +12,7 @@ import sys
 
 
 # generic distutils parameters
-version = '0.3-post-nongit' # '0.2-post-nongit
+version = '0.3-post-nongit' # 0.x-post-nongit
 try: # try to get current version from git
     orig_dir = os.getcwd()
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -36,7 +36,7 @@ params = {
         'estimation (Bayesian filtering) that is convenient to use. Already implemented are ' +
         'Kalman filter, particle filter and marginalized particle filter, all built atop of ' +
         'a light framework of probability density functions. PyBayes can optionally use Cython ' +
-        'for lage speed gains (Cython build is several times faster).',
+        'for lage speed gains (Cython build can be several times faster in some situations).',
     # Note to myself: must manually upload on each release!
     'download_url':'https://github.com/downloads/strohel/PyBayes/PyBayes-'+version+'.tar.gz',
     'platforms':'cross-platform',
@@ -206,7 +206,6 @@ def main():
             libraries=['cblas', 'lapack'],
             **ext_options
         ))
-
     else:  # options.use_cython is False
         params['packages'] = ['pybayes', 'pybayes.stresses', 'pybayes.tests', 'pybayes.wrappers']
 

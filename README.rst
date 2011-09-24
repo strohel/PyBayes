@@ -9,7 +9,7 @@ PyBayes is an object-oriented Python library for recursive Bayesian
 estimation (Bayesian filtering) that is convenient to use. Already implemented are
 Kalman filter, particle filter and marginalized particle filter, all built atop of
 a light framework of probability density functions. PyBayes can optionally use Cython
-for lage speed gains (Cython build is several times faster).
+for lage speed gains (Cython build can be several times faster in some situations).
 
 Future plans include more specialised variants of Kalman/particle filters and
 speed optimisations.
@@ -28,6 +28,12 @@ PyBayes in e.g. BSD-licensed project? Ask!)
 
 Obtaining PyBayes
 =================
+
+PyBayes releases can be found in .tar.gz format at github_ or PyPI_. These releases bundle the Tokyo
+project for convenience.
+
+.. _github: https://github.com/strohel/PyBayes/downloads
+.. _PyPI: http://pypi.python.org/pypi/PyBayes
 
 Development of PyBayes happens on http://github.com/strohel/PyBayes using git VCS
 and the most fresh development sources can be obtained using git. It should be noted that
@@ -84,7 +90,7 @@ way.
 
 In order to build optimised PyBayes, you'll additionally need:
 
-* Cython_ Python to C compiler
+* Cython_ Python to C compiler, version **0.14.1** or newer
 * working C compiler (GCC on Unix-like systems, MinGW or Microsoft Visual C on
   Windows [#install_cython]_)
 * NumPy_ numerical library for Python, version 1.5 or greater (NumPy is needed
@@ -92,7 +98,7 @@ In order to build optimised PyBayes, you'll additionally need:
 * On some Debian-based Linux distributions (Ubuntu) you'll need python-dev
   package that contains ``Python.h`` file that is needed by PyBayes
 
-.. _Cython: http://www.cython.org
+.. _Cython: http://www.cython.org/
 .. [#install_cython] http://docs.cython.org/src/quickstart/install.html
 .. _NumPy: http://numpy.scipy.org/
 
@@ -109,8 +115,8 @@ Proceed with following steps:
       ``Notice: NumPy found.``
 
    * in order to be 100% sure that optimised build is used, you can add
-     ``--use=cython=yes`` option to the ``./setup.py`` call. You can force pure
-     Python mode even when Cython is installed, pass ``--use=cython=no``. By
+     ``--use-cython=yes`` option to the ``./setup.py`` call. You can force pure
+     Python mode even when Cython is installed, pass ``--use-cython=no``. By
      default, PyBayes auto-detects Cython and NumPy presence on system.
    * if you plan to profile code that uses optimised PyBayes, you may want to
      embed profiling information into PyBayes. This can be accomplished by
