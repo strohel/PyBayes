@@ -24,7 +24,6 @@ class PyBayesBuildPrepare(Command):
         self.ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
         self.ext_options['pyrex_directives'] = {'profile':self.distribution.profile, 'infer_types':True}
         self.ext_options['pyrex_include_dirs'] = ['tokyo']  # find tokyo.pxd from bundled tokyo
-        print "Prifiling=", self.distribution.profile
 
     def finalize_options(self):
         # these are just aliases to distribution variables
