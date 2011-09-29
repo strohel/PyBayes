@@ -19,9 +19,10 @@ class PyBayesDistribution(Distribution):
 
     def __init__(self, attrs=None):
         Distribution.__init__(self, attrs)
-        self.ext_modules = []
         self.use_cython = None
         self.profile = False
+        if not self.ext_modules:
+            self.ext_modules = []
 
         self.global_options += [
             ('use-cython=', None, "use Cython to make faster binary python modules (choices: "
@@ -30,26 +31,19 @@ class PyBayesDistribution(Distribution):
              + 'yes/no; default: no)')
         ]
 
-    def get_command_class(self, command):
-        """Overriden method to return our custom command in case that Cython build is in effect"""
-        self._ensure_options_finalised()
-        if self.use_cython is not True:
-            return Distribution.get_command_class(self, command)
+    def has_ext_modules(self):
+        if self.use_cython:
+            return True
+        return Distribution.has_ext_modules(self)
 
-        if command == "build":
-            return PyBayesBuild
-        if command == "build_prepare":
-            return PyBayesBuildPrepare
-        if command == "build_ext":
-            return self.build_ext
-        return Distribution.get_command_class(self, command)
+    def parse_command_line(self):
+        """We need to process the options once command line is parsed"""
+        ret = Distribution.parse_command_line(self)
+        if ret:
+            self.finalize_command_line()
+        return ret
 
-    def has_ext_modules (self):
-        """This method needs to be overriden as we create our Extension instances late in the
-        cycle"""
-        return True
-
-    def _ensure_options_finalised(self):
+    def finalize_command_line(self):
         if self.profile not in (True, False):
             self.profile = bool(strtobool(self.profile))
         if self.use_cython is None:
@@ -57,7 +51,7 @@ class PyBayesDistribution(Distribution):
             if self.use_cython:
                 print("Notice: Cython and NumPy found, enabling optimised Cython build.")
             else:
-                print("Notice: Cython was not found on your system. Falling back to pure")
+                print("Notice: Cython or NumPy was not found on your system. Falling back to pure")
                 print("        python mode which may be somehow slower.")
         elif self.use_cython not in (True, False):
             requested = strtobool(self.use_cython)
@@ -65,6 +59,18 @@ class PyBayesDistribution(Distribution):
                 raise DistutilsOptionError("Cython build was requested but no or too old Cython"
                                             + " found on your system.")
             self.use_cython = bool(requested)
+        if self.use_cython:
+            self.finalize_cython_options()
+
+    def finalize_cython_options(self):
+        self.cmdclass['build'] = PyBayesBuild
+        self.cmdclass['build_prepare'] = PyBayesBuildPrepare
+        self.cmdclass['build_ext'] = self.build_ext
+
+        # .pyc files just litter site-packages in Cython build
+        install = self.get_command_obj('install')
+        install.compile = 0
+        install.optimise = 0
 
     def _find_cython(self):
         """Returns true if sufficient version of Cython in found on system, false otherwise.

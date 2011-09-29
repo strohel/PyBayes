@@ -94,6 +94,7 @@ class PyBayesBuildPrepare(Command):
             if ext.name == module:
                 return  # do not add duplicate entries
         paths = [f] # TODO + deps  # simple "every module depends on all pxd files" logic
+        print "injecting Cython extension {0}".format(paths[0])
         self.distribution.ext_modules.append(
             self.distribution.Extension(module, paths, **self.ext_options)
         )

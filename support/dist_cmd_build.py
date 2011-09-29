@@ -16,3 +16,9 @@ class PyBayesBuild(build):
         build.finalize_options(self)
         # prepend our custom command
         self.sub_commands = [('build_prepare', None)] + self.sub_commands
+        self.build_lib = self.build_platlib
+        if self.distribution.profile:
+            # so that profiling and non-profiling builds do not clash
+            self.build_lib += '-profile'
+            # Cython would otherwise think that .c files need not be regenerated:
+            self.build_temp += '-profile'
