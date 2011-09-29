@@ -17,7 +17,7 @@ import sys
 
 def parse_options():
     def_pybayes_dir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    def_data_dir = os.path.join(def_pybayes_dir, 'examples', 'stress_data')
+    def_data_dir = os.path.join(def_pybayes_dir, 'support', 'stress_data')
 
     parser = OptionParser(description='Install, test and stress possible multiple ' +
                           'variants of PyBayes in one go')
@@ -102,13 +102,13 @@ def install(mode, options):
     os.chdir(orig_dir)
 
 def run_tests(options):
-    script = os.path.join(options.pybayes_dir, 'examples', 'run_tests.py')
+    script = os.path.join(options.pybayes_dir, 'support', 'run_tests.py')
     args = [sys.executable, script]
     print(join(args, ' '))
     call(args)
 
 def run_stresses(options):
-    script = os.path.join(options.pybayes_dir, 'examples', 'run_stresses.py')
+    script = os.path.join(options.pybayes_dir, 'support', 'run_stresses.py')
     args = [sys.executable, script, '-d', options.data_dir]
     print(join(args, ' '))
     call(args)

@@ -11,8 +11,8 @@ Kalman filter, particle filter and marginalized particle filter, all built atop 
 a light framework of probability density functions. PyBayes can optionally use Cython
 for lage speed gains (Cython build can be several times faster in some situations).
 
-Future plans include more specialised variants of Kalman/particle filters and
-speed optimisations.
+PyBayes is tested with Python 2.6, 2.7 and 3.1 (using 2to3). Future plans include more specialised
+variants of Kalman/particle filters and speed optimisations.
 
 PyBayes is being developed by Matěj Laitl, feel free to send me a mail to matej at laitl dot cz.
 
@@ -122,6 +122,12 @@ Proceed with following steps:
      embed profiling information into PyBayes. This can be accomplished by
      passing ``--profile=yes`` to ``./setup.py``. The default is to omit
      profiling information in order to avoid performance penalties.
+   * all standard and custom build parameters can be listed using ``./setup.py --help``
+
+The best results performance-wise are achieved when also your code that uses or extends PyBayes is
+compiled by Cython and uses static typing where appropriate. Remember to
+``cimport pybayes[.something]`` everytime you ``import pybayes[.something]`` so that fast Cython
+calling convention is used.
 
 Building Documentation
 ----------------------
@@ -148,14 +154,14 @@ Testing PyBayes
 ===============
 
 Once PyBayes is installed, you may want to run its tests in order to ensure
-proper functionality. The ``examples`` directory contains ``run_tests.py`` and
+proper functionality. The ``support`` directory contains ``run_tests.py`` and
 ``run_stresses.py`` scripts that execute all PyBayes tests and stress tests
 respectively. Run these scripts with ``-h`` option to see usage.
 
    *Note: running tests from within source directory is discouraged and
    unsupported.*
 
-For even greater convenience, ``examples/install_test_stress.py`` python
+For even greater convenience, ``support/install_test_stress.py`` python
 script can clear, build, install, test, stress both Python and Cython build in
 one go. It is especially suitable for PyBayes hackers. Run
 ``install_test_stress.py -h`` to get usage information. Please be sure to add
