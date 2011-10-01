@@ -8,6 +8,7 @@ An additional subcommand to distutils' build to handle Python/Cython build of Py
 
 from distutils.cmd import Command
 from distutils.errors import DistutilsSetupError
+import distutils.log as log
 from glob import glob
 import os
 import string
@@ -94,7 +95,7 @@ class PyBayesBuildPrepare(Command):
             if ext.name == module:
                 return  # do not add duplicate entries
         paths = [f] # TODO + deps  # simple "every module depends on all pxd files" logic
-        print "injecting Cython extension {0}".format(paths[0])
+        log.info("injecting Cython extension {0}".format(paths[0]))
         self.distribution.ext_modules.append(
             self.distribution.Extension(module, paths, **self.ext_options)
         )

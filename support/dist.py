@@ -8,6 +8,7 @@ An extension to distutils' Distribution to handle Python/Cython build of PyBayes
 
 from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError
+import distutils.log as log
 from distutils.util import strtobool
 
 from dist_cmd_build import PyBayesBuild
@@ -51,16 +52,20 @@ class PyBayesDistribution(Distribution):
         if self.use_cython is None:
             self.use_cython = self._find_cython()
             if self.use_cython:
-                print("Notice: Cython and NumPy found, enabling optimised Cython build.")
+                log.info("Cython and NumPy found, enabling optimised Cython build.")
             else:
-                print("Notice: Cython or NumPy was not found on your system. Falling back to pure")
-                print("        python mode which may be somehow slower.")
+                log.info("Cython or NumPy was not found on your system. Falling back to pure")
+                log.info("python mode which may be somehow slower.")
         elif self.use_cython not in (True, False):
             requested = strtobool(self.use_cython)
             if requested and not self._find_cython():
                 raise DistutilsOptionError("Cython build was requested but no or too old Cython"
                                             + " found on your system.")
             self.use_cython = bool(requested)
+            if self.use_cython:
+                log.debug("Cython build requested and Cython and NumPy found.")
+            else:
+                log.debug("Pure Python build requested, not searching for Cython.")
         if self.use_cython:
             self.finalize_cython_options()
 
@@ -92,9 +97,9 @@ class PyBayesDistribution(Distribution):
         try:
             import numpy
         except ImportError:
-            print("Notice: Cython was found on your system, but NumPy was not. NumPy is needed")
-            print("        build-time for cython builds and runtime for all builds. Falling back")
-            print("        to pure Python build.")
+            log.warn("Cython was found on your system, but NumPy was not. NumPy is needed")
+            log.warn("build-time for cython builds and runtime for all builds. Falling back")
+            log.warn("to pure Python build.")
             return False
         self.numpy_include_dir = numpy.get_include()
         return True
