@@ -12,6 +12,7 @@ from distutils.util import strtobool
 
 from dist_cmd_build import PyBayesBuild
 from dist_cmd_build_prepare import PyBayesBuildPrepare
+from dist_cmd_test import PyBayesTest
 
 
 class PyBayesDistribution(Distribution):
@@ -23,6 +24,7 @@ class PyBayesDistribution(Distribution):
         self.profile = False
         if not self.ext_modules:
             self.ext_modules = []
+        self.cmdclass['test'] = PyBayesTest
 
         self.global_options += [
             ('use-cython=', None, "use Cython to make faster binary python modules (choices: "

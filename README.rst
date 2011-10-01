@@ -151,19 +151,16 @@ for example, run ``make html`` and then point your browser to
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _LaTeX: http://www.latex-project.org/
 
-Testing PyBayes
-===============
+Testing
+=======
 
-Once PyBayes is installed, you may want to run its tests in order to ensure
-proper functionality. The ``support`` directory contains ``run_tests.py`` and
-``run_stresses.py`` scripts that execute all PyBayes tests and stress tests
-respectively. Run these scripts with ``-h`` option to see usage.
+PyBayes comes with a comprehensive test and stress-suite that can and should be used to verify that
+your PyBayes build works as expected.
 
-   *Note: running tests from within source directory is discouraged and
-   unsupported.*
+Since version 0.4, testing is integrated into the `setup.py` script and can be run without
+installing PyBayes. On order to run PyBayes test-suite, simply issue ``./setup.py test``. To run
+tests in normal PyBayes installation procedure, simply install like this:
+``./setup.py build test install``. Failing tests cause installation to fail, but this can be
+overriden using `--non-fatal` option to the `test` command.
 
-For even greater convenience, ``support/install_test_stress.py`` python
-script can clear, build, install, test, stress both Python and Cython build in
-one go. It is especially suitable for PyBayes hackers. Run
-``install_test_stress.py -h`` to get usage information. Please be sure to add
-``--clean`` or ``-c`` flag when you mix Python and Cython builds.
+Stress testing is not yet ported to the `setup.py`, see the `support/run_stresses.py` script.
