@@ -15,6 +15,7 @@ PyBayes is tested with Python 2.6, 2.7 and 3.1 (using 2to3). Future plans includ
 variants of Kalman/particle filters and speed optimisations.
 
 PyBayes is being developed by Matěj Laitl, feel free to send me a mail to matej at laitl dot cz.
+See ChangeLog.rst file to review a list of most important changes in recent versions.
 
 Automatically generated **documentation** can be found at
 http://strohel.github.com/PyBayes-doc/
