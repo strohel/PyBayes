@@ -9,6 +9,7 @@ An additional subcommand to distutils' build to handle Python/Cython build of Py
 from distutils.cmd import Command
 from distutils.errors import DistutilsSetupError
 import distutils.log as log
+from distutils.sysconfig import get_config_var
 from glob import glob
 import os
 import string
@@ -58,6 +59,7 @@ class PyBayesBuildPrepare(Command):
             'tokyo',  # module name
             ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
             libraries=['cblas', 'lapack'],
+            library_dirs=[os.path.join(get_config_var('LIBDIR'), 'atlas')],
             **self.ext_options
         ))
         self.package_data['tokyo'] = '*.pxd'
