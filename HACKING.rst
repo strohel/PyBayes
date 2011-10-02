@@ -60,3 +60,46 @@ Following rules apply to \*.pxd (cython augmentation) files:
 
 *Above rules do not apply to* ``pybayes/tests``. *These modules are considered
 external and should behave as a client script.*
+
+Releasing PyBayes
+=================
+
+Things to do when releasing new version (let it be **X.Y**) of PyBayes:
+
+Before Tagging
+--------------
+
+1. Set fallback version to **X.Y** in `setup.py` (around line 15)
+#. Set version to **X.Y** in `support/python-pybayes.spec`
+#. Ensure `ChangeLog.rst` mentions all important changes
+#. (Optional) update **short description** in `setup.py` **AND** `support/python-pybayes.spec`
+#. (Optional) update **long description** in `setup.py` **AND** `README.rst` **AND**
+   `support/python-pybayes.spec`
+
+Tagging
+-------
+
+1. Check everything, run tests and stresses for Python 2.6, 2.7, 3.1, 3.2 in both pure/Cython mode
+#. git tag -s **vX.Y**
+#. git-archive-all.sh --format tar --prefix PyBayes-**X.Y/** dist/PyBayes-**X.Y**.tar
+#. gzip dist/PyBayes-**X.Y**.tar
+#. ./setup.py register
+
+(do not use `./setup.py upload`, it does not work as some files are not in MANIFEST etc.)
+
+Publishing
+----------
+
+1. Upload PyBayes-**X.Y**.tar.gz to https://github.com/strohel/PyBayes/downloads and
+   http://pypi.python.org/pypi/PyBayes
+#. Build and upload docs: ``cd ../pybayes-doc && ./synchronize.sh``
+#. Upload updated `python-pybayes.spec` file to
+   https://build.opensuse.org/package/files?package=python-pybayes&project=home%3Astrohel
+#. If **short description** of PyBayes changed, update it manually at following places:
+
+   * https://github.com/strohel/PyBayes
+#. If **long description** of PyBayes changed, update it manually at following places:
+
+   * https://build.opensuse.org/package/show?package=python-pybayes&project=home%3Astrohel
+   * http://scipy.org/Topical_Software
+   * http://www.ohloh.net/p/pybayes
