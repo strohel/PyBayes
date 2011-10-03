@@ -26,6 +26,7 @@ class PyBayesBuildPrepare(Command):
         self.ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
         self.ext_options['pyrex_directives'] = {'profile':self.distribution.profile, 'infer_types':True}
         self.ext_options['pyrex_include_dirs'] = ['tokyo']  # find tokyo.pxd from bundled tokyo
+        self.deps = []  # .pxd dependencies for injected packages
 
     def finalize_options(self):
         # these are just aliases to distribution variables
@@ -47,12 +48,14 @@ class PyBayesBuildPrepare(Command):
         self.get_package_dir = build_py.get_package_dir  # borrow a method from build_py
         self.check_package = build_py.check_package  # ditto
 
+        # presume modules depend on tokyo
+        self.deps.append('tokyo/tokyo.pxd')
+
         for package in self.packages:
             package_dir = self.get_package_dir(package)
             self.inject_package_modules(package, package_dir)
 
-        #deps.append('tokyo/tokyo.pxd')  # plus tokyo's pxd file
-        # TODO: add cython's numpy.pxd as a dependency
+        self.update_dependencies()
 
         # build and install bundled tokyo
         self.distribution.ext_modules.append(self.distribution.Extension(
@@ -74,6 +77,7 @@ class PyBayesBuildPrepare(Command):
             if corres_py_file in py_files:
                 del py_files[py_files.index(corres_py_file)]
         pxd_files = glob(os.path.join(package_dir, "*.pxd"))
+        self.deps += pxd_files
         setup_script = os.path.abspath(self.distribution.script_name)
 
         if package not in self.package_data:
@@ -90,14 +94,15 @@ class PyBayesBuildPrepare(Command):
                 continue
 
             module = os.path.splitext(f)[0].replace("/", ".")
-            self.inject_extension(package, module, f, pxd_files)
+            self.inject_extension(module, f)
 
-    def inject_extension(self, package, module, f, pxd_files):
-        for ext in self.distribution.ext_modules:
-            if ext.name == module:
-                return  # do not add duplicate entries
-        paths = [f] # TODO + deps  # simple "every module depends on all pxd files" logic
-        log.info("injecting Cython extension {0}".format(paths[0]))
+    def inject_extension(self, module, f):
+        log.info("injecting Cython extension {0} (module {1})".format(f, module))
         self.distribution.ext_modules.append(
-            self.distribution.Extension(module, paths, **self.ext_options)
+            self.distribution.Extension(module, [f], **self.ext_options)
         )
+
+    def update_dependencies(self):
+        """Update dependencies of all already injected extensions"""
+        for module in self.distribution.ext_modules:
+            module.sources += self.deps
