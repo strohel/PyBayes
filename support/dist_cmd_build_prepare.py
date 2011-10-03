@@ -58,7 +58,7 @@ class PyBayesBuildPrepare(Command):
         self.distribution.ext_modules.append(self.distribution.Extension(
             'tokyo',  # module name
             ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
-            libraries=['cblas', 'lapack'],
+            libraries=['cblas', 'lapack', 'clapack'],  # TODO!!! somewhere lapack, somewhere clapack
             library_dirs=[os.path.join(get_config_var('LIBDIR'), 'atlas')],
             **self.ext_options
         ))
