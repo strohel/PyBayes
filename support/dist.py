@@ -60,7 +60,7 @@ class PyBayesDistribution(Distribution):
             requested = strtobool(self.use_cython)
             if requested and not self._find_cython():
                 raise DistutilsOptionError("Cython build was requested but no or too old Cython"
-                                            + " found on your system.")
+                                            + " and/or NumPy was found on your system.")
             self.use_cython = bool(requested)
             if self.use_cython:
                 log.debug("Cython build requested and Cython and NumPy found.")
@@ -88,7 +88,8 @@ class PyBayesDistribution(Distribution):
         try:
             from Cython.Distutils import build_ext
             from Cython.Distutils.extension import Extension
-        except ImportError:
+        except ImportError as e:
+            log.debug("Cython was not found: {0}".format(e))
             return False
         self.build_ext = build_ext
         self.Extension = Extension
@@ -96,7 +97,8 @@ class PyBayesDistribution(Distribution):
         # determine path to NumPy C header files
         try:
             import numpy
-        except ImportError:
+        except ImportError as e:
+            log.warn("Error importing numpy: {0}".format(e))
             log.warn("Cython was found on your system, but NumPy was not. NumPy is needed")
             log.warn("build-time for cython builds and runtime for all builds. Falling back")
             log.warn("to pure Python build.")
