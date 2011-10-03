@@ -169,6 +169,10 @@ class TestUniPdf(PbTestCase):
         self.assertTrue(test_uni.rv.contains(a))
         self.assertTrue(test_uni.rv.contains(b))
 
+        test_uni = pb.UniPdf(np.array([0., -1., 2.]), np.array([1., 1., 4.]), [a, b])
+        self.assertTrue(test_uni.rv.contains(a))
+        self.assertTrue(test_uni.rv.contains(b))
+
     def test_shape(self):
         self.assertEqual(self.uni.shape(), 1)
         self.assertEqual(self.multiuni.shape(), 3)

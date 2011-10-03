@@ -227,9 +227,9 @@ class CPdf(object):
     not the case, the result is unconditional.
 
     Every CPdf takes (apart from others) 2 optional arguments to constructor:
-    **rv** (:class:`RV`) and **cond_rv** (:class:`RV`). When specified, they
-    denote that the CPdf is associated with a particular random variable (respectively
-    its condition is associated with a particular random variable); when unspecified,
+    **rv** and **cond_rv**. (both :class:`RV` or a sequence of :class:`RVComp` objects) When
+    specified, they denote that the CPdf is associated with a particular random variable
+    (respectively its condition is associated with a particular random variable); when unspecified,
     *anonymous* random variable is assumed (exceptions exist, see :class:`ProdPdf`).
     It is an error to pass RV whose dimension is not same as CPdf's dimension
     (or cond dimension respectively).
@@ -258,12 +258,12 @@ class CPdf(object):
     >>> a_t, b_t = RVComp(1, 'a_t'), RVComp(1, 'b_t')  # create RV components
     >>> a_tp, b_tp = RVComp(1, 'a_{t-1}'), RVComp(1, 'b_{t-1}')  # t-1 case
 
-    >>> p1 = LinGaussCPdf(1., 0., 1., 0., RV(a_t), RV(a_tp, b_t))
+    >>> p1 = LinGaussCPdf(1., 0., 1., 0., [a_t], [a_tp, b_t])
     >>> # params for p2:
     >>> cov, A, b = np.array([[0.0001]]), np.array([[1.]]), np.array([0.])
-    >>> p2 = MLinGaussCPdf(cov, A, b, RV(b_t), RV(b_tp))
+    >>> p2 = MLinGaussCPdf(cov, A, b, [b_t], [b_tp])
 
-    >>> p = ProdCPdf((p1, p2), RV(a_t, b_t), RV(a_tp, b_tp))
+    >>> p = ProdCPdf((p1, p2), [a_t, b_t], [a_tp, b_tp])
 
     >>> p.sample(np.array([1., 2.]))
     >>> p.eval_log()
@@ -366,9 +366,11 @@ class CPdf(object):
         """Internal heper to check and set rv and cond_rv.
 
         :param int exp_shape: expected random variable shape
-        :param RV rv: associated random variable or None to have it auto-created
+        :param rv: associated random variable or None to have it auto-created
+        :type rv: :class:`RV` or a sequence of :class:`RVComp` objects
         :param int exp_cond_shape: expected conditioning variable shape
-        :param RV cond_rv: associated conditioning variable or None to have it auto-created
+        :param cond_rv: associated conditioning variable or None to have it auto-created
+        :type cond_rv: :class:`RV` or a sequence of :class:`RVComp` objects
 
         :raises TypeError: rv or cond_rv doesnt have right type
         :raises ValueError: dimensions do not match
@@ -376,11 +378,12 @@ class CPdf(object):
         if rv is None:
             self.rv = RV(RVComp(exp_shape))  # create RV with one anonymous component
         else:
-            if not isinstance(rv, RV):
-                raise TypeError("rv (if specified) must be (a subclass of) RV")
-            if rv.dimension != exp_shape:
+            if isinstance(rv, RV):
+                self.rv = rv
+            else:
+                self.rv = RV(rv)  #  assume that rv is a sequence of components
+            if self.rv.dimension != exp_shape:
                 raise ValueError("rv has wrong dimension {0}, {1} expected".format(rv.dimension, exp_shape))
-            self.rv = rv
 
         if cond_rv is None:
             if exp_cond_shape is 0:
@@ -388,11 +391,12 @@ class CPdf(object):
             else:
                 self.cond_rv = RV(RVComp(exp_cond_shape))  # create RV with one anonymous component
         else:
-            if not isinstance(cond_rv, RV):
-                raise TypeError("cond_rv (if specified) must be (a subclass of) RV")
-            if cond_rv.dimension is not exp_cond_shape:
+            if isinstance(cond_rv, RV):
+                self.cond_rv = cond_rv
+            else:
+                self.cond_rv = RV(cond_rv)
+            if self.cond_rv.dimension is not exp_cond_shape:
                 raise ValueError("cond_rv has wrong dimension {0}, {1} expected".format(cond_rv.dimension, exp_cond_shape))
-            self.cond_rv = cond_rv
         return True
 
 
@@ -1152,9 +1156,9 @@ class ProdCPdf(CPdf):
     >>> x_1, x_2 = RVComp(1), RVComp(1, "name is optional")
     >>> y_1, y_2 = RVComp(1), RVComp(1, "but recommended")
 
-    >>> p_1 = SomePdf(..., rv=RV(x_1), cond_rv=RV(x_2))
-    >>> p_2 = SomePdf(..., rv=RV(x_2), cond_rv=RV(y_2, y_1))
-    >>> p = ProdCPdf((p_2, p_1), rv=RV(x_1, x_2), cond_rv=RV(y_1, y_2))  # order of
+    >>> p_1 = SomePdf(..., rv=[x_1], cond_rv=[x_2])
+    >>> p_2 = SomePdf(..., rv=[x_2], cond_rv=[y_2, y_1])
+    >>> p = ProdCPdf((p_2, p_1), rv=[x_1, x_2], cond_rv=[y_1, y_2])  # order of
     >>> # pdfs is insignificant - order of rv components determines data flow
 
     *Please note: this will change in near future in following way: it will be always required to
@@ -1170,7 +1174,7 @@ class ProdCPdf(CPdf):
 
         Usual way of creating ProdCPdf could be:
 
-        >>> prod = ProdCPdf((MLinGaussCPdf(..), UniPdf(..)), RV(..), RV(..))
+        >>> prod = ProdCPdf([MLinGaussCPdf(..), UniPdf(..)], rv=[..], cond_rv=[..])
         """
         if len(factors) is 0:
             raise ValueError("at least one factor must be passed")

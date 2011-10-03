@@ -88,12 +88,12 @@ class PfOptionsA(object):
             return sigma_sq
 
         # p(a_t | a_{t-1} b_t) density:
-        p_at_atpbt = pb.LinGaussCPdf(1., 0., 1., 0., pb.RV(a_t), pb.RV(a_tp, b_t))
+        p_at_atpbt = pb.LinGaussCPdf(1., 0., 1., 0., [a_t], [a_tp, b_t])
         self.kalman_args['A'] = np.array([[1.]])  # process model
         # p(b_t | b_{t-1}) density:
-        self.p_bt_btp = pb.GaussCPdf(1, 1, f, g, rv=pb.RV(b_t), cond_rv=pb.RV(b_tp), base_class=pb.LogNormPdf)
+        self.p_bt_btp = pb.GaussCPdf(1, 1, f, g, rv=[b_t], cond_rv=[b_tp], base_class=pb.LogNormPdf)
         # p(x_t | x_{t-1}) density:
-        self.p_xt_xtp = pb.ProdCPdf((p_at_atpbt, self.p_bt_btp), pb.RV(a_t, b_t), pb.RV(a_tp, b_tp))
+        self.p_xt_xtp = pb.ProdCPdf((p_at_atpbt, self.p_bt_btp), [a_t, b_t], [a_tp, b_tp])
 
         # prepare p(y_t | x_t) density:
         self.p_yt_xt = pb.LinGaussCPdf(1., 0., 1., 0.)
