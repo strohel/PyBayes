@@ -58,6 +58,9 @@ class PyBayesBuildPrepare(Command):
         self.update_dependencies()
 
         # build and install bundled tokyo
+        tokyo_options = self.ext_options.copy()
+        # some distros (Debian, Ubuntu) have clapack.h or cblas.h in atlas subdir
+        tokyo_options['include_dirs'].append('/usr/include/atlas')
         self.distribution.ext_modules.append(self.distribution.Extension(
             'tokyo',  # module name
             ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
