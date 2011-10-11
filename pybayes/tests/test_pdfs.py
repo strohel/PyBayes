@@ -10,7 +10,7 @@ from math import exp, log, sqrt
 import numpy as np
 
 import pybayes as pb
-from support import PbTestCase
+from support import PbTestCase, stochastic
 
 
 class TestRVComp(PbTestCase):
@@ -367,8 +367,9 @@ class TestGaussPdf(PbTestCase):
             res = exp(norm.eval_log(x))
             self.assertApproxEqual(res, expected[i])
 
+    @stochastic
     def test_sample_uni(self):
-        """Test GaussPdf.sample() mean and variance (univariate case). This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
+        """Test GaussPdf.sample() mean and variance (univariate case)."""
         N = 500
 
         mean = np.array([124.6])
@@ -382,8 +383,9 @@ class TestGaussPdf(PbTestCase):
         var, fuzz = cov.diagonal(), 0.2
         self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
 
+    @stochastic
     def test_sample_multi(self):
-        """Test GaussPdf.sample() mean and variance (multivariate case). This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
+        """Test GaussPdf.sample() mean and variance (multivariate case)."""
         N = 500
 
         mean = np.array([124.6, -1.5])
@@ -452,8 +454,9 @@ class LogNormPdf(PbTestCase):
             x[0] = i - 1.
             self.assertApproxEqual(exp(self.lognorm.eval_log(x)), exp_results[i][0])
 
+    @stochastic
     def test_sample(self):
-        """Test LogNormPdf.sample() mean and variance. This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
+        """Test LogNormPdf.sample() mean and variance."""
         N = 500  # number of samples
         samples = np.log(self.lognorm.samples(N))  # note the logarithm
         emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us
@@ -852,6 +855,7 @@ class TestLinGaussCPdf(PbTestCase):
                 ret = self.gauss.eval_log(x, cond)
                 self.assertApproxEqual(ret, gauss.eval_log(x))
 
+    @stochastic
     def test_sample(self):
         """Test that 10 LinGaussCPdf samples are within mean +- n*sigma (>99.9% probability for n=3.3)"""
         n = 4
@@ -903,8 +907,9 @@ class TestGaussCPdf(PbTestCase):
             x = np.array([i - 6.156, i - 4.7967])
             self.assertApproxEqual(self.cgauss.eval_log(x, self.cond), self.gauss.eval_log(x))
 
+    @stochastic
     def test_sample(self):
-        """Test GaussCPdf.sample() mean and variance. This test MAY FAIL ocassionally (but not often) - the probabibility of happening so is maintained low."""
+        """Test GaussCPdf.sample() mean and variance."""
         N = 500  # number of samples
         samples = self.cgauss.samples(N, self.cond)
         emp = pb.EmpPdf(samples)  # Emipirical pdf computes sample mean and variance for us

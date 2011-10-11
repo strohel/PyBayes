@@ -4,9 +4,28 @@
 
 """Various support methods for tests"""
 
-import unittest as ut
-
+import functools
 import numpy as np
+import sys
+import unittest as ut
+try:
+    from unittest.case import _ExpectedFailure as ExpectedFailure
+except ImportError:
+    ExpectedFailure = None
+
+
+def stochastic(func):
+    """Decorator to mark test as stochastic - these tests are not fatal when they fail."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            if ExpectedFailure is not None:  # added in Py 2.7
+                raise ExpectedFailure(sys.exc_info())
+    wrapper.__doc__ += ' (stochastic, failures ignored)'
+    return wrapper
+
 
 class PbTestCase(ut.TestCase):
     """Test case that adds some numeric assert functions"""

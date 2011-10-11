@@ -49,7 +49,9 @@ class test(Command):
                                 + "{0}, but it was from {1} instead".format(tests_path,
                                 dirname(pybayes.tests.__file__)))
             suite = unittest.TestLoader().loadTestsFromModule(pybayes.tests)
-            unittest.TextTestRunner().run(suite)
+            result = unittest.TextTestRunner().run(suite)
+            if not result.wasSuccessful():
+                raise Exception("There were test failures")
         except Exception as e:
             if self.fatal:
                 raise DistutilsExecError(e)

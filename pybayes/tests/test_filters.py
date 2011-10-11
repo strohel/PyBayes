@@ -9,7 +9,7 @@ from copy import copy, deepcopy
 import numpy as np
 
 import pybayes as pb
-from support import PbTestCase
+from support import PbTestCase, stochastic
 
 
 class TestKalmanFilter(PbTestCase):
@@ -136,8 +136,9 @@ class testParticleFilter(PbTestCase):
             pdf = self.pf.posterior()
             #print "observation, mean:", i, pdf.mean()[0]
 
+    @stochastic
     def test_bayes_with_cond(self):
-        """Test that ParticleFilter.bayes() with cond specified works (stochassic test)"""
+        """Test that ParticleFilter.bayes() with cond specified works."""
         E = np.array([[1.]])
         o = np.array([0.])
         init_pdf = pb.UniPdf(np.array([-5.]), np.array([5.]))
@@ -149,5 +150,5 @@ class testParticleFilter(PbTestCase):
         for i in range(20):
             pf.bayes(np.array([i], dtype=float), np.array([1.]))
             pdf = pf.posterior()
-            self.assertTrue(abs(pdf.mean()[0] - i) < 1.)
+            self.assertTrue(abs(pdf.mean()[0] - i) < 0.3)
             #print "observation, mean:", i, pdf.mean()[0]
