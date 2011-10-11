@@ -1224,6 +1224,9 @@ class ProdCPdf(CPdf):
         :param factors: factor pdfs that will form the product
         :type factors: :class:`list` of :class:`CPdf` items
         """
+        # rv, cond_rv could be lists, so convert them if needed
+        rv = RV(rv)
+        cond_rv = RV(cond_rv)
         # gradually filled set of components that would be available in e.g.
         # sample() computation:
         avail_rvcomps = set(cond_rv.components)
