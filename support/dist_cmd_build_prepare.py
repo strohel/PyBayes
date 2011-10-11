@@ -18,6 +18,8 @@ import string
 class build_prepare(Command):
     """Additional build step that is used to add Cython Extension per each module that is specified"""
 
+    description = 'scan defined packages for python modules and inject Cython module per each'
+
     def initialize_options(self):
         self.ext_options = {}  # options common to all extensions
         self.ext_options['include_dirs'] = [self.distribution.numpy_include_dir]
@@ -29,6 +31,19 @@ class build_prepare(Command):
         self.deps = []  # .pxd dependencies for injected packages
 
     def finalize_options(self):
+        # these options are passed through global distribution
+        dist = self.distribution
+        self.blas_lib = dist.blas_lib
+        self.lapack_lib = dist.lapack_lib
+        self.library_dirs = dist.library_dirs
+
+        self.blas_lib = self.blas_lib or 'cblas'
+        self.lapack_lib = self.lapack_lib or 'lapack'
+        if self.library_dirs:
+            self.library_dirs = self.library_dirs.split(os.pathsep)
+        else:
+            self.library_dirs = []
+
         # these are just aliases to distribution variables
         self.packages = self.distribution.packages
         self.py_modules = self.distribution.py_modules
@@ -64,8 +79,8 @@ class build_prepare(Command):
         self.distribution.ext_modules.append(self.distribution.Extension(
             'tokyo',  # module name
             ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
-            libraries=['cblas', 'lapack', 'clapack'],  # TODO!!! somewhere lapack, somewhere clapack
-            library_dirs=[os.path.join(get_config_var('LIBDIR'), 'atlas')],
+            libraries=[self.blas_lib, self.lapack_lib],
+            library_dirs=self.library_dirs,
             **self.ext_options
         ))
         self.package_data['tokyo'] = '*.pxd'

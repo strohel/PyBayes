@@ -10,6 +10,7 @@ from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError
 import distutils.log as log
 from distutils.util import strtobool
+import os
 
 from dist_cmd_build import build
 from dist_cmd_build_prepare import build_prepare
@@ -23,6 +24,9 @@ class PyBayesDistribution(Distribution):
         Distribution.__init__(self, attrs)
         self.use_cython = None
         self.profile = False
+        self.blas_lib = None
+        self.lapack_lib = None
+        self.library_dirs = None
         if not self.ext_modules:
             self.ext_modules = []
 
@@ -34,7 +38,16 @@ class PyBayesDistribution(Distribution):
             ('use-cython=', None, "use Cython to make faster binary python modules (choices: "
              + "yes/no; default: autodetect)"),
             ('profile=', None, 'embed profiling information into Cython build (choices: '
-             + 'yes/no; default: no)')
+             + 'yes/no; default: no)'),
+
+            # cython-build specific options
+            ('blas-lib=', None,
+             'library name that provides cblas_sswap function, without lib prefix [default: cblas]'),
+            ('lapack-lib=', None,
+             'library name that provides clapack_sgetri function, without lib prefix [default: lapack]'),
+            ('library-dirs=', 'L',
+             'list of additional directories where libraries are seached for, separated by '
+             + '{0} character'.format(os.pathsep)),
         ]
 
     def has_ext_modules(self):
