@@ -162,6 +162,12 @@ Since version 0.4, testing is integrated into the `setup.py` script and can be r
 installing PyBayes. In order to run PyBayes test-suite, simply issue ``./setup.py test`` from within
 the source directory. To run tests during installation procedure, simply install like this:
 ``./setup.py build test install``. Failing tests cause installation to fail, but this can be
-overriden using `--non-fatal` option to the `test` command.
+overriden using `--non-fatal` option of the `test` command.
+
+If you want to test your already installed PyBayes instance, simply issue
+``python -m pybayes.tests`` anytime, anywhere. :-)
+
+Stress-testing
+--------------
 
 Stress testing is not yet ported to the `setup.py`, see the `support/run_stresses.py` script.
