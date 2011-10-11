@@ -1,0 +1,15 @@
+Source: python-pybayes
+Section: python
+Priority: optional
+Maintainer: Matej Laitl <matej@laitl.cz>
+Build-Depends: debhelper (>= 4.1.16), libatlas-base-dev, python-numpy, python-dev (>= 2.6), cython (>=0.14.1)
+Package: python-pybayes
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Provides: ${python:Provides}
+Description: Python library for recursive Bayesian estimation (Bayesian filtering)
+ PyBayes is an object-oriented Python library for recursive Bayesian
+ estimation (Bayesian filtering) that is convenient to use. Already implemented are
+ Kalman filter, particle filter and marginalized particle filter, all built atop of
+ a light framework of probability density functions. PyBayes can optionally use Cython
+ for lage speed gains (Cython build can be several times faster in some situations).
