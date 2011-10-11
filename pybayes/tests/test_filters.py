@@ -130,9 +130,24 @@ class testParticleFilter(PbTestCase):
 
     def test_bayes(self):
         # TODO: this test currently does little to verify that PF gives appropriate results
-        np.set_printoptions(linewidth=120, precision=2, suppress=True)
+        #np.set_printoptions(linewidth=120, precision=2, suppress=True)
         for i in range(20):
             self.pf.bayes(np.array([i], dtype=float))
             pdf = self.pf.posterior()
             #print "observation, mean:", i, pdf.mean()[0]
-            #print "particles, mean:", pdf.particles.view().squeeze()
+
+    def test_bayes_with_cond(self):
+        """Test that ParticleFilter.bayes() with cond specified works (stochassic test)"""
+        E = np.array([[1.]])
+        o = np.array([0.])
+        init_pdf = pb.UniPdf(np.array([-5.]), np.array([5.]))
+        p_xt_xtp = pb.LinGaussCPdf(1., 1., 1., 0.)
+        p_yt_xt = pb.MLinGaussCPdf(E, E, o)
+
+        pf = pb.ParticleFilter(100, init_pdf, p_xt_xtp, p_yt_xt)
+        #np.set_printoptions(linewidth=120, precision=2, suppress=True)
+        for i in range(20):
+            pf.bayes(np.array([i], dtype=float), np.array([1.]))
+            pdf = pf.posterior()
+            self.assertTrue(abs(pdf.mean()[0] - i) < 1.)
+            #print "observation, mean:", i, pdf.mean()[0]

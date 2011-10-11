@@ -268,10 +268,10 @@ class ParticleFilter(Filter):
             raise TypeError("both p_xt_xtp and p_yt_xt must be instances of the CPdf class")
 
         dim = init_pdf.shape()  # dimension of state
-        if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() != dim:
+        if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() < dim:
             raise ValueError("Expected shape() and cond_shape() of p_xt_xtp will "
-                + "be {0}; ({1}, {2}) given.".format(dim, p_xt_xtp.shape(),
-                p_xt_xtp.cond_shape()))
+                + "be (respectively greater than) {0}; ({1}, {2}) given.".format(dim,
+                p_xt_xtp.shape(), p_xt_xtp.cond_shape()))
         self.p_xt_xtp = p_xt_xtp
         if p_yt_xt.cond_shape() != dim:
             raise ValueError("Expected cond_shape() of p_yt_xt will be {0}; {1} given."
@@ -282,7 +282,12 @@ class ParticleFilter(Filter):
         self.emp = EmpPdf(init_pdf.samples(n))
 
     def bayes(self, yt, cond = None):
-        r"""Perform Bayes rule for new measurement :math:`y_t`. The algorithm is as follows:
+        r"""Perform Bayes rule for new measurement :math:`y_t`.
+
+        :param numpy.ndarray cond: optional condition that is passed to :math:`p(x_t|x_{t-1})`
+          after :math:`x_{t-1}` so that is can be rewritten as: :math:`p(x_t|x_{t-1}, c)`.
+
+        The algorithm is as follows:
 
         1. generate new particles: :math:`x_t^{(i)} = \text{sample from }
            p(x_t^{(i)}|x_{t-1}^{(i)}) \quad \forall i`
@@ -293,7 +298,11 @@ class ParticleFilter(Filter):
         """
         for i in range(self.emp.particles.shape[0]):
             # generate new ith particle:
-            self.emp.particles[i] = self.p_xt_xtp.sample(self.emp.particles[i])
+            if cond is None:
+                aggregate_cond = self.emp.particles[i]
+            else:
+                aggregate_cond = np.concatenate((self.emp.particles[i], cond))
+            self.emp.particles[i] = self.p_xt_xtp.sample(aggregate_cond)
 
             # recompute ith weight:
             self.emp.weights[i] *= exp(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))

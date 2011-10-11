@@ -37,6 +37,9 @@ cdef class ParticleFilter(Filter):
     cdef readonly CPdf p_xt_xtp, p_yt_xt
     cdef readonly EmpPdf emp
 
+    @cython.locals(aggregate_cond = np.ndarray)
+    cpdef bint bayes(self, np.ndarray yt, np.ndarray cond = *) except False
+
 
 cdef class MarginalizedParticleFilter(Filter):
     cdef readonly CPdf p_bt_btp
