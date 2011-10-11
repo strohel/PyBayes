@@ -11,9 +11,9 @@ from distutils.errors import DistutilsOptionError
 import distutils.log as log
 from distutils.util import strtobool
 
-from dist_cmd_build import PyBayesBuild
-from dist_cmd_build_prepare import PyBayesBuildPrepare
-from dist_cmd_test import PyBayesTest
+from dist_cmd_build import build
+from dist_cmd_build_prepare import build_prepare
+from dist_cmd_test import test
 
 
 class PyBayesDistribution(Distribution):
@@ -25,7 +25,10 @@ class PyBayesDistribution(Distribution):
         self.profile = False
         if not self.ext_modules:
             self.ext_modules = []
-        self.cmdclass['test'] = PyBayesTest
+
+        # it is better to define command classes here, so it available in --help text
+        self.cmdclass['test'] = test
+        self.cmdclass['build_prepare'] = build_prepare
 
         self.global_options += [
             ('use-cython=', None, "use Cython to make faster binary python modules (choices: "
@@ -70,8 +73,7 @@ class PyBayesDistribution(Distribution):
             self.finalize_cython_options()
 
     def finalize_cython_options(self):
-        self.cmdclass['build'] = PyBayesBuild
-        self.cmdclass['build_prepare'] = PyBayesBuildPrepare
+        self.cmdclass['build'] = build
         self.cmdclass['build_ext'] = self.build_ext
 
         # .pyc files just litter site-packages in Cython build

@@ -14,7 +14,7 @@ import sys
 import unittest
 
 
-class PyBayesTest(Command):
+class test(Command):
     """Test PyBayes in the build directory"""
 
     description = 'run unit test-suite of PyBayes within build directory'

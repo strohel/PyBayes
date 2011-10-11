@@ -15,7 +15,7 @@ import os
 import string
 
 
-class PyBayesBuildPrepare(Command):
+class build_prepare(Command):
     """Additional build step that is used to add Cython Extension per each module that is specified"""
 
     def initialize_options(self):
