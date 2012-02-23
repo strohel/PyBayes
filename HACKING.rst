@@ -16,9 +16,9 @@ PyBayes modules are laid out with following rules:
 * all modules go directly into ``pybayes/<module>.py`` (pure Python file) with
   cython augmentation file in ``pybayes/module.pxd``
 * in future, bigger independent units can form subpackages
-* ``pybayes/wapperts/`` subpackage is special, it is the only package whose modules
-  have different implementation for cython and for python. It is accomplished by .py (Python) and
-  .pyx, .pxd (Cython) files.
+* ``pybayes/wappers/`` subpackage is special, it is the only package whose
+  modules have different implementation for cython and for python. It is
+  accomplished by .py (Python) and .pyx, .pxd (Cython) files.
 
 Tests and Stress Tests
 ======================
@@ -34,18 +34,19 @@ Imports and cimports
 ====================
 
 **No internal module** can ``import pybayes``! That would result in an infinite
-recursion. External PyBayes clients can and should, however, only ``import pybayes``
-(and in future also ``import pybayes.subpackage``). From insibe PyBayes just
-import relevant pybayes modules, e.g. ``import pdfs``. Notable exception from this rule is cimport,
-where (presumable due to a cython bug) ``from a.b cimport c`` sometimes doesn't work and one has
-to type ``from pybayes.a.b cimport c``.
+recursion. External PyBayes clients can and should, however, only ``import
+pybayes`` (and in future also ``import pybayes.subpackage``). From inside
+PyBayes just import relevant pybayes modules, e.g. ``import pdfs``. Notable
+exception from this rule is cimport, where (presumable due to a cython bug)
+``from a.b cimport c`` sometimes doesn't work and one has to type ``from
+pybayes.a.b cimport c``.
 
 Imports in \*.py files should adhere to following rules:
 
 * import first system modules (sys, io..), then external modules (matplotlib..)
   and then pybayes modules.
-* **instead of** importing **numpy** directly use ``import wrappers._numpy as np``. This ensures
-  that fast C alternatives are used in compiled mode.
+* **instead of** importing **numpy** directly use ``import wrappers._numpy as np``. 
+  This ensures that fast C alternatives are used in compiled mode.
 * **instead of** importing **numpy.linalg** directly use ``import wrappers._linalg as linalg``.
 * use ``import module [as abbrev]`` or, for commonly used symbols ``from module import symbol``.
 * ``from module import *`` shouldn't be used.
