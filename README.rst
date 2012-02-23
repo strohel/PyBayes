@@ -9,10 +9,10 @@ PyBayes is an object-oriented Python library for recursive Bayesian
 estimation (Bayesian filtering) that is convenient to use. Already implemented are
 Kalman filter, particle filter and marginalized particle filter, all built atop of
 a light framework of probability density functions. PyBayes can optionally use Cython
-for lage speed gains (Cython build can be several times faster in some situations).
+for large speed gains (Cython build can be several times faster in some situations).
 
-PyBayes is tested with Python 2.6, 2.7 and 3.1 (using 2to3). Future plans include more specialised
-variants of Kalman/particle filters and speed optimisations.
+PyBayes is tested with Python 2.6, 2.7 and 3.1 (using 2to3). Future plans include 
+more specialised variants of Kalman/particle filters and speed optimisations.
 
 PyBayes is being developed by Matěj Laitl, feel free to send me a mail to matej at laitl dot cz.
 See ChangeLog.rst file to review a list of most important changes in recent versions.
