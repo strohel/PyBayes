@@ -425,9 +425,9 @@ class UniPdf(Pdf):
     .. math:: f(x) = \Theta(x - a) \Theta(b - x) \prod_{i=1}^n \frac{1}{b_i-a_i}
 
     :var a: left border
-    :type a: :class:`numpy.ndarray`
+    :type a: 1D :class:`numpy.ndarray`
     :var b: right border
-    :type b: :class:`numpy.ndarray`
+    :type b: 1D :class:`numpy.ndarray`
 
     You may modify these attributes as long as you don't change their shape and
     assumption **a** < **b** still holds.
@@ -437,11 +437,14 @@ class UniPdf(Pdf):
         """Initialise uniform distribution.
 
         :param a: left border
-        :type a: :class:`numpy.ndarray`
+        :type a: 1D :class:`numpy.ndarray`
         :param b: right border
-        :type b: :class:`numpy.ndarray`
+        :type b: 1D :class:`numpy.ndarray`
 
-        **b** must be greater (in each dimension) than **a**
+        **b** must be greater (in each dimension) than **a**.
+        To construct uniform distribution on interval [0,1]:
+
+        >>> uni = UniPdf(np.array([0.]), np.array([1.]), rv)
         """
         self.a = np.asarray(a)
         self.b = np.asarray(b)
