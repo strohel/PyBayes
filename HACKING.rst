@@ -80,7 +80,7 @@ Before Tagging
 Tagging
 -------
 
-1. Check everything, run tests and stresses for Python 2.6, 2.7, 3.1, 3.2 in both pure/Cython mode
+1. Check everything, run tests and stresses for Python 2.7, 3.2 in both pure/Cython mode
 #. git tag -s **vX.Y**
 #. git-archive-all.sh --format tar --prefix PyBayes-**X.Y/** dist/PyBayes-**X.Y**.tar
 #. gzip dist/PyBayes-**X.Y**.tar
