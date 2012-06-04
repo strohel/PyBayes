@@ -90,6 +90,8 @@ def install(mode, options):
     commands = []
     if options.force_rebuild:
         commands.append('clean')
+    if options.run_tests:
+        commands.append('test')
     commands.append('install')
 
     orig_dir = os.getcwd()
@@ -100,12 +102,6 @@ def install(mode, options):
         print(join(cmdargs, ' '))
         check_call(cmdargs)
     os.chdir(orig_dir)
-
-def run_tests(options):
-    script = os.path.join(options.pybayes_dir, 'support', 'run_tests.py')
-    args = [sys.executable, script]
-    print(join(args, ' '))
-    call(args)
 
 def run_stresses(options):
     script = os.path.join(options.pybayes_dir, 'support', 'run_stresses.py')
@@ -121,9 +117,6 @@ def main():
             clean(options)
 
         install(mode, options)
-
-        if options.run_tests:
-            run_tests(options)
 
         if options.run_stresses:
             run_stresses(options)
