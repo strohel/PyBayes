@@ -82,6 +82,7 @@ cdef class LogNormPdf(AbstractGaussPdf):
 
 cdef class AbstractEmpPdf(Pdf):
     cdef public np.ndarray weights  # dtype=double, ndims=1
+    cdef public np.ndarray particles  # dtype=double, ndims=2
 
     @cython.locals(wsum = double)
     cpdef bint normalise_weights(self) except False
@@ -91,14 +92,11 @@ cdef class AbstractEmpPdf(Pdf):
 
 
 cdef class EmpPdf(AbstractEmpPdf):
-    cdef public np.ndarray particles  # dtype=double, ndims=2
-
     cpdef bint resample(self) except False
 
 
 cdef class MarginalizedEmpPdf(AbstractEmpPdf):
     cdef public np.ndarray gausses  # dtype=GaussPdf, ndims=1
-    cdef public np.ndarray particles  # dtype=double, ndims=2
     cdef public int _gauss_shape, _part_shape
 
 
