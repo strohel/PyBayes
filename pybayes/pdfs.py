@@ -665,15 +665,16 @@ class AbstractEmpPdf(Pdf):
         return True
 
     def get_resample_indices(self):
-        r"""Calculate first step of resampling process (dropping low-weight particles and replacing
-        them with more weighted ones.
+        r"""Calculate first step of resampling process (dropping low-weight particles and
+        replacing them with more weighted ones.
 
-        :return: integer array of length n: :math:`(a_1, a_2 \dots a_n)` where :math:`a_i` means
-           that particle at ith place should be replaced with particle number :math:`a_i`
+        :return: integer array of length n: :math:`(a_1, a_2 \dots a_n)` where
+            :math:`a_i` means that particle at ith place should be replaced with particle
+            number :math:`a_i`
         :rtype: :class:`numpy.ndarray` of ints
 
-        *This method doesnt modify underlying pdf in any way - it merely calculates how particles
-        should be replaced.*
+        *This method doesnt modify underlying pdf in any way - it merely calculates how
+        particles should be replaced.*
         """
         n = self.weights.shape[0]
         cum_weights = np.cumsum(self.weights)
