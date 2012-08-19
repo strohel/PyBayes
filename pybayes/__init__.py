@@ -14,6 +14,6 @@ underlying software analysis and background information for PyBayes.
 """
 
 from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
-from pdfs import AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
+from pdfs import GammaPdf, AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
 from pdfs import MLinGaussCPdf, LinGaussCPdf, GaussCPdf, ProdCPdf
 from filters import Filter, KalmanFilter, ParticleFilter, MarginalizedParticleFilter

@@ -631,7 +631,7 @@ class LogNormPdf(AbstractGaussPdf):
 
     def eval_log(self, x, cond = None):
         self._check_x(x)
-        if x[0] <= 0:  # log-normal pdf support = (0, +inf)
+        if x[0] <= 0.:  # log-normal pdf support = (0, +inf)
             return float('-inf')
 
         # 1/2.*log(2*pi) = 0.91893853320467
@@ -640,6 +640,43 @@ class LogNormPdf(AbstractGaussPdf):
     def sample(self, cond = None):
         # size parameter ( = 1) makes lognormal() return a np.ndarray
         return random.lognormal(self.mu[0], math.sqrt(self.R[0,0]), 1)
+
+
+class GammaPdf(Pdf):
+    r"""Gamma distribution with shape parameter :math:`k` and scale parameter
+    :math:`\theta`. Extends :class:`Pdf`.
+
+    .. math:: f(x) = \frac{1}{\Gamma(k)\theta^k} x^{k-1} e^{\frac{-x}{\theta}}
+    """
+
+    def __init__(self, k, theta, rv = None):
+        r"""Initialise Gamma pdf.
+
+        :param double k: :math:`k` shape parameter above
+        :param double theta: :math:`\theta` scale parameter above
+        """
+        assert k > 0.
+        assert theta > 0.
+        self.k = k
+        self.theta = theta
+        self._set_rv(1, rv)
+
+    def mean(self, cond = None):
+        return np.array([self.k * self.theta])
+
+    def variance(self, cond = None):
+        return np.array([self.k * self.theta**2])
+
+    def eval_log(self, x, cond = None):
+        self._check_x(x)
+        if x[0] < 0.:
+            return float('-inf')
+        if x == 0.:
+            if self.k == 1:
+                return -math.lgamma(self.k) - self.k*math.log(self.theta)
+            else:
+                return -math.lgamma(self.k) - self.k*math.log(self.theta) + (self.k - 1)*float('-inf')
+        return -math.lgamma(self.k) - self.k*math.log(self.theta) + (self.k - 1)*math.log(x[0]) - x[0]/self.theta
 
 
 class AbstractEmpPdf(Pdf):

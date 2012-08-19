@@ -80,6 +80,10 @@ cdef class LogNormPdf(AbstractGaussPdf):
     pass  # everything inherited from AbstractGaussPdf
 
 
+cdef class GammaPdf(Pdf):
+    cdef public double k, theta
+
+
 cdef class AbstractEmpPdf(Pdf):
     cdef public np.ndarray weights  # dtype=double, ndims=1
     cdef public np.ndarray particles  # dtype=double, ndims=2

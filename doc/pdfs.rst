@@ -40,6 +40,10 @@ Unconditional Probability Density Functions (pdfs)
 
    .. automethod:: __init__
 
+.. autoclass:: GammaPdf
+
+   .. automethod:: __init__
+
 .. autoclass:: AbstractEmpPdf
 
 .. autoclass:: EmpPdf

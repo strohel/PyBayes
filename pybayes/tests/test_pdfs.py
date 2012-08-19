@@ -468,6 +468,57 @@ class LogNormPdf(PbTestCase):
         self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
 
 
+class TestGammaPdf(PbTestCase):
+    """Test Gamma pdf"""
+
+    def setUp(self):
+        self.gamma1 = pb.GammaPdf(1.0, 3.2)
+        self.gamma2 = pb.GammaPdf(4.1, 1.3)
+
+    def test_init(self):
+        self.assertEqual(type(self.gamma1), pb.GammaPdf)
+        self.assertEqual(type(self.gamma2), pb.GammaPdf)
+
+    def test_invalid_init(self):
+        constructor = pb.GammaPdf
+
+        # non-positive k:
+        self.assertRaises(AssertionError, constructor, 0., 1.)
+        self.assertRaises(AssertionError, constructor, -0.3, 2.)
+        # non-positive theta:
+        self.assertRaises(AssertionError, constructor, 2.1, 0.)
+        self.assertRaises(AssertionError, constructor, 2.7, -12.3)
+
+    def test_shape(self):
+        self.assertEqual(self.gamma1.shape(), 1)
+        self.assertEqual(self.gamma2.shape(), 1)
+
+    def test_mean(self):
+        self.assertEqual(self.gamma1.mean(), np.array([3.2]))
+        self.assertEqual(self.gamma2.mean(), np.array([5.33]))
+
+    def test_variance(self):
+        self.assertApproxEqual(self.gamma1.variance(), np.array([10.24]))
+        self.assertApproxEqual(self.gamma2.variance(), np.array([6.929]))
+
+    def test_eval_log(self):
+        exp_results = np.array([
+            [0.                , 0.                ],  # eval in -1
+            [0.3125            , 0.                ],  # in 0
+            [0.2286298840458256, 0.0231977161187639],  # in 1
+            [0.1672691964121845, 0.0921648960588247],  # in 2
+            [0.1223767583364997, 0.1500982961404964],  # ...
+            [0.0895327490188094, 0.1696731674960094],
+            [0.0655035584847180, 0.1570223704738114]
+        ])
+
+        x = np.zeros(1)
+        for i in range(7):
+            x[0] = i - 1.
+            self.assertApproxEqual(exp(self.gamma1.eval_log(x)), exp_results[i][0])
+            self.assertApproxEqual(exp(self.gamma2.eval_log(x)), exp_results[i][1])
+
+
 class TestEmpPdf(PbTestCase):
     """Test empirical pdf"""
 
