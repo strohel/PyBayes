@@ -678,6 +678,9 @@ class GammaPdf(Pdf):
                 return -math.lgamma(self.k) - self.k*math.log(self.theta) + (self.k - 1)*float('-inf')
         return -math.lgamma(self.k) - self.k*math.log(self.theta) + (self.k - 1)*math.log(x[0]) - x[0]/self.theta
 
+    def sample(self, cond = None):
+        return random.gamma(self.k, self.theta, size=(1,))
+
 
 class AbstractEmpPdf(Pdf):
     r"""An abstraction of empirical probability density functions that provides common methods such
