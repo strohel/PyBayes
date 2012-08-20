@@ -44,13 +44,13 @@ cdef class CPdf(object):
     cpdef np.ndarray sample(self, np.ndarray cond = *)
     cpdef np.ndarray samples(self, int n, np.ndarray cond = *)
 
-    cdef bint _check_cond(self, np.ndarray cond) except False
-    cdef bint _check_x(self, np.ndarray x) except False
-    cdef bint _set_rvs(self, int exp_shape, rv, int exp_cond_shape, cond_rv) except False
+    cpdef bint _check_cond(self, np.ndarray cond) except False
+    cpdef bint _check_x(self, np.ndarray x) except False
+    cpdef bint _set_rvs(self, int exp_shape, rv, int exp_cond_shape, cond_rv) except False
 
 
 cdef class Pdf(CPdf):
-    cdef bint _set_rv(self, int exp_shape, rv) except False
+    cpdef bint _set_rv(self, int exp_shape, rv) except False
 
 
 cdef class UniPdf(Pdf):
