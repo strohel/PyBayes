@@ -532,6 +532,70 @@ class TestGammaPdf(PbTestCase):
         self.assertTrue(np.all(abs(emp2.variance() - self.gamma2.variance()) <= 1.3))
 
 
+class TestInverseGammaPdf(PbTestCase):
+    """Test Inverse gamma pdf"""
+
+    def setUp(self):
+        self.gamma1 = pb.InverseGammaPdf(2.2, 3.3)
+        self.gamma2 = pb.InverseGammaPdf(4.2, 1.3)
+
+    def test_init(self):
+        self.assertEqual(type(self.gamma1), pb.InverseGammaPdf)
+        self.assertEqual(type(self.gamma2), pb.InverseGammaPdf)
+
+    def test_invalid_init(self):
+        constructor = pb.InverseGammaPdf
+
+        # non-positive alpha:
+        self.assertRaises(AssertionError, constructor, 0., 1.)
+        self.assertRaises(AssertionError, constructor, -0.3, 2.)
+        # non-positive beta:
+        self.assertRaises(AssertionError, constructor, 2.1, 0.)
+        self.assertRaises(AssertionError, constructor, 2.7, -12.3)
+
+    def test_shape(self):
+        self.assertEqual(self.gamma1.shape(), 1)
+        self.assertEqual(self.gamma2.shape(), 1)
+
+    def test_mean(self):
+        self.assertApproxEqual(self.gamma1.mean(), np.array([2.75]))
+        self.assertApproxEqual(self.gamma2.mean(), np.array([0.40625]))
+
+    def test_variance(self):
+        self.assertApproxEqual(self.gamma1.variance(), np.array([37.81249999999996]))
+        self.assertApproxEqual(self.gamma2.variance(), np.array([0.07501775568181818]))
+
+    def test_eval_log(self):
+        exp_results = np.array([
+            [0.                , 0.                ],  # eval in -1
+            [0.                , 0.                ],  # in 0
+            [0.4628658368306967, 0.1057554711028215],  # in 1
+            [0.2622678382649004, 0.0055110998545603],  # in 2
+            [0.1241981059139586, 0.0008311145217714],  # ...
+            [0.0651241395203701, 0.0002075047340156],
+            [0.0376087194223439, 0.0000693945050975]
+        ])
+
+        x = np.zeros(1)
+        for i in range(7):
+            x[0] = i - 1.
+            self.assertApproxEqual(exp(self.gamma1.eval_log(x)), exp_results[i][0])
+            self.assertApproxEqual(exp(self.gamma2.eval_log(x)), exp_results[i][1])
+
+    @stochastic
+    def test_sample(self):
+        """Test GaussPdf.sample() mean and variance."""
+        N = 1000  # number of samples, variance is very sensible here
+        emp1 = pb.EmpPdf(self.gamma1.samples(N))  # Emipirical pdf computes sample mean and variance for us
+        emp2 = pb.EmpPdf(self.gamma2.samples(N))  # Emipirical pdf computes sample mean and variance for us
+
+        self.assertTrue(np.all(abs(emp1.mean() - self.gamma1.mean()) <= 0.4))
+        self.assertTrue(np.all(abs(emp2.mean() - self.gamma2.mean()) <= 0.025))
+
+        self.assertTrue(np.all(abs(emp1.variance() - self.gamma1.variance()) <= 32.0))
+        self.assertTrue(np.all(abs(emp2.variance() - self.gamma2.variance()) <= 0.03))
+
+
 class TestEmpPdf(PbTestCase):
     """Test empirical pdf"""
 

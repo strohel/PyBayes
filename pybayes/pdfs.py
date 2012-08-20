@@ -677,6 +677,50 @@ class GammaPdf(Pdf):
         return random.gamma(self.k, self.theta, size=(1,))
 
 
+class InverseGammaPdf(Pdf):
+    r"""Inverse gamma distribution with shape parameter :math:`\alpha` and scale parameter
+    :math:`\beta`. Extends :class:`Pdf`.
+
+    If random variable :math:`X \sim \text{Gamma}(k, \theta)` then :math:`Y = 1/X` will
+    have distribution :math:`\text{InverseGamma}(k, 1/\theta)` i.e.
+    :math:`\alpha = k, \beta = 1/\theta`
+
+    .. math:: f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha-1} e^{\frac{-\beta}{x}}
+    """
+
+    def __init__(self, alpha, beta, rv = None):
+        r"""Initialise Inverse gamma pdf.
+
+        :param double alpha: :math:`\alpha` shape parameter above
+        :param double beta: :math:`\beta` scale parameter above
+        """
+        assert alpha > 0.
+        assert beta > 0.
+        self.alpha = alpha
+        self.beta = beta
+        self._set_rv(1, rv)
+
+    def mean(self, cond = None):
+        if self.alpha <= 1.0:
+            raise NotImplementedError("Indeterminate form")
+        return np.array([self.beta / (self.alpha - 1.0)])
+
+    def variance(self, cond = None):
+        if self.alpha <= 2.0:
+            raise NotImplementedError("Indeterminate form")
+        return np.array([self.beta**2 / ((self.alpha - 2.0)*(self.alpha - 1.0)**2)])
+
+    def eval_log(self, x, cond = None):
+        self._check_x(x)
+        if x[0] <= 0.:
+            return float('-inf')
+        return self.alpha*math.log(self.beta) - math.lgamma(self.alpha) \
+               + (-self.alpha - 1.0)*math.log(x[0]) - self.beta/x[0]
+
+    def sample(self, cond = None):
+        return 1.0 / random.gamma(self.alpha, 1.0/self.beta, size=(1,))
+
+
 class AbstractEmpPdf(Pdf):
     r"""An abstraction of empirical probability density functions that provides common methods such
     as weight normalisation. Extends :class:`Pdf`.
