@@ -669,13 +669,8 @@ class GammaPdf(Pdf):
 
     def eval_log(self, x, cond = None):
         self._check_x(x)
-        if x[0] < 0.:
+        if x[0] <= 0.:
             return float('-inf')
-        if x == 0.:
-            if self.k == 1:
-                return -math.lgamma(self.k) - self.k*math.log(self.theta)
-            else:
-                return -math.lgamma(self.k) - self.k*math.log(self.theta) + (self.k - 1)*float('-inf')
         return -math.lgamma(self.k) - self.k*math.log(self.theta) + (self.k - 1)*math.log(x[0]) - x[0]/self.theta
 
     def sample(self, cond = None):
