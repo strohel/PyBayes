@@ -1051,6 +1051,76 @@ class TestGaussCPdf(PbTestCase):
         self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
 
 
+class TestGammaCPdf(PbTestCase):
+    """Test conditional gamma pdf"""
+
+    def setUp(self):
+        self.gamma1 = pb.GammaCPdf(0.2)
+        self.gamma2 = pb.GammaCPdf(1.2)
+
+    def test_mean(self):
+        self.assertApproxEqual(self.gamma1.mean(np.array([5.])), np.array([5.]))
+        self.assertApproxEqual(self.gamma1.mean(np.array([2.])), np.array([2.]))
+        self.assertApproxEqual(self.gamma2.mean(np.array([3.])), np.array([3.]))
+        self.assertApproxEqual(self.gamma2.mean(np.array([4.])), np.array([4.]))
+
+    def test_variance(self):
+        self.assertApproxEqual(self.gamma1.variance(np.array([5.])), np.array([1.0])**2)
+        self.assertApproxEqual(self.gamma1.variance(np.array([2.])), np.array([0.4])**2)
+        self.assertApproxEqual(self.gamma2.variance(np.array([3.])), np.array([3.6])**2)
+        self.assertApproxEqual(self.gamma2.variance(np.array([4.])), np.array([4.8])**2)
+
+    def test_eval_log(self):
+        cond1 = np.array([12.])
+        cond2 = np.array([0.1])
+        equiv_gamma1 = pb.GammaPdf(25., 0.48)  # for gamma = 0.2, mu = 12
+        equiv_gamma2 = pb.GammaPdf(25., 0.004)  # for gamma = 0.2, mu = 0.1
+        for i in range(-2, 20):
+            x = np.array([i * 1.9], dtype=float)
+            # exp because assertApproxEqual has problems with -inf
+            self.assertApproxEqual(np.exp(self.gamma1.eval_log(x, cond1)),
+                                   np.exp(equiv_gamma1.eval_log(x)))
+            self.assertApproxEqual(np.exp(self.gamma1.eval_log(x, cond2)),
+                                   np.exp(equiv_gamma2.eval_log(x)))
+
+    # TODO: test sample()
+
+
+class TestInverseGammaCPdf(PbTestCase):
+    """Test conditional inverse gamma pdf"""
+
+    def setUp(self):
+        self.igamma1 = pb.InverseGammaCPdf(0.2)
+        self.igamma2 = pb.InverseGammaCPdf(1.2)
+
+    def test_mean(self):
+        self.assertApproxEqual(self.igamma1.mean(np.array([5.])), np.array([5.]))
+        self.assertApproxEqual(self.igamma1.mean(np.array([2.])), np.array([2.]))
+        self.assertApproxEqual(self.igamma2.mean(np.array([3.])), np.array([3.]))
+        self.assertApproxEqual(self.igamma2.mean(np.array([4.])), np.array([4.]))
+
+    def test_variance(self):
+        self.assertApproxEqual(self.igamma1.variance(np.array([5.])), np.array([1.0])**2)
+        self.assertApproxEqual(self.igamma1.variance(np.array([2.])), np.array([0.4])**2)
+        self.assertApproxEqual(self.igamma2.variance(np.array([3.])), np.array([3.6])**2)
+        self.assertApproxEqual(self.igamma2.variance(np.array([4.])), np.array([4.8])**2)
+
+    def test_eval_log(self):
+        cond1 = np.array([12.])
+        cond2 = np.array([0.1])
+        equiv_gamma1 = pb.InverseGammaPdf(27., 312.)  # for gamma = 0.2, mu = 12
+        equiv_gamma2 = pb.InverseGammaPdf(27., 2.6)  # for gamma = 0.2, mu = 0.1
+        for i in range(-2, 20):
+            x = np.array([i * 1.9], dtype=float)
+            # exp because assertApproxEqual has problems with -inf
+            self.assertApproxEqual(np.exp(self.igamma1.eval_log(x, cond1)),
+                                   np.exp(equiv_gamma1.eval_log(x)))
+            self.assertApproxEqual(np.exp(self.igamma1.eval_log(x, cond2)),
+                                   np.exp(equiv_gamma2.eval_log(x)))
+
+    # TODO: test sample()
+
+
 class TestProdCPdf(PbTestCase):
     """Test conditional product of pdfs"""
 

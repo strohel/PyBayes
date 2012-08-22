@@ -1213,6 +1213,88 @@ class GaussCPdf(CPdf):
         return True
 
 
+class GammaCPdf(CPdf):
+    r"""Conditional pdf based on :class:`GammaPdf` tuned in a way to have mean
+    :math:`\mu` and standard deviation :math:`\gamma \mu`. In other words,
+    :math:`\text{GammaCpdf}(\mu, \gamma) = \text{GammaPdf}\left(
+    k = \gamma^{-2}, \theta = \gamma^2 \mu \right)`
+
+    The :math:`\gamma` parameter is specified in constructor and the :math:`\mu`
+    parameter is the conditioning variable.
+    """
+
+    def __init__(self, gamma, rv = None, cond_rv = None):
+        """Initialise conditional gamma pdf.
+
+        :param float gamma: :math:`\gamma` parameter above
+        """
+        self.gamma = gamma
+        self.gamma_pdf = GammaPdf(self.gamma**(-2.), 1.)  # theta is set later
+        self._set_rvs(1, rv, 1, cond_rv)
+
+    def mean(self, cond = None):
+        self._set_cond(cond)
+        return self.gamma_pdf.mean()
+
+    def variance(self, cond = None):
+        self._set_cond(cond)
+        return self.gamma_pdf.variance()
+
+    def eval_log(self, x, cond = None):
+        self._set_cond(cond)
+        # x is checked in self.igamma_pdf
+        return self.gamma_pdf.eval_log(x)
+
+    def sample(self, cond = None):
+        self._set_cond(cond)
+        return self.gamma_pdf.sample()
+
+    def _set_cond(self, cond):
+        self._check_cond(cond)
+        self.gamma_pdf.theta = self.gamma**2. * cond[0]
+
+
+class InverseGammaCPdf(CPdf):
+    r"""Conditional pdf based on :class:`InverseGammaPdf` tuned in a way to have mean
+    :math:`\mu` and standard deviation :math:`\gamma \mu`. In other words,
+    :math:`\text{InverseGammaCpdf}(\mu, \gamma) = \text{InverseGammaPdf}\left(
+    \alpha = \gamma^{-2} + 2, \beta = \left( \gamma^{-2} + 1 \right) \mu \right)`
+
+    The :math:`\gamma` parameter is specified in constructor and the :math:`\mu`
+    parameter is the conditioning variable.
+    """
+
+    def __init__(self, gamma, rv = None, cond_rv = None):
+        """Initialise conditional inverse gamma pdf.
+
+        :param float gamma: :math:`\gamma` parameter above
+        """
+        self.gamma = gamma
+        self.igamma_pdf = InverseGammaPdf(self.gamma**(-2.) + 2., 1.)  # beta is set later
+        self._set_rvs(1, rv, 1, cond_rv)
+
+    def mean(self, cond = None):
+        self._set_cond(cond)
+        return self.igamma_pdf.mean()
+
+    def variance(self, cond = None):
+        self._set_cond(cond)
+        return self.igamma_pdf.variance()
+
+    def eval_log(self, x, cond = None):
+        self._set_cond(cond)
+        # x is checked in self.igamma_pdf
+        return self.igamma_pdf.eval_log(x)
+
+    def sample(self, cond = None):
+        self._set_cond(cond)
+        return self.igamma_pdf.sample()
+
+    def _set_cond(self, cond):
+        self._check_cond(cond)
+        self.igamma_pdf.beta = (self.gamma**(-2.) + 1.)*cond[0]
+
+
 class ProdCPdf(CPdf):
     r"""Pdf that is formed as a chain rule of multiple conditional pdfs.
     Extends :class:`CPdf`.

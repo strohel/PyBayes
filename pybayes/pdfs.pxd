@@ -149,6 +149,16 @@ cdef class GaussCPdf(CPdf):
     cdef bint _set_gauss_params(self, np.ndarray cond) except False
 
 
+cdef class GammaCPdf(CPdf):
+    cdef public double gamma
+    cdef public GammaPdf gamma_pdf
+
+
+cdef class InverseGammaCPdf(CPdf):
+    cdef public double gamma
+    cdef public InverseGammaPdf igamma_pdf
+
+
 cdef class ProdCPdf(CPdf):
     cdef readonly np.ndarray factors  # dtype=CPdf
     cdef readonly list in_indeces, out_indeces  # dtype=ndarray of ints
