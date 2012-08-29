@@ -8,6 +8,7 @@ recent versions are mentioned on top.
 Changes between 0.3 and 0.4
 ===========================
 
+* ParticleFilter.bayes() now ignores cond completely. Yell if you need it.
 * ParticleFilter lost last emp_pdf argument. Pass the same object as the init_pdf argument
   to achieve the same thing.
 * Test-suite no longer needs PyBayes to be installed, yay! (no privilege problems etc.)

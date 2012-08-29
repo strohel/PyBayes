@@ -286,7 +286,7 @@ class ParticleFilter(Filter):
             self.emp = EmpPdf(init_pdf.samples(n))
 
     def bayes(self, yt, cond = None):
-        r"""Perform Bayes rule for new measurement :math:`y_t`.
+        r"""Perform Bayes rule for new measurement :math:`y_t`; *cond* is ignored.
 
         :param numpy.ndarray cond: optional condition that is passed to :math:`p(x_t|x_{t-1})`
           after :math:`x_{t-1}` so that is can be rewritten as: :math:`p(x_t|x_{t-1}, c)`.
@@ -302,11 +302,7 @@ class ParticleFilter(Filter):
         """
         for i in range(self.emp.particles.shape[0]):
             # generate new ith particle:
-            if cond is None:
-                aggregate_cond = self.emp.particles[i]
-            else:
-                aggregate_cond = np.concatenate((self.emp.particles[i], cond))
-            self.emp.particles[i] = self.p_xt_xtp.sample(aggregate_cond)
+            self.emp.particles[i] = self.p_xt_xtp.sample(self.emp.particles[i])
 
             # recompute ith weight:
             self.emp.weights[i] *= exp(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))
