@@ -8,6 +8,8 @@ recent versions are mentioned on top.
 Changes between 0.3 and 0.4
 ===========================
 
+* ParticleFilter lost last emp_pdf argument. Pass the same object as the init_pdf argument
+  to achieve the same thing.
 * Test-suite no longer needs PyBayes to be installed, yay! (no privilege problems etc.)
 * Build-system was rewritten so that it is no longer an ugly hack. .pxd and .py files are now
   installed along .so (.dll) files for interoperability and additional openness. Better parsing of

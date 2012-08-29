@@ -249,18 +249,18 @@ class ParticleFilter(Filter):
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
     """
 
-    def __init__(self, n, init_pdf, p_xt_xtp, p_yt_xt, emp = None):
+    def __init__(self, n, init_pdf, p_xt_xtp, p_yt_xt):
         r"""Initialise particle filter.
 
         :param int n: number of particles
-        :param init_pdf: probability density which initial particles are sampled from
+        :param init_pdf: either :class:`~pybayes.pdfs.EmpPdf` instance that will be used
+            directly as a posterior (and should already have initial particles sampled) or
+            any other probability density which initial particles are sampled from
         :type init_pdf: :class:`~pybayes.pdfs.Pdf`
         :param p_xt_xtp: :math:`p(x_t|x_{t-1})` cpdf of state in *t* given state in *t-1*
         :type p_xt_xtp: :class:`~pybayes.pdfs.CPdf`
         :param p_yt_xt: :math:`p(y_t|x_t)` cpdf of observation in *t* given state in *t*
         :type p_yt_xt: :class:`~pybayes.pdfs.CPdf`
-        :param emp: (optional) instance of :class:`~pybayes.pdfs.EmpPdf` (sublass) to use
-            as posterior pdf. Otherwise *emp* is constructed as ``EmpPdf(init_pdf.samples(n))``
         """
         if not isinstance(n, int) or n < 1:
             raise TypeError("n must be a positive integer")
@@ -280,13 +280,10 @@ class ParticleFilter(Filter):
                 .format(dim, p_yt_xt.cond_shape()))
         self.p_yt_xt = p_yt_xt
 
-        if emp is None:
-            # generate initial particles:
-            self.emp = EmpPdf(init_pdf.samples(n))
+        if isinstance(init_pdf, EmpPdf):
+            self.emp = init_pdf  # use directly
         else:
-            assert isinstance(emp, EmpPdf)
-            assert emp.shape() == dim
-            self.emp = emp
+            self.emp = EmpPdf(init_pdf.samples(n))
 
     def bayes(self, yt, cond = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`.
