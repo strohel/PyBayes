@@ -316,7 +316,7 @@ class ParticleFilter(Filter):
         """
         for i in range(self.emp.particles.shape[0]):
             # generate new ith particle:
-            self.emp.particles[i] = self.p_xt_xtp.sample(self.emp.particles[i])
+            self.emp.transition_using(i, self.p_xt_xtp)
 
             # recompute ith weight:
             self.emp.weights[i] *= exp(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))

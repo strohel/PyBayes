@@ -914,6 +914,13 @@ class EmpPdf(AbstractEmpPdf):
         self.weights[:] = 1./self.weights.shape[0]
         return True
 
+    def transition_using(self, i, transition_cpdf):
+        r"""Transition *i*-th particle from :math:`t-1` to :math:`t` by sampling from
+        *transition_cpdf* :math:`p(x_t|x_{t-1})`
+        """
+        self.particles[i] = transition_cpdf.sample(self.particles[i])
+        return True
+
 
 class MarginalizedEmpPdf(AbstractEmpPdf):
     r"""An extension to empirical pdf (:class:`EmpPdf`) used as posterior density by

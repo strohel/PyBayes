@@ -115,6 +115,7 @@ cdef class AbstractEmpPdf(Pdf):
 
 cdef class EmpPdf(AbstractEmpPdf):
     cpdef bint resample(self) except False
+    cpdef bint transition_using(self, int i, CPdf transition_cpdf) except False
 
 
 cdef class MarginalizedEmpPdf(AbstractEmpPdf):
