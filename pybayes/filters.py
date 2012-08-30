@@ -255,15 +255,15 @@ class KalmanFilter(Filter):
 
 
 class ParticleFilter(Filter):
-    r"""Standard particle filter implementation with resampling.
+    r"""Standard particle filter (or SIR filter, SMC method) implementation with resampling
+    and optional support for proposal density.
 
-    Specifying proposal density is currently unsupported, but planned; speak up if you want it!
     Posterior pdf is represented using :class:`~pybayes.pdfs.EmpPdf` and takes following form:
 
     .. math:: p(x_t|y_{1:t}) = \sum_{i=1}^n \omega_i \delta ( x_t - x_t^{(i)} )
     """
 
-    def __init__(self, n, init_pdf, p_xt_xtp, p_yt_xt):
+    def __init__(self, n, init_pdf, p_xt_xtp, p_yt_xt, proposal = None):
         r"""Initialise particle filter.
 
         :param int n: number of particles
@@ -275,6 +275,12 @@ class ParticleFilter(Filter):
         :type p_xt_xtp: :class:`~pybayes.pdfs.CPdf`
         :param p_yt_xt: :math:`p(y_t|x_t)` cpdf of observation in *t* given state in *t*
         :type p_yt_xt: :class:`~pybayes.pdfs.CPdf`
+        :param proposal: (optional) a filter whose posterior will be used to sample
+            particles in :meth:`bayes` from (and to correct their weights). More specifically,
+            its :meth:`bayes <Filter.bayes>` :math:`\left(y_t, x_{t-1}^{(i)}\right)` method is called before sampling
+            i-th particle. Each call to ``bayes()`` should therefore reset any effects of
+            the previous call.
+        :type proposal: :class:`Filter`
         """
         if not isinstance(n, int) or n < 1:
             raise TypeError("n must be a positive integer")
@@ -282,6 +288,8 @@ class ParticleFilter(Filter):
             raise TypeError("init_pdf must be an instance ot the Pdf class")
         if not isinstance(p_xt_xtp, CPdf) or not isinstance(p_yt_xt, CPdf):
             raise TypeError("both p_xt_xtp and p_yt_xt must be instances of the CPdf class")
+        if proposal is not None and not isinstance(proposal, Filter):
+            raise TypeError("proposal must by Filter instance")
 
         dim = init_pdf.shape()  # dimension of state
         if p_xt_xtp.shape() != dim or p_xt_xtp.cond_shape() < dim:
@@ -298,6 +306,8 @@ class ParticleFilter(Filter):
             self.emp = init_pdf  # use directly
         else:
             self.emp = EmpPdf(init_pdf.samples(n))
+        self.proposal = proposal
+
 
     def bayes(self, yt, cond = None):
         r"""Perform Bayes rule for new measurement :math:`y_t`; *cond* is ignored.
@@ -315,11 +325,26 @@ class ParticleFilter(Filter):
         4. resample particles
         """
         for i in range(self.emp.particles.shape[0]):
+            if self.proposal is not None:
+                self.proposal.bayes(yt, self.emp.particles[i])
+                proposal_pdf = self.proposal.posterior()  # gives unconditional Pdf, doesn't hurt
+                x_tp = self.emp.particles[i]  # we need to save previous particle in this case
+            else:
+                proposal_pdf = self.p_xt_xtp  # naive (transition) proposal
+
             # generate new ith particle:
-            self.emp.transition_using(i, self.p_xt_xtp)
+            self.emp.transition_using(i, proposal_pdf)
 
             # recompute ith weight:
             self.emp.weights[i] *= exp(self.p_yt_xt.eval_log(yt, self.emp.particles[i]))
+            if self.proposal is not None:
+                # non-naive proposal was used, corrent the weight
+                self.emp.weights[i] *= exp(self.p_xt_xtp.eval_log(self.emp.particles[i], x_tp))
+                denom = exp(proposal_pdf.eval_log(self.emp.particles[i]))
+                if denom > 0:
+                    self.emp.weights[i] /= exp(proposal_pdf.eval_log(self.emp.particles[i]))
+                else:
+                    self.emp.weights[i] = 0.  # TODO: what to do in this case?
 
         # assure that weights are normalised
         self.emp.normalise_weights()

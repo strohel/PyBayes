@@ -40,6 +40,7 @@ cdef class KalmanFilter(Filter):
 cdef class ParticleFilter(Filter):
     cdef readonly CPdf p_xt_xtp, p_yt_xt
     cdef readonly EmpPdf emp
+    cdef readonly Filter proposal
 
     cpdef bint bayes(self, double[:] yt, double[:] cond = *) except False
 
