@@ -26,7 +26,12 @@ class build_prepare(Command):
         self.ext_options['extra_compile_args'] = ['-O2']
         self.ext_options['extra_link_args'] = ['-Wl,-O1']
         self.ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
-        self.ext_options['pyrex_directives'] = {'profile':self.distribution.profile, 'infer_types':True}
+        self.ext_options['pyrex_directives'] = {
+            'profile':self.distribution.profile,
+            'infer_types':True,
+            "binding": False,  # default was changed to True in Cython commit 621dbe6403 and it
+                               # breaks the build. I don't know what it means, it's undocumented.
+        }
         self.ext_options['pyrex_include_dirs'] = ['tokyo']  # find tokyo.pxd from bundled tokyo
         self.deps = []  # .pxd dependencies for injected packages
 
