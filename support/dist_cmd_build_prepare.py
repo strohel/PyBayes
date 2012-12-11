@@ -24,7 +24,7 @@ class build_prepare(Command):
         self.ext_options = {}  # options common to all extensions
         self.ext_options['include_dirs'] = [self.distribution.numpy_include_dir]
         self.ext_options['extra_compile_args'] = ['-O2']
-        self.ext_options['extra_link_args'] = ['-Wl,-O1']
+        #self.ext_options['extra_link_args'] = ['-Wl,-O1']
         self.ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
         self.ext_options['pyrex_directives'] = {
             'profile':self.distribution.profile,
