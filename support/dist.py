@@ -42,12 +42,12 @@ class PyBayesDistribution(Distribution):
 
             # cython-build specific options
             ('blas-lib=', None,
-             'library name that provides cblas_sswap function, without lib prefix [default: cblas]'),
+             'library name that provides cblas_sswap function, without lib prefix [default: pkg-config --libs cblas  or "cblas"]'),
             ('lapack-lib=', None,
-             'library name that provides clapack_sgetri function, without lib prefix [default: lapack]'),
+             'library name that provides clapack_sgetri function, without lib prefix [default: pkg-config --libs lapack  or "lapack"]'),
             ('library-dirs=', 'L',
              'list of additional directories where libraries are seached for, separated by '
-             + '{0} character'.format(os.pathsep)),
+             + '{0} character [default: try pkg-config  or none]'.format(os.pathsep)),
         ]
 
     def has_ext_modules(self):
