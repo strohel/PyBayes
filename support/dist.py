@@ -24,9 +24,6 @@ class PyBayesDistribution(Distribution):
         Distribution.__init__(self, attrs)
         self.use_cython = None
         self.profile = False
-        self.blas_lib = None
-        self.lapack_lib = None
-        self.library_dirs = None
         if not self.ext_modules:
             self.ext_modules = []
 
@@ -39,15 +36,6 @@ class PyBayesDistribution(Distribution):
              + "yes/no; default: autodetect)"),
             ('profile=', None, 'embed profiling information into Cython build (choices: '
              + 'yes/no; default: no)'),
-
-            # cython-build specific options
-            ('blas-lib=', None,
-             'library name that provides cblas_sswap function, without lib prefix [default: pkg-config --libs cblas  or "cblas"]'),
-            ('lapack-lib=', None,
-             'library name that provides clapack_sgetri function, without lib prefix [default: pkg-config --libs lapack  or "lapack"]'),
-            ('library-dirs=', 'L',
-             'list of additional directories where libraries are seached for, separated by '
-             + '{0} character [default: try pkg-config  or none]'.format(os.pathsep)),
         ]
 
     def has_ext_modules(self):

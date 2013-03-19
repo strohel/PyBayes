@@ -30,35 +30,20 @@ PyBayes in e.g. BSD-licensed project? Ask!)
 Obtaining PyBayes
 =================
 
-PyBayes releases can be found in .tar.gz format at github_ or PyPI_. These releases bundle the Tokyo
-project for convenience. Binary packages for CentOS, Debian, Fedora, RHEL, OpenSUSE and Ubuntu can
-be downloaded from the `OpenSUSE Build Service`_; these packages are fast Cython builds. (with no
-requirement to install Cython for building)
+PyBayes releases can be found in .tar.gz format at github_ or PyPI_. Binary packages for
+CentOS, Debian, Fedora, RHEL, OpenSUSE and Ubuntu can be downloaded from the
+`OpenSUSE Build Service`_; these packages are fast Cython builds. (with no requirement to
+install Cython for building)
 
 .. _github: https://github.com/strohel/PyBayes/downloads
 .. _PyPI: http://pypi.python.org/pypi/PyBayes
 .. _`OpenSUSE Build Service`: https://build.opensuse.org/package/show?package=python-pybayes&project=home%3Astrohel
 
 Development of PyBayes happens on http://github.com/strohel/PyBayes using git VCS
-and the most fresh development sources can be obtained using git. It should be noted that
-PyBayes uses git submodule to bundle Tokyo library, so the proper way to clone
-PyBayes repository would be::
+and the most fresh development sources can be obtained using git::
 
    # cd path/to/projects
    # git clone git://github.com/strohel/PyBayes.git
-   Cloning into PyBayes...
-   (...)
-   # cd PyBayes
-   # git submodule update --init
-   Submodule 'tokyo' (git://github.com/strohel/Tokyo.git) registered for path 'tokyo'
-   Cloning into tokyo...
-   (...)
-   Submodule path 'tokyo': checked out '896d046b62cf50faf7faa7e58a8705fb2f22f19a'
-
-When updating your repository (using ``git pull``), git should inform you that
-some submodules have became outdated. In that case you should issue
-``git submodule update``.
-
 
 Installing PyBayes
 ==================
@@ -86,25 +71,26 @@ faster*, please read the following section.
 Advanced installation options
 -----------------------------
 
-PyBayes can use Cython to build itself into binary Python
-module. Such binary modules are transparent to Python in a way that Python
-treats then as any other modules (you can ``import`` them as usual).
-Interpreter overhead is avoided and many other optimisation options arise this
-way.
+PyBayes can use Cython to build itself into binary Python module. Such binary modules are
+transparent to Python in a way that Python treats then as any other modules (you can
+``import`` them as usual). Interpreter overhead is avoided and many other optimisation
+options arise this way.
 
 In order to build optimised PyBayes, you'll additionally need:
 
-* Cython_ Python to C compiler, version **0.14.1** or newer
+* Cython_ Python to C compiler, version **0.18** or newer is recommended
 * working C compiler (GCC on Unix-like systems, MinGW or Microsoft Visual C on
   Windows [#install_cython]_)
 * NumPy_ numerical library for Python, version 1.5 or greater (NumPy is needed
   also in Python build, but older version suffice in that case)
+* Ceygen_ Python package installed to a standard location
 * On some Debian-based Linux distributions (Ubuntu) you'll need python-dev
   package that contains ``Python.h`` file that is needed by PyBayes
 
 .. _Cython: http://www.cython.org/
 .. [#install_cython] http://docs.cython.org/src/quickstart/install.html
 .. _NumPy: http://numpy.scipy.org/
+.. _Ceygen: https://github.com/strohel/Ceygen
 
 Proceed with following steps:
 
