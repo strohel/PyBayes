@@ -18,9 +18,9 @@ params = {
     # meta-data; see http://docs.python.org/distutils/setupscript.html#additional-meta-data
     'name':'PyBayes',
     'version':version,
-    'author':u'Matěj Laitl',
+    'author':'Matěj Laitl',
     'author_email':'matej@laitl.cz',
-    'maintainer':u'Matěj Laitl',
+    'maintainer':'Matěj Laitl',
     'maintainer_email':'matej@laitl.cz',
     'url':'https://github.com/strohel/PyBayes',
     'description':'Python library for recursive Bayesian estimation (Bayesian filtering)',

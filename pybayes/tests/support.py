@@ -9,7 +9,7 @@ import numpy as np
 import sys
 import unittest as ut
 try:
-    from unittest.case import _ExpectedFailure as ExpectedFailure
+    from unittest.case import _ExpectedFailure as ExpectedFailure, TestCase
 except ImportError:
     ExpectedFailure = None
 
@@ -20,7 +20,7 @@ def stochastic(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception:
+        except TestCase.failureException:
             if ExpectedFailure is not None:  # added in Py 2.7
                 raise ExpectedFailure(sys.exc_info())
     wrapper.__doc__ += ' (stochastic, failures ignored)'
