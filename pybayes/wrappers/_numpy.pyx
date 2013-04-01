@@ -8,64 +8,63 @@
 # this file is special - it is used only in cython build, this can contain code
 # not callable from python etc.
 
-cimport ceygen.core as c
-from numpy cimport *
+cimport ceygen.dtype as d
 # cython workaround: cannot import *
-from numpy import any, arange, array, asarray, concatenate, cumsum, diag, empty, exp, eye, ones
-from numpy import prod, sum, zeros
+from numpy import any, array, asarray, concatenate, cumsum, diag, exp, eye, ones, prod
 
 
-import_array()  # needed to call any PyArray functions
+cdef double[:] vector(int size):
+    return d.vector(size, <double *> 0)
 
-cdef ndarray dot(ndarray a, ndarray b):
-    cdef ndarray ret
-    cdef npy_intp shape[2]
+cdef int[:] index_vector(int size):
+    return d.vector(size, <int *> 0)
 
-    if a is None:
-        raise TypeError("a must be numpy.ndarray")
-    if b is None:
-        raise TypeError("b must be numpy.ndarray")
-    if a.descr.type_num != NPY_DOUBLE:
-        raise ValueError("a is not of type double")
-    if b.descr.type_num != NPY_DOUBLE:
-        raise ValueError("b is not of type double")
+cdef int[:] index_range(int start, int stop):
+    cdef int[:] v = d.vector(stop - start, <int *> 0)
+    for i in range(stop - start):
+        v[i] = start + i
+    return v
 
-    if a.ndim == 1:
-        if b.ndim == 1:
-            raise ValueError("Use dotvv for vector * vector dot product")
-        elif b.ndim == 2:
-            shape[0] = b.shape[1]  # prepare shape to pass to PyArray_EMPTY
-            ret = PyArray_EMPTY(1, shape, NPY_DOUBLE, 0)  # shortcut to np.empty()
-            c.dot_vm(a, b, ret)
-            return ret
-        else:
-            raise ValueError("I cannot handle ndarrays with ndim > 2")
-    elif a.ndim == 2:
-        if b.ndim == 1:
-            shape[0] = a.shape[0]
-            ret = PyArray_EMPTY(1, shape, NPY_DOUBLE, 0)
-            c.dot_mv(a, b, ret)
-            return ret
-        elif b.ndim == 2:
-            shape[0] = a.shape[0]
-            shape[1] = b.shape[1]
-            ret = PyArray_EMPTY(2, shape, NPY_DOUBLE, 0)
-            c.dot_mm(a, b, ret)
-            return ret
-        else:
-            raise ValueError("I cannot handle ndarrays with ndim > 2")
+cdef double[:, :] matrix(int rows, int cols):
+    return d.matrix(rows, cols, <double *> 0)
+
+cdef double[:] zeros(int size):
+    ret = vector(size)
+    ret[:] = 0
+    return ret
+
+cdef bint reindex_vv(reindexable[:] data, int[:] indices) except False:
+    assert data.shape[0] == indices.shape[0]
+    cdef int newi
+    datacopy = data.copy()
+    for i in range(data.shape[0]):
+        newi = indices[i]
+        assert newi >= 0 and newi < data.shape[0]
+        data[i] = datacopy[newi]
+    return True
+
+
+cdef bint reindex_mv(reindexable[:, :] data, int[:] indices) except False:
+    assert data.shape[0] == indices.shape[0]
+    cdef int newi
+    datacopy = data.copy()
+    for i in range(data.shape[0]):
+        newi = indices[i]
+        assert newi >= 0 and newi < data.shape[0]
+        data[i, :] = datacopy[newi, :]
+    return True
+
+cdef double[:] take_vv(double[:] data, int[:] indices, double[:] out = None):
+    if out is None:
+        out = d.vector(indices.shape[0], <double *> 0)
     else:
-        raise ValueError("I cannot handle ndarrays with ndim > 2")
+        assert out.shape[0] >= indices.shape[0]
+    for i in range(indices.shape[0]):
+        out[i] = data[indices[i]]
+    return out
 
-
-# this is defined separately because of different return type
-cdef double dotvv(ndarray a, ndarray b) except? -1:
-    if a is None:
-        raise TypeError("a must be numpy.ndarray")
-    if b is None:
-        raise TypeError("b must be numpy.ndarray")
-    if a.descr.type_num != NPY_DOUBLE:
-        raise ValueError("a is not of type double")
-    if b.descr.type_num != NPY_DOUBLE:
-        raise ValueError("b is not of type double")
-    return c.dot_vv(a, b)
+cdef bint put_vv(double[:] out, int[:] indices, double[:] data) except False:
+    assert data.shape[0] >= indices.shape[0]
+    for i in range(indices.shape[0]):
+        out[indices[i]] = data[i]
+    return True

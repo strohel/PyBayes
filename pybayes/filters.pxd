@@ -12,14 +12,18 @@ cimport pybayes.wrappers._numpy as np
 from pdfs cimport CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
+# workarounds for Cython:
+ctypedef double[:, :] double_2D
+ctypedef int[:] int_1D
+
 cdef class Filter(object):
-    cpdef bint bayes(self, np.ndarray yt, np.ndarray cond = *) except False
+    cpdef bint bayes(self, double[:] yt, double[:] cond = *) except False
     cpdef Pdf posterior(self)
-    cpdef double evidence_log(self, np.ndarray yt) except? -1
+    cpdef double evidence_log(self, double[:] yt) except? -1
 
 
 cdef class KalmanFilter(Filter):
-    cdef readonly np.ndarray A, B, C, D, Q, R
+    cdef readonly double[:, :] A, B, C, D, Q, R
     cdef readonly int n, k, j
     cdef readonly GaussPdf P, S
 
@@ -29,24 +33,24 @@ cdef class KalmanFilter(Filter):
     @cython.locals(ret = KalmanFilter)
     cpdef KalmanFilter __deepcopy__(self, memo)
 
-    @cython.locals(K = np.ndarray)
-    cpdef bint bayes(self, np.ndarray yt, np.ndarray cond = *) except False
+    @cython.locals(K = double_2D)
+    cpdef bint bayes(self, double[:] yt, double[:] cond = *) except False
 
 
 cdef class ParticleFilter(Filter):
     cdef readonly CPdf p_xt_xtp, p_yt_xt
     cdef readonly EmpPdf emp
 
-    @cython.locals(aggregate_cond = np.ndarray)
-    cpdef bint bayes(self, np.ndarray yt, np.ndarray cond = *) except False
+    cpdef bint bayes(self, double[:] yt, double[:] cond = *) except False
 
 
 cdef class MarginalizedParticleFilter(Filter):
     cdef readonly CPdf p_bt_btp
-    cdef readonly np.ndarray kalmans  # dtype=KalmanFilter
+    cdef readonly KalmanFilter[:] kalmans
     cdef readonly MarginalizedEmpPdf memp
 
     @cython.locals(kalman = KalmanFilter)
-    cpdef bint bayes(self, np.ndarray yt, np.ndarray cond = *) except False
+    cpdef bint bayes(self, double[:] yt, double[:] cond = *) except False
 
+    @cython.locals(indices = int_1D)
     cpdef bint _resample(self) except False

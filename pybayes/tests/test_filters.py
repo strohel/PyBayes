@@ -18,13 +18,13 @@ class TestKalmanFilter(PbTestCase):
     def setUp(self):
         # synthetic parameters. May be completely mathematically invalid
         self.setup_1 = {  # n = 2, k = 3, j = 4
-            "A":np.array([[1, 2], [3, 4]]),  # n*n
-            "B":np.array([[1, 2, 3], [4, 5, 6]]),  # n*k
-            "C":np.array([[1, 2], [3, 4], [5, 6], [7, 8]]),  # j*n
-            "D":np.array([[1, 2, 3], [5, 6, 7], [9, 1, 2], [2, 3, 4]]),  # j*k
-            "Q":np.array([[2, 3], [4, 5]]),  # n*n
-            "R":np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 1, 2, 3], [2, 3, 4, 5]]),  # j*j
-            "state_pdf":pb.GaussPdf(np.array([1, 2]), np.array([[1, 0], [0, 2]]))  # n
+            "A":np.array([[1., 2], [3, 4]]),  # n*n
+            "B":np.array([[1., 2, 3], [4, 5, 6]]),  # n*k
+            "C":np.array([[1., 2], [3, 4], [5, 6], [7, 8]]),  # j*n
+            "D":np.array([[1., 2, 3], [5, 6, 7], [9, 1, 2], [2, 3, 4]]),  # j*k
+            "Q":np.array([[2., 3], [4, 5]]),  # n*n
+            "R":np.array([[1., 2, 3, 4], [5, 6, 7, 8], [9, 1, 2, 3], [2, 3, 4, 5]]),  # j*j
+            "state_pdf":pb.GaussPdf(np.array([1., 2]), np.array([[1., 0], [0, 2]]))  # n
         }
         self.setup_2 = {  # n = 2, k = 1, j = 1
             "A":np.array([[1.0, -0.5],[1.0, 0.0]]),
@@ -49,15 +49,15 @@ class TestKalmanFilter(PbTestCase):
         for arg in args:
             setup = self.setup_1.copy()
             setup[arg] = 125.65
-            self.assertRaises(TypeError, pb.KalmanFilter, **setup)
+            self.assertRaises(Exception, pb.KalmanFilter, **setup)
 
         # invalid dimension
         del args[6]  # remove state_pdf
         for arg in args:
             setup = self.setup_1.copy()
-            setup[arg] = np.array([[1],[2]])
+            setup[arg] = np.array([[1.], [2.]])
             self.assertRaises(ValueError, pb.KalmanFilter, **setup)
-        gauss = pb.GaussPdf(np.array([1]), np.array([[1]]))
+        gauss = pb.GaussPdf(np.array([1.]), np.array([[1.]]))
         setup = self.setup_1.copy()
         setup['state_pdf'] = gauss
         self.assertRaises(ValueError, pb.KalmanFilter, **setup)
@@ -99,18 +99,18 @@ class TestKalmanFilter(PbTestCase):
         c = copy(o)  # copy
         self.assertEqual(type(c), type(o))
 
-        self.assertTrue(id(o) != id(c))
-        self.assertTrue(id(o.A) == id(c.A))
-        self.assertTrue(id(o.B) == id(c.B))
-        self.assertTrue(id(o.C) == id(c.C))
-        self.assertTrue(id(o.D) == id(c.D))
-        self.assertTrue(id(o.Q) == id(c.Q))
-        self.assertTrue(id(o.R) == id(c.R))
-        self.assertTrue(id(o.n) == id(c.n))
-        self.assertTrue(id(o.k) == id(c.k))
-        self.assertTrue(id(o.j) == id(c.j))
-        self.assertTrue(id(o.P) == id(c.P))
-        self.assertTrue(id(o.S) == id(c.S))
+        self.assertNotEqual(id(o), id(c))
+        self.assertArraysSame(o.A, c.A)
+        self.assertArraysSame(o.B, c.B)
+        self.assertArraysSame(o.C, c.C)
+        self.assertArraysSame(o.D, c.D)
+        self.assertArraysSame(o.Q, c.Q)
+        self.assertArraysSame(o.R, c.R)
+        self.assertEqual(o.n, c.n)
+        self.assertEqual(o.k, c.k)
+        self.assertEqual(o.j, c.j)
+        self.assertEqual(id(o.P), id(c.P))
+        self.assertEqual(id(o.S), id(c.S))
 
     def test_deepcopy(self):
         """Test that deep copying KF works as expected"""
