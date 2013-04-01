@@ -393,11 +393,8 @@ class TestGaussPdf(PbTestCase):
         samples = pb.GaussPdf(mean, cov).samples(N)
         emp = pb.EmpPdf(samples)
 
-        fuzz = 0.2
-        self.assertTrue(np.all(abs(emp.mean() - mean) <= fuzz))
-
-        var, fuzz = cov.diagonal(), 0.3
-        self.assertTrue(np.all(abs(emp.variance() - var) <= fuzz))
+        self.assertAlmostEqual(np.max(abs(emp.mean() - mean)), 0., delta=0.2)
+        self.assertAlmostEqual(np.max(abs(emp.variance() - cov.diagonal())), 0., delta=0.3)
 
 
 class LogNormPdf(PbTestCase):
@@ -525,11 +522,11 @@ class TestGammaPdf(PbTestCase):
         emp1 = pb.EmpPdf(self.gamma1.samples(N))  # Emipirical pdf computes sample mean and variance for us
         emp2 = pb.EmpPdf(self.gamma2.samples(N))  # Emipirical pdf computes sample mean and variance for us
 
-        self.assertTrue(np.all(abs(emp1.mean() - self.gamma1.mean()) <= 0.4))
-        self.assertTrue(np.all(abs(emp2.mean() - self.gamma2.mean()) <= 0.3))
+        self.assertAlmostEqual(np.max(abs(emp1.mean() - self.gamma1.mean())), 0., delta=0.4)
+        self.assertAlmostEqual(np.max(abs(emp2.mean() - self.gamma2.mean())), 0., delta=0.35)
 
-        self.assertTrue(np.all(abs(emp1.variance() - self.gamma1.variance()) <= 2.2))
-        self.assertTrue(np.all(abs(emp2.variance() - self.gamma2.variance()) <= 1.3))
+        self.assertAlmostEqual(np.max(abs(emp1.variance() - self.gamma1.variance())), 0., delta=3.0)
+        self.assertAlmostEqual(np.max(abs(emp2.variance() - self.gamma2.variance())), 0., delta=1.4)
 
 
 class TestInverseGammaPdf(PbTestCase):
@@ -589,11 +586,11 @@ class TestInverseGammaPdf(PbTestCase):
         emp1 = pb.EmpPdf(self.gamma1.samples(N))  # Emipirical pdf computes sample mean and variance for us
         emp2 = pb.EmpPdf(self.gamma2.samples(N))  # Emipirical pdf computes sample mean and variance for us
 
-        self.assertTrue(np.all(abs(emp1.mean() - self.gamma1.mean()) <= 0.4))
-        self.assertTrue(np.all(abs(emp2.mean() - self.gamma2.mean()) <= 0.025))
+        self.assertAlmostEqual(np.max(abs(emp1.mean() - self.gamma1.mean())), 0., delta=0.4)
+        self.assertAlmostEqual(np.max(abs(emp2.mean() - self.gamma2.mean())), 0., delta=0.033)
 
-        self.assertTrue(np.all(abs(emp1.variance() - self.gamma1.variance()) <= 32.0))
-        self.assertTrue(np.all(abs(emp2.variance() - self.gamma2.variance()) <= 0.03))
+        self.assertAlmostEqual(np.max(abs(emp1.variance() - self.gamma1.variance())), 0., delta=34.0)
+        self.assertAlmostEqual(np.max(abs(emp2.variance() - self.gamma2.variance())), 0., delta=0.06)
 
 
 class TestEmpPdf(PbTestCase):
