@@ -62,7 +62,7 @@ class TestKalmanFilter(PbTestCase):
         setup['state_pdf'] = gauss
         self.assertRaises(ValueError, pb.KalmanFilter, **setup)
 
-    def test_bayes(self):
+    def test_bayes_evidence(self):
         k = pb.KalmanFilter(**self.setup_2)
         y = np.array([[4.1], [-0.2], [1.4], [-2.1]])
         u = np.array([[4.8], [-0.3], [1.1], [-1.8]])
@@ -72,10 +72,26 @@ class TestKalmanFilter(PbTestCase):
             [ 1.21108425,  0.0224309 ],
             [-1.87141692,  0.98517451]
         ])
+        exp_var = np.array([
+            [ 0.00999960, 40.3342872],
+            [ 0.00999029,  0.20999610],
+            [ 0.00963301,  0.20962422],
+            [ 0.00963191,  0.20930431]
+        ])
+        # in:  y_t -1,  y_t,  y_t + 1
+        exp_evidences_log = np.array([
+            [ -3.68958564, -3.68287128,  -3.68015356],
+            [ -3.16749303, -2.75744797,  -2.44453198],
+            [ -2.69696927, -8.75357053, -18.48011903],
+            [-10.17228316, -3.47352413,  -0.45566728]
+        ])
         for i in range(4):
             k.bayes(y[i], u[i])
-            mu = k.posterior().mu
-            self.assertApproxEqual(mu, exp_mu[i])
+            post = k.posterior()
+            self.assertApproxEqual(post.mean(), exp_mu[i])
+            self.assertApproxEqual(post.variance(), exp_var[i])
+            evidences = np.array([k.evidence_log(y[i] - 1.), k.evidence_log(y[i]), k.evidence_log(y[i] + 1.)])
+            self.assertApproxEqual(evidences, exp_evidences_log[i])
 
     def test_copy(self):
         """Test that copying KF works as expected"""
