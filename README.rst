@@ -156,4 +156,6 @@ If you want to test your already installed PyBayes instance, simply issue
 Stress-testing
 --------------
 
-Stress testing is not yet ported to the `setup.py`, see the `support/run_stresses.py` script.
+Stress-testing works similarly to unit testing since version 0.4, run it using ``./setup.py
+stress`` from the source directory. Already installed PyBayes can be stress-tested using
+``python -m pybayes.stresses``.

@@ -3,7 +3,7 @@
 # later version of the license, at your option.
 
 """
-A custom command for distutils to faciliate testing of PyBayes
+A custom command for distutils to facilitate testing of PyBayes
 """
 
 from distutils.cmd import Command
@@ -19,7 +19,6 @@ class test(Command):
 
     description = 'run unit test-suite of PyBayes within build directory'
     user_options = [
-        # Select installation scheme and set base director(y|ies)
         ('fatal', None,
          'make test failures fatal [default]'),
         ('non-fatal', None,
@@ -33,9 +32,7 @@ class test(Command):
         self.fatal = 1
 
     def finalize_options(self):
-        self.set_undefined_options('build',
-            ('build_lib', 'build_lib')
-        )
+        self.set_undefined_options('build', ('build_lib', 'build_lib'))
 
     def run(self):
         self.run_command('build')  # build if not alredy run

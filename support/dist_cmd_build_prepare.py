@@ -83,11 +83,15 @@ class build_prepare(Command):
         self.package_data[package] += [os.path.basename(pxd_file) for pxd_file in pxd_files]
 
         for f in py_files + pyx_files:
+            basename = os.path.basename(f)
             if os.path.abspath(f) == setup_script:
                 self.debug_print("excluding %s" % setup_script)
                 continue
-            if os.path.basename(f) == '__init__.py':
+            if basename == '__init__.py':
                 # otherwise import package (`import pybayes`) does not really work
+                continue
+            if basename == '__main__.py':
+                # otherwise `python -m pybayes.tests` does not really work
                 continue
 
             module = os.path.splitext(f)[0].replace("/", ".")

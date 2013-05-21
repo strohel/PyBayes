@@ -49,7 +49,7 @@ params = {
 
     # Python (Cython) packages to build:
     'packages':['pybayes', 'pybayes.stresses', 'pybayes.tests', 'pybayes.wrappers'],
-    'package_data':{'pybayes.tests':['stress_kalman_data.mat']},
+    'package_data':{'pybayes.stresses':['data/stress_kalman_data.mat']},
 
     # THE trick - custom distribution that handles Python/Cython build
     'distclass':PyBayesDistribution

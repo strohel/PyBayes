@@ -14,6 +14,7 @@ import os
 
 from dist_cmd_build import build
 from dist_cmd_build_prepare import build_prepare
+from dist_cmd_stress import stress
 from dist_cmd_test import test
 
 
@@ -29,6 +30,7 @@ class PyBayesDistribution(Distribution):
 
         # it is better to define command classes here, so it available in --help text
         self.cmdclass['test'] = test
+        self.cmdclass['stress'] = stress
         self.cmdclass['build_prepare'] = build_prepare
 
         self.global_options += [

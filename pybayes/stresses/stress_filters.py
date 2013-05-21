@@ -4,23 +4,18 @@
 
 """Stresses for kalman filters"""
 
-import os.path
-import time
-
 import numpy as np
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
 
+from os.path import dirname, join
+import unittest as ut
+
 import pybayes as pb
+from support import timed
 
-
-def stress_kalman(options, timer):
-    input_file = options.datadir + "/stress_kalman_data.mat"
-    output_file = "stress_kalman_res.mat"
-
-    run_kalman_on_mat_data(input_file, output_file, timer)
 
 def run_kalman_on_mat_data(input_file, output_file, timer):
     # this should be here so that only this stress fails when scipy is not installed
@@ -65,6 +60,7 @@ def run_kalman_on_mat_data(input_file, output_file, timer):
         plt.show()
 
     savemat(output_file, {"Mu_py":mean.T, "exec_time_pybayes":timer.spent[0]}, oned_as='row')
+
 
 class PfOptionsA(object):
     """Class that represents options for a particle filter"""
@@ -117,28 +113,8 @@ class PfOptionsA(object):
         self.x_t = x_t
         self.y_t = y_t
 
-pf_nr_steps = 100  # number of steps for particle filter
-pf_opts_a = PfOptionsA(pf_nr_steps)
 
-def stress_pf_a_1(options, timer):
-    run_pf(options, timer, pf_opts_a, 10, pb.ParticleFilter)
-
-def stress_pf_a_1_marg(options, timer):
-    run_pf(options, timer, pf_opts_a, 10, pb.MarginalizedParticleFilter)
-
-def stress_pf_a_2(options, timer):
-    run_pf(options, timer, pf_opts_a, 30, pb.ParticleFilter)
-
-def stress_pf_a_2_marg(options, timer):
-    run_pf(options, timer, pf_opts_a, 30, pb.MarginalizedParticleFilter)
-
-def stress_pf_a_3(options, timer):
-    run_pf(options, timer, pf_opts_a, 90, pb.ParticleFilter)
-
-def stress_pf_a_3_marg(options, timer):
-    run_pf(options, timer, pf_opts_a, 90, pb.MarginalizedParticleFilter)
-
-def run_pf(options, timer, pf_opts, nr_particles, pf_class):
+def run_pf(timer, pf_opts, nr_particles, pf_class):
     nr_steps = pf_opts.nr_steps # number of time steps
 
     # prepare initial particle density:
@@ -174,3 +150,38 @@ def run_pf(options, timer, pf_opts, nr_particles, pf_class):
         plt.plot(x, x_t[:,1], '--')
         plt.legend()
         plt.show()
+
+
+class StressFilters(ut.TestCase):
+    pf_nr_steps = 100  # number of steps for particle filter
+    pf_opts_a = PfOptionsA(pf_nr_steps)
+
+    @timed
+    def test_kalman(self, timer):
+        input_file = join(dirname(__file__), "data", "stress_kalman_data.mat")
+        output_file = "stress_kalman_res.mat"
+        run_kalman_on_mat_data(input_file, output_file, timer)
+
+    @timed
+    def test_pf_a_1(self, timer):
+        run_pf(timer, self.pf_opts_a, 10, pb.ParticleFilter)
+
+    @timed
+    def test_pf_a_1_marg(self, timer):
+        run_pf(timer, self.pf_opts_a, 10, pb.MarginalizedParticleFilter)
+
+    @timed
+    def test_pf_a_2(self, timer):
+        run_pf(timer, self.pf_opts_a, 30, pb.ParticleFilter)
+
+    @timed
+    def test_pf_a_2_marg(self, timer):
+        run_pf(timer, self.pf_opts_a, 30, pb.MarginalizedParticleFilter)
+
+    @timed
+    def test_pf_a_3(self, timer):
+        run_pf(timer, self.pf_opts_a, 90, pb.ParticleFilter)
+
+    @timed
+    def test_pf_a_3_marg(self, timer):
+        run_pf(timer, self.pf_opts_a, 90, pb.MarginalizedParticleFilter)
