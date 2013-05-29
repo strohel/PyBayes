@@ -74,8 +74,7 @@ Before Tagging
 #. Set version to **X.Y** in `support/python-pybayes.spec`
 #. Ensure `ChangeLog.rst` mentions all important changes
 #. (Optional) update **short description** in `setup.py` **AND** `support/python-pybayes.spec`
-#. (Optional) update **long description** in `setup.py` **AND** `README.rst` **AND**
-   `support/python-pybayes.spec`
+#. (Optional) update **long description** `README.rst` **AND** `support/python-pybayes.spec`
 
 Tagging
 -------
