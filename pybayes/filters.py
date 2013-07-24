@@ -131,9 +131,9 @@ class KalmanFilter(Filter):
         for name in matrices:
             matrix = matrices[name]
             if name == 'B' and matrix is None:  # we allow B to be unspecified
-                matrices['B'] = matrix = B = np.matrix(A.shape[0], 0)
+                continue
             if name == 'D' and matrix is None:  # we allow D to be unspecified
-                matrices['D'] = matrix = D = np.matrix(C.shape[0], 0)
+                continue
 
             if matrix.ndim != 2:
                 raise ValueError("{0} must have 2 dimensions (forming a matrix) {1} given".format(
@@ -141,7 +141,7 @@ class KalmanFilter(Filter):
 
         # remember vector shapes
         self.n = state_pdf.shape()  # dimension of state vector
-        self.k = B.shape[1]  # dimension of control vector
+        self.k = 0 if B is None else B.shape[1]  # dimension of control vector
         self.j = C.shape[0]  # dimension of observation vector
 
         # dict of required matrice shapes (sizes)
@@ -156,7 +156,10 @@ class KalmanFilter(Filter):
         # check input matrix sizes
         for name in matrices:
             matrix = matrices[name]
-            if matrix.shape != shapes[name]:
+            element_count = shapes[name][0] * shapes[name][1]
+            if element_count == 0:
+                assert(matrix is None)
+            elif matrix.shape != shapes[name]:
                 raise ValueError("Given shapes of state_pdf, B and C, matrix " + name +
                                  " must have shape " + str(shapes[name]) + ", " +
                                  str(matrix.shape) + " given")
@@ -187,9 +190,9 @@ class KalmanFilter(Filter):
         ret = type(self).__new__(type(self))
         # numeric arrays:
         ret.A = self.A.copy()
-        ret.B = self.B.copy()
+        ret.B = None if self.B is None else self.B.copy()
         ret.C = self.C.copy()
-        ret.D = self.D.copy()
+        ret.D = None if self.B is None else self.D.copy()
         ret.Q = self.Q.copy()
         ret.R = self.R.copy()
         ret.n = self.n  # no need to copy integers
