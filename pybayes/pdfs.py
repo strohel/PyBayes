@@ -1391,7 +1391,10 @@ class ProdCPdf(CPdf):
                 raise ValueError("Expected that pdf {0} will have shape (={1}) + ".
                     format(factor, shape) + "cond_shape (={0}) == {1}".
                     format(cond_shape, exp_shape))
-            self.in_indeces.append(np.index_range(start_ind + shape, start_ind + shape + cond_shape))
+            if cond_shape > 0:
+                self.in_indeces.append(np.index_range(start_ind + shape, start_ind + shape + cond_shape))
+            else:
+                self.in_indeces.append(None)
             self.out_indeces.append(np.index_range(start_ind, start_ind + shape))
             start_ind += shape
         if start_ind != cum_shape:
@@ -1451,7 +1454,10 @@ class ProdCPdf(CPdf):
         cummulate_rv = RV(rv, cond_rv)
         for i in range(self.factors.shape[0]):
             factor = self.factors[i]
-            self.in_indeces.append(factor.cond_rv.indexed_in(cummulate_rv))
+            if factor.cond_rv.dimension > 0:
+                self.in_indeces.append(factor.cond_rv.indexed_in(cummulate_rv))
+            else:
+                self.in_indeces.append(None)
             self.out_indeces.append(factor.rv.indexed_in(cummulate_rv))
         return(rv.dimension, cond_rv.dimension) # in fact no-op, but we already check RV dimensions
 
@@ -1474,7 +1480,10 @@ class ProdCPdf(CPdf):
         for i in range(self.factors.shape[0]):
             factor = self.factors[i]  # work-around Cython bug
             # ret += factor.eval_log(data[self.out_indeces[i]], data[self.in_indeces[i]]):
-            ret += factor.eval_log(np.take_vv(data, self.out_indeces[i]), np.take_vv(data, self.in_indeces[i]))
+            cond = None
+            if self.in_indeces[i] is not None:
+                cond = np.take_vv(data, self.in_indeces[i])
+            ret += factor.eval_log(np.take_vv(data, self.out_indeces[i]), cond)
         return ret
 
     def sample(self, cond = None):
@@ -1489,6 +1498,9 @@ class ProdCPdf(CPdf):
         for i in range(self.factors.shape[0] -1, -1, -1):
             factor = self.factors[i]  # work-around Cython bug
             # data[self.out_indeces[i]] = factor.sample(data[self.in_indeces[i]]):
-            np.put_vv(data, self.out_indeces[i], factor.sample(np.take_vv(data, self.in_indeces[i])))
+            cond = None
+            if self.in_indeces[i] is not None:
+                cond = np.take_vv(data, self.in_indeces[i])
+            np.put_vv(data, self.out_indeces[i], factor.sample(cond))
 
         return data[:self.rv.dimension]  # return right portion of data
