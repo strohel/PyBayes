@@ -11,9 +11,9 @@ env:
   - USE_CYTHON=no
 
 install:
-  - if test ${USE_CYTHON} = yes; then pip install cython ceygen --use-mirrors; fi
+  - if test ${USE_CYTHON} = yes; then pip install cython --use-mirrors; pip install ceygen --use-mirrors; fi
   # Python 3 environment on travis doesn't see python3-numpy package, install manually
   - if test ${TRAVIS_PYTHON_VERSION%%.*} = 3; then pip install numpy --use-mirrors; fi
 
 script:
-  - python setup.py -v --use=cython=${USE_CYTHON} test stress
+  - python setup.py -v --use-cython=${USE_CYTHON} test stress
