@@ -83,7 +83,7 @@ In order to build optimised PyBayes, you'll additionally need:
   Windows [#install_cython]_)
 * NumPy_ numerical library for Python, version 1.5 or greater (NumPy is needed
   also in Python build, but older version suffice in that case)
-* Ceygen_ Python package installed to a standard location
+* Ceygen_ Python package 0.3 or greater installed to a standard location
 * On some Debian-based Linux distributions (Ubuntu) you'll need python-dev
   package that contains ``Python.h`` file that is needed by PyBayes
 
