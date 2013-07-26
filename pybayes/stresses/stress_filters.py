@@ -18,7 +18,7 @@ from os.path import dirname, join
 import unittest as ut
 
 import pybayes as pb
-from support import timed, skipUnless
+from support import timed
 
 
 def run_kalman_on_mat_data(input_file, output_file, timer):
@@ -158,7 +158,7 @@ class StressFilters(ut.TestCase):
     pf_nr_steps = 100  # number of steps for particle filter
     pf_opts_a = PfOptionsA(pf_nr_steps)
 
-    @skipUnless(scipy, "Kalman stress needs SciPy installed")
+    @ut.skipUnless(scipy, "Kalman stress needs SciPy installed")
     @timed
     def test_kalman(self, timer):
         input_file = join(dirname(__file__), "data", "stress_kalman_data.mat")
