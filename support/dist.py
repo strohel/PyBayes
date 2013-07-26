@@ -6,6 +6,12 @@
 An extension to distutils' Distribution to handle Python/Cython build of PyBayes
 """
 
+try:
+    # 3.x
+    from distutils.command.build_py import build_py_2to3 as build_py
+except ImportError:
+    # 2.x
+    from distutils.command.build_py import build_py
 from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError
 import distutils.log as log
@@ -28,10 +34,11 @@ class PyBayesDistribution(Distribution):
         if not self.ext_modules:
             self.ext_modules = []
 
-        # it is better to define command classes here, so it available in --help text
+        # it is better to define command classes here, so they are available in --help text
         self.cmdclass['test'] = test
         self.cmdclass['stress'] = stress
         self.cmdclass['build_prepare'] = build_prepare
+        self.cmdclass['build_py'] = build_py
 
         self.global_options += [
             ('use-cython=', None, "use Cython to make faster binary python modules (choices: "

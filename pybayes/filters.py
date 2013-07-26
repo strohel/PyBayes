@@ -15,9 +15,9 @@ from math import exp
 
 from numpy import empty
 
-import wrappers._linalg as linalg
-import wrappers._numpy as np
-from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
+from .wrappers import _linalg as linalg
+from .wrappers import _numpy as np
+from .pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
 class Filter(object):
