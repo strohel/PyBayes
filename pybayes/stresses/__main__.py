@@ -6,7 +6,7 @@
 
 import unittest as ut
 
-from . import *
+from pybayes.stresses import *
 
 
 if __name__ == '__main__':

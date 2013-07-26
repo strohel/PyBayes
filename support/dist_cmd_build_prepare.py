@@ -6,7 +6,6 @@
 An additional subcommand to distutils' build to handle Python/Cython build of PyBayes
 """
 
-import commands
 from distutils.cmd import Command
 from distutils.errors import DistutilsSetupError
 import distutils.log as log

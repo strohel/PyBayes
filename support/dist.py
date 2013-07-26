@@ -12,10 +12,10 @@ import distutils.log as log
 from distutils.util import strtobool
 import os
 
-from dist_cmd_build import build
-from dist_cmd_build_prepare import build_prepare
-from dist_cmd_stress import stress
-from dist_cmd_test import test
+from .dist_cmd_build import build
+from .dist_cmd_build_prepare import build_prepare
+from .dist_cmd_stress import stress
+from .dist_cmd_test import test
 
 
 class PyBayesDistribution(Distribution):

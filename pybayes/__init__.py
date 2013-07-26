@@ -13,7 +13,7 @@ underlying software analysis and background information for PyBayes.
 .. _my bachelor thesis: thesis.pdf
 """
 
-from pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
-from pdfs import GammaPdf, InverseGammaPdf, AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
-from pdfs import MLinGaussCPdf, LinGaussCPdf, GaussCPdf, GammaCPdf, InverseGammaCPdf, ProdCPdf
-from filters import Filter, KalmanFilter, ParticleFilter, MarginalizedParticleFilter
+from .pdfs import RVComp, RV, CPdf, Pdf, UniPdf, AbstractGaussPdf, GaussPdf, LogNormPdf
+from .pdfs import GammaPdf, InverseGammaPdf, AbstractEmpPdf, EmpPdf, MarginalizedEmpPdf, ProdPdf
+from .pdfs import MLinGaussCPdf, LinGaussCPdf, GaussCPdf, GammaCPdf, InverseGammaCPdf, ProdCPdf
+from .filters import Filter, KalmanFilter, ParticleFilter, MarginalizedParticleFilter

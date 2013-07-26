@@ -1019,7 +1019,7 @@ class TestGaussCPdf(PbTestCase):
             self.assertEqual(condlognorm.eval_log(x, cond), lognorm.eval_log(x))
         for i in range(30):
             # only test that samples are positive
-            self.assertTrue(np.all(condlognorm.sample(cond) >= 0))
+            self.assertTrue(np.all(np.asarray(condlognorm.sample(cond)) >= 0))
 
     def test_mean(self):
         self.assertApproxEqual(self.cgauss.mean(self.cond), self.gauss.mean())
