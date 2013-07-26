@@ -9,20 +9,22 @@ try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
+try:
+    import scipy.io
+except ImportError:
+    scipy = None
 
 from os.path import dirname, join
 import unittest as ut
 
 import pybayes as pb
-from support import timed
+from support import timed, skipUnless
 
 
 def run_kalman_on_mat_data(input_file, output_file, timer):
     # this should be here so that only this stress fails when scipy is not installed
-    try:
-        from scipy.io import loadmat, savemat
-    except ImportError, e:
-        raise StopIteration("Kalman filter stress needs scipy installed: " + str(e))
+    loadmat = scipy.io.loadmat
+    savemat = scipy.io.savemat
 
     d = loadmat(input_file, struct_as_record=True, mat_dtype=True)
 
@@ -156,6 +158,7 @@ class StressFilters(ut.TestCase):
     pf_nr_steps = 100  # number of steps for particle filter
     pf_opts_a = PfOptionsA(pf_nr_steps)
 
+    @skipUnless(scipy, "Kalman stress needs SciPy installed")
     @timed
     def test_kalman(self, timer):
         input_file = join(dirname(__file__), "data", "stress_kalman_data.mat")
