@@ -38,7 +38,7 @@ class stress(Command):
                                 + "{0}, but it was from {1} instead".format(tests_path,
                                 dirname(pybayes.tests.__file__)))
             suite = unittest.TestLoader().loadTestsFromModule(pybayes.stresses)
-            result = unittest.TextTestRunner().run(suite)
+            result = unittest.TextTestRunner(verbosity=self.verbose).run(suite)
             if not result.wasSuccessful():
                 raise Exception("There were test failures")
         except Exception as e:
