@@ -147,8 +147,7 @@ your PyBayes build works as expected.
 Since version 0.4, testing is integrated into the `setup.py` script and can be run without
 installing PyBayes. In order to run PyBayes test-suite, simply issue ``./setup.py test`` from within
 the source directory. To run tests during installation procedure, simply install like this:
-``./setup.py build test install``. Failing tests cause installation to fail, but this can be
-overriden using `--non-fatal` option of the `test` command.
+``./setup.py build test install``. With this command, failing tests prevent installation.
 
 If you want to test your already installed PyBayes instance, simply issue
 ``python -m pybayes.tests`` anytime, anywhere. :-)

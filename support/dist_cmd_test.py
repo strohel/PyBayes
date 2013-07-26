@@ -18,18 +18,10 @@ class test(Command):
     """Test PyBayes in the build directory"""
 
     description = 'run unit test-suite of PyBayes within build directory'
-    user_options = [
-        ('fatal', None,
-         'make test failures fatal [default]'),
-        ('non-fatal', None,
-         'make test failures fatal (opposite of `--fatal`)')
-    ]
-    boolean_options = ['fatal']
-    negative_opt = {'non-fatal':'fatal'}
+    user_options = []
 
     def initialize_options(self):
         self.build_lib = None
-        self.fatal = 1
 
     def finalize_options(self):
         self.set_undefined_options('build', ('build_lib', 'build_lib'))
@@ -50,9 +42,6 @@ class test(Command):
             if not result.wasSuccessful():
                 raise Exception("There were test failures")
         except Exception as e:
-            if self.fatal:
-                raise DistutilsExecError(e)
-            else:
-                log.warn("ignoring exception: {0}".format(e))
+            raise DistutilsExecError(e)
         finally:
             sys.path = orig_path
