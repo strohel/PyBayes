@@ -6,15 +6,22 @@
 An extension to distutils' Distribution to handle Python/Cython build of PyBayes
 """
 
+try:
+    # 3.x
+    from distutils.command.build_py import build_py_2to3 as build_py
+except ImportError:
+    # 2.x
+    from distutils.command.build_py import build_py
 from distutils.dist import Distribution
 from distutils.errors import DistutilsOptionError
 import distutils.log as log
 from distutils.util import strtobool
 import os
 
-from dist_cmd_build import build
-from dist_cmd_build_prepare import build_prepare
-from dist_cmd_test import test
+from .dist_cmd_build import build
+from .dist_cmd_build_prepare import build_prepare
+from .dist_cmd_stress import stress
+from .dist_cmd_test import test
 
 
 class PyBayesDistribution(Distribution):
@@ -24,30 +31,20 @@ class PyBayesDistribution(Distribution):
         Distribution.__init__(self, attrs)
         self.use_cython = None
         self.profile = False
-        self.blas_lib = None
-        self.lapack_lib = None
-        self.library_dirs = None
         if not self.ext_modules:
             self.ext_modules = []
 
-        # it is better to define command classes here, so it available in --help text
+        # it is better to define command classes here, so they are available in --help text
         self.cmdclass['test'] = test
+        self.cmdclass['stress'] = stress
         self.cmdclass['build_prepare'] = build_prepare
+        self.cmdclass['build_py'] = build_py
 
         self.global_options += [
             ('use-cython=', None, "use Cython to make faster binary python modules (choices: "
              + "yes/no; default: autodetect)"),
             ('profile=', None, 'embed profiling information into Cython build (choices: '
              + 'yes/no; default: no)'),
-
-            # cython-build specific options
-            ('blas-lib=', None,
-             'library name that provides cblas_sswap function, without lib prefix [default: pkg-config --libs cblas  or "cblas"]'),
-            ('lapack-lib=', None,
-             'library name that provides clapack_sgetri function, without lib prefix [default: pkg-config --libs lapack  or "lapack"]'),
-            ('library-dirs=', 'L',
-             'list of additional directories where libraries are seached for, separated by '
-             + '{0} character [default: try pkg-config  or none]'.format(os.pathsep)),
         ]
 
     def has_ext_modules(self):

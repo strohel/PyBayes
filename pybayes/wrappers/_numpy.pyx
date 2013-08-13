@@ -8,98 +8,63 @@
 # this file is special - it is used only in cython build, this can contain code
 # not callable from python etc.
 
-from numpy cimport *
+cimport ceygen.dtype as d
 # cython workaround: cannot import *
-from numpy import any, arange, array, asarray, concatenate, cumsum, diag, empty, exp, eye, ones
-from numpy import prod, sum, zeros
-
-cimport tokyo as t
+from numpy import any, array, asarray, concatenate, cumsum, diag, exp, eye, ones, prod
 
 
-import_array()  # needed to call any PyArray functions
+cdef double[:] vector(int size):
+    return d.vector(size, <double *> 0)
 
-cdef ndarray dot(ndarray a, ndarray b):
-    cdef t.CBLAS_TRANSPOSE trans_a, trans_b  # stored directly, or transposed?
-    cdef ndarray ret
-    cdef npy_intp shape[2]
-    cdef int lda, ldb
+cdef int[:] index_vector(int size):
+    return d.vector(size, <int *> 0)
 
-    if a is None:
-        raise TypeError("a must be numpy.ndarray")
-    if b is None:
-        raise TypeError("b must be numpy.ndarray")
-    if a.descr.type_num != NPY_DOUBLE:
-        raise ValueError("a is not of type double")
-    if b.descr.type_num != NPY_DOUBLE:
-        raise ValueError("b is not of type double")
+cdef int[:] index_range(int start, int stop):
+    cdef int[:] v = d.vector(stop - start, <int *> 0)
+    for i in range(stop - start):
+        v[i] = start + i
+    return v
 
-    if a.ndim != 2:
-        raise ValueError("I can only handle matrix*vector and matrix*matrix!")
+cdef double[:, :] matrix(int rows, int cols):
+    return d.matrix(rows, cols, <double *> 0)
 
-    if a.shape[1] != b.shape[0]:
-        raise ValueError("a columns != b rows")
+cdef double[:] zeros(int size):
+    ret = vector(size)
+    ret[:] = 0
+    return ret
 
-    if PyArray_ISCARRAY_RO(a):
-        trans_a = t.CblasNoTrans
-        ldb = a.shape[0]  # abused for number of A rows
-        lda = a.shape[1]
-    elif PyArray_ISFARRAY_RO(a):
-        trans_a = t.CblasTrans
-        ldb = a.shape[1]  # abused for number of A.T rows
-        lda = a.shape[0]
+cdef bint reindex_vv(reindexable[:] data, int[:] indices) except False:
+    assert data.shape[0] == indices.shape[0]
+    cdef int newi
+    datacopy = data.copy()
+    for i in range(data.shape[0]):
+        newi = indices[i]
+        assert newi >= 0 and newi < data.shape[0]
+        data[i] = datacopy[newi]
+    return True
+
+
+cdef bint reindex_mv(reindexable[:, :] data, int[:] indices) except False:
+    assert data.shape[0] == indices.shape[0]
+    cdef int newi
+    datacopy = data.copy()
+    for i in range(data.shape[0]):
+        newi = indices[i]
+        assert newi >= 0 and newi < data.shape[0]
+        data[i, :] = datacopy[newi, :]
+    return True
+
+cdef double[:] take_vv(double[:] data, int[:] indices, double[:] out = None):
+    if out is None:
+        out = d.vector(indices.shape[0], <double *> 0)
     else:
-        raise ValueError("a must be C contiguos or F contiguos (ro)")
+        assert out.shape[0] >= indices.shape[0]
+    for i in range(indices.shape[0]):
+        out[i] = data[indices[i]]
+    return out
 
-    if b.ndim == 1:  # matrix * vector
-        if not PyArray_ISCARRAY_RO(b):
-            raise ValueError("b must be C Contiguos (ro) array")
-
-        shape[0] = a.shape[0];  # prepare shape to pass to dgemv_
-        ret = PyArray_EMPTY(1, shape, NPY_DOUBLE, 0)  # create empty array for result of right dimension
-
-        if a.shape[0] > 0 and a.shape[1] > 0:  # otherwise BLAS may fail
-            t.dgemv_(t.CblasRowMajor, trans_a, ldb, lda, 1.0, <double*> a.data,
-                     lda, <double*> b.data, 1, 0.0, <double*> ret.data, 1)
-        return ret
-
-    if b.ndim == 2:  # matrix * matrix
-        if PyArray_ISCARRAY_RO(b):
-            trans_b = t.CblasNoTrans
-            ldb = b.shape[1]
-        elif PyArray_ISFARRAY_RO(b):
-            trans_b = t.CblasTrans
-            ldb = b.shape[0]
-        else:
-            raise ValueError("b must be C contiguos or F contiguos (ro)")
-
-        shape[0] = a.shape[0]  # prepare shape to pass to dgemm_
-        shape[1] = b.shape[1]
-        ret = PyArray_EMPTY(2, shape, NPY_DOUBLE, 0)  # allocate retsult matrix
-
-        t.dgemm_(t.CblasRowMajor, trans_a, trans_b, a.shape[0], b.shape[1], a.shape[1],
-                 1.0, <double*> a.data, lda, <double*> b.data, ldb,
-                 0.0, <double*> ret.data, b.shape[1])
-        return ret
-
-# this is defined separately because of different return type
-cdef double dotvv(ndarray a, ndarray b) except? -1:
-    if a is None:
-        raise TypeError("a must be numpy.ndarray")
-    if b is None:
-        raise TypeError("b must be numpy.ndarray")
-    if a.descr.type_num != NPY_DOUBLE:
-        raise ValueError("a is not of type double")
-    if b.descr.type_num != NPY_DOUBLE:
-        raise ValueError("b is not of type double")
-    if a.ndim != 1:
-        raise ValueError("a is not a vector")
-    if b.ndim != 1:
-        raise ValueError("b is not a vector")
-    if a.shape[0] != b.shape[0]:
-        raise ValueError("a columns != b columns")
-    if not PyArray_ISCARRAY_RO(a):
-        raise ValueError("a is not C contiguos (ro)")
-    if not PyArray_ISCARRAY_RO(b):
-        raise ValueError("b is not C contiguos (ro)")
-
-    return t.ddot_(a.shape[0], <double*> a.data, 1, <double*> b.data, 1)
+cdef bint put_vv(double[:] out, int[:] indices, double[:] data) except False:
+    assert data.shape[0] >= indices.shape[0]
+    for i in range(indices.shape[0]):
+        out[indices[i]] = data[i]
+    return True

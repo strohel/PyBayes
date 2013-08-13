@@ -6,7 +6,6 @@
 An additional subcommand to distutils' build to handle Python/Cython build of PyBayes
 """
 
-import commands
 from distutils.cmd import Command
 from distutils.errors import DistutilsSetupError
 import distutils.log as log
@@ -24,8 +23,6 @@ class build_prepare(Command):
     def initialize_options(self):
         self.ext_options = {}  # options common to all extensions
         self.ext_options['include_dirs'] = [self.distribution.numpy_include_dir]
-        self.ext_options['library_dirs'] = []
-        self.ext_options['libraries'] = []
         self.ext_options['extra_compile_args'] = ['-O2']
         #self.ext_options['extra_link_args'] = ['-Wl,-O1']
         self.ext_options['pyrex_c_in_temp'] = True  # do not pollute source directory with .c files
@@ -35,24 +32,11 @@ class build_prepare(Command):
             "binding": False,  # default was changed to True in Cython commit 621dbe6403 and it
                                # breaks the build. I don't know what it means, it's undocumented.
         }
-        self.ext_options['pyrex_include_dirs'] = ['tokyo']  # find tokyo.pxd from bundled tokyo
         self.deps = []  # .pxd dependencies for injected packages
 
     def finalize_options(self):
         # these options are passed through global distribution
         dist = self.distribution
-
-        if dist.blas_lib:
-            self.ext_options['libraries'].append(dist.blas_lib)
-        else:
-            self.try_pkgconfig('cblas')
-        if dist.lapack_lib:
-            self.ext_options['libraries'].append(dist.lapack_lib)
-        else:
-            self.try_pkgconfig('lapack')
-
-        if dist.library_dirs:
-            self.ext_options['library_dirs'].extend(dist.library_dirs.split(os.pathsep))
 
         # these are just aliases to distribution variables
         self.packages = self.distribution.packages
@@ -68,43 +52,16 @@ class build_prepare(Command):
         if not self.packages:
             raise DistutilsSetupError("PyBayes-tweaked distutils doesn't support nempty `packages`")
 
-    def try_pkgconfig(self, library):
-        # pkg-config handling inspired by http://code.activestate.com/recipes/502261/
-        flag_map = {'-I': 'include_dirs', '-L': 'library_dirs', '-l': 'libraries'}
-        extra_ext_options = {'include_dirs':[], 'library_dirs':[], 'libraries':[]}
-
-        for token in commands.getoutput("pkg-config --libs --cflags {0}".format(library)).split():
-            extra_ext_options[flag_map.get(token[:2])].append(token[2:])
-        if extra_ext_options['libraries']:
-            for key in extra_ext_options:
-                self.ext_options[key].extend(extra_ext_options[key])
-        else:
-            self.ext_options['libraries'].extend(library)
-
     def run(self):
         build_py = self.distribution.get_command_obj('build_py')
         self.get_package_dir = build_py.get_package_dir  # borrow a method from build_py
         self.check_package = build_py.check_package  # ditto
-
-        # presume modules depend on tokyo
-        self.deps.append('tokyo/tokyo.pxd')
 
         for package in self.packages:
             package_dir = self.get_package_dir(package)
             self.inject_package_modules(package, package_dir)
 
         self.update_dependencies()
-
-        # build and install bundled tokyo
-        tokyo_options = self.ext_options.copy()
-        # some distros (Debian, Ubuntu) have clapack.h or cblas.h in atlas subdir
-        tokyo_options['include_dirs'].append('/usr/include/atlas')
-        self.distribution.ext_modules.append(self.distribution.Extension(
-            'tokyo',  # module name
-            ['tokyo/tokyo.pyx', 'tokyo/tokyo.pxd'],  # source file and deps
-            **self.ext_options
-        ))
-        self.package_data['tokyo'] = '*.pxd'
 
     def inject_package_modules (self, package, package_dir):
         """This is our purpose and a hack - we create Cython extensions here"""
@@ -125,11 +82,15 @@ class build_prepare(Command):
         self.package_data[package] += [os.path.basename(pxd_file) for pxd_file in pxd_files]
 
         for f in py_files + pyx_files:
+            basename = os.path.basename(f)
             if os.path.abspath(f) == setup_script:
                 self.debug_print("excluding %s" % setup_script)
                 continue
-            if os.path.basename(f) == '__init__.py':
+            if basename == '__init__.py':
                 # otherwise import package (`import pybayes`) does not really work
+                continue
+            if basename == '__main__.py':
+                # otherwise `python -m pybayes.tests` does not really work
                 continue
 
             module = os.path.splitext(f)[0].replace("/", ".")

@@ -4,6 +4,5 @@
 
 """Definitions for wrapper around numpy.linalg - cython version"""
 
-from numpy cimport ndarray
-
-cdef ndarray inv(ndarray A)
+from ceygen.lu cimport *
+from ceygen.llt cimport *

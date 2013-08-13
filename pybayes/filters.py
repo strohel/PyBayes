@@ -13,9 +13,11 @@ pybayes import KalmanFilter``.
 from copy import deepcopy
 from math import exp
 
-import wrappers._linalg as linalg
-import wrappers._numpy as np
-from pybayes.pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
+from numpy import empty
+
+from .wrappers import _linalg as linalg
+from .wrappers import _numpy as np
+from .pdfs import CPdf, Pdf, GaussPdf, EmpPdf, MarginalizedEmpPdf
 
 
 class Filter(object):
@@ -129,19 +131,17 @@ class KalmanFilter(Filter):
         for name in matrices:
             matrix = matrices[name]
             if name == 'B' and matrix is None:  # we allow B to be unspecified
-                matrices['B'] = matrix = B = np.empty((A.shape[0], 0))
+                continue
             if name == 'D' and matrix is None:  # we allow D to be unspecified
-                matrices['D'] = matrix = D = np.empty((C.shape[0], 0))
+                continue
 
-            if not isinstance(matrix, np.ndarray):
-                raise TypeError("{0} must be numpy.ndarray, {1} given".format(name, type(matrix)))
             if matrix.ndim != 2:
                 raise ValueError("{0} must have 2 dimensions (forming a matrix) {1} given".format(
                                  name, matrix.ndim))
 
         # remember vector shapes
         self.n = state_pdf.shape()  # dimension of state vector
-        self.k = B.shape[1]  # dimension of control vector
+        self.k = 0 if B is None else B.shape[1]  # dimension of control vector
         self.j = C.shape[0]  # dimension of observation vector
 
         # dict of required matrice shapes (sizes)
@@ -156,7 +156,10 @@ class KalmanFilter(Filter):
         # check input matrix sizes
         for name in matrices:
             matrix = matrices[name]
-            if matrix.shape != shapes[name]:
+            element_count = shapes[name][0] * shapes[name][1]
+            if element_count == 0:
+                assert(matrix is None)
+            elif matrix.shape != shapes[name]:
                 raise ValueError("Given shapes of state_pdf, B and C, matrix " + name +
                                  " must have shape " + str(shapes[name]) + ", " +
                                  str(matrix.shape) + " given")
@@ -185,12 +188,13 @@ class KalmanFilter(Filter):
     def __deepcopy__(self, memo):
         # type(self) is used because this method may be called for a derived class
         ret = type(self).__new__(type(self))
-        ret.A = deepcopy(self.A, memo)  # numpy arrays:
-        ret.B = deepcopy(self.B, memo)
-        ret.C = deepcopy(self.C, memo)
-        ret.D = deepcopy(self.D, memo)
-        ret.Q = deepcopy(self.Q, memo)
-        ret.R = deepcopy(self.R, memo)
+        # numeric arrays:
+        ret.A = self.A.copy()
+        ret.B = None if self.B is None else self.B.copy()
+        ret.C = self.C.copy()
+        ret.D = None if self.B is None else self.D.copy()
+        ret.Q = self.Q.copy()
+        ret.R = self.R.copy()
         ret.n = self.n  # no need to copy integers
         ret.k = self.k
         ret.j = self.j
@@ -198,7 +202,7 @@ class KalmanFilter(Filter):
         ret.S = deepcopy(self.S, memo)
         return ret
 
-    def bayes(self, yt, cond = np.empty(0)):
+    def bayes(self, yt, cond = None):
         r"""Perform exact bayes rule.
 
         :param yt: observation at time t
@@ -208,29 +212,39 @@ class KalmanFilter(Filter):
         :type cond: 1D :class:`numpy.ndarray`
         :return: always returns True (see :meth:`~Filter.posterior` to get posterior density)
         """
-        if not isinstance(yt, np.ndarray):
-            raise TypeError("yt must be and instance of numpy.ndarray ({0} given)".format(type(yt)))
         if yt.ndim != 1 or yt.shape[0] != self.j:
             raise ValueError("yt must have shape {0}. ({1} given)".format((self.j,), (yt.shape[0],)))
-        if not isinstance(cond, np.ndarray):
-            raise TypeError("cond must be and instance of numpy.ndarray ({0} given)".format(type(cond)))
-        if cond.ndim != 1 or cond.shape[0] != self.k:
-            raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
+        if self.k > 0:
+            if cond is None or cond.shape[0] != self.k:
+                raise ValueError("cond must have shape {0}. ({1} given)".format((self.k,), (cond.shape[0],)))
+        else:
+            if cond is not None:
+                raise ValueError("cond must be None as k == 0")
 
         # predict
-        self.P.mu = np.dot(self.A, self.P.mu) + np.dot(self.B, cond)  # prior state mean estimate
-        self.P.R  = np.dot(np.dot(self.A, self.P.R), self.A.T) + self.Q  # prior state covariance estimate
+        self.P.mu = np.dot_mv(self.A, self.P.mu)  # prior state mean estimate
+        if cond is not None:
+            np.add_vv(self.P.mu, np.dot_mv(self.B, cond), self.P.mu)  # self.P.mu += self.B * cond
+        # prior state covariance estimate:
+        self.P.R = np.dot_mm(np.dot_mm(self.A, self.P.R), self.A.T)  # self.P.R = self.A * self.P.R * self.A'
+        np.add_mm(self.P.R, self.Q, self.P.R)  # self.P.R += self.Q
 
         # data update
-        self.S.mu = np.dot(self.C, self.P.mu) + np.dot(self.D, cond)  # prior observation mean estimate
-        self.S.R = np.dot(np.dot(self.C, self.P.R), self.C.T) + self.R  # prior observation covariance estimate
+        np.dot_mv(self.C, self.P.mu, self.S.mu)  # prior observation mean estimate; self.S.mu = self.C * self.P.mu
+        if cond is not None:
+            np.add_vv(self.S.mu, np.dot_mv(self.D, cond), self.S.mu)  # self.S.mu += self.D * cond
+        # prior observation covariance estimate:
+        np.dot_mm(np.dot_mm(self.C, self.P.R), self.C.T, self.S.R)  # self.S.R = self.C * self.P.R * self.C'
+        np.add_mm(self.S.R, self.R, self.S.R)  # self.S.R += self.R
 
         # kalman gain
-        K = np.dot(np.dot(self.P.R, self.C.T), linalg.inv(self.S.R))
+        K = np.dot_mm(np.dot_mm(self.P.R, self.C.T), linalg.inv(self.S.R))
 
         # update according to observation
-        self.P.mu += np.dot(K, (yt - self.S.mu))  # posterior state mean estimate
-        self.P.R -= np.dot(np.dot(K, self.C), self.P.R)  # posterior state covariance estimate
+        # posterior state mean estimate:
+        np.add_vv(self.P.mu, np.dot_mv(K, np.subtract_vv(yt, self.S.mu)), self.P.mu)  # self.P.mu += K * (yt - self.S.mu)
+        # posterior state covariance estimate:
+        np.subtract_mm(self.P.R, np.dot_mm(np.dot_mm(K, self.C), self.P.R), self.P.R)  # self.P.R -= K * self.C * self.P.R
         return True
 
     def posterior(self):
@@ -377,8 +391,8 @@ class MarginalizedParticleFilter(Filter):
         init_particles = init_pdf.samples(n)
 
         # create all Kalman filters first
-        self.kalmans = np.empty(n, dtype=KalmanFilter) # array of references to Kalman filters
-        gausses = np.empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
+        self.kalmans = empty(n, dtype=KalmanFilter) # array of references to Kalman filters
+        gausses = empty(n, dtype=GaussPdf) # array of Kalman filter state pdfs
         for i in range(n):
             gausses[i] = GaussPdf(init_particles[i,0:a_shape], np.array([[1.]]))
             kalman_args['state_pdf'] = gausses[i]
@@ -431,8 +445,8 @@ class MarginalizedParticleFilter(Filter):
 
     def _resample(self):
         indices = self.memp.get_resample_indices()
-        self.kalmans = self.kalmans[indices]  # resample kalman filters (makes references, not hard copies)
-        self.memp.particles = self.memp.particles[indices]  # resample particles
+        np.reindex_vv(self.kalmans, indices)  # resample kalman filters (makes references, not hard copies)
+        np.reindex_mv(self.memp.particles, indices)  # resample particles
         for i in range(self.kalmans.shape[0]):
             if indices[i] == i:  # copy only when needed
                 continue

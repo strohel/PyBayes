@@ -1,0 +1,19 @@
+language: python
+
+python:
+  - 2.7
+  - 3.2
+  - 3.3
+
+env:
+  - USE_CYTHON=yes
+  - USE_CYTHON=no
+
+install:
+  # Ceygen needs system Eigen installed
+  - if test ${USE_CYTHON} = yes; then pip install cython --use-mirrors; sudo apt-get install -qq libeigen3-dev; pip install ceygen --use-mirrors; fi
+  # Python 3 environment on travis doesn't see python3-numpy package, install manually
+  - if test ${TRAVIS_PYTHON_VERSION%%.*} = 3; then pip install numpy --use-mirrors; fi
+
+script:
+  - python setup.py -v --use-cython=${USE_CYTHON} test stress

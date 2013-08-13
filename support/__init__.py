@@ -18,6 +18,6 @@ def determine_pybayes_version(dir, fallback):
         version = str(subprocess.check_output(['git', 'describe', '--dirty'])).lstrip('v').rstrip()
         os.chdir(orig_dir)
     except Exception as e:  # CalledProcessError subclassed Exception directly
-        print "Failed to determine version using git:", e
+        print("Failed to determine version using git:", e)
         version = fallback
     return version

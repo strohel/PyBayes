@@ -11,7 +11,7 @@ Kalman filter, particle filter and marginalized particle filter, all built atop 
 a light framework of probability density functions. PyBayes can optionally use Cython
 for large speed gains (Cython build can be several times faster in some situations).
 
-PyBayes is tested with Python 2.7 and 3.2 (using 2to3). Future plans include
+PyBayes is tested with Python 2.7, 3.2 and 3.3 (using 2to3). Future plans include
 more specialised variants of Kalman/particle filters and speed optimisations.
 
 PyBayes is being developed by Matěj Laitl, feel free to send me a mail to matej at laitl dot cz.
@@ -30,35 +30,20 @@ PyBayes in e.g. BSD-licensed project? Ask!)
 Obtaining PyBayes
 =================
 
-PyBayes releases can be found in .tar.gz format at github_ or PyPI_. These releases bundle the Tokyo
-project for convenience. Binary packages for CentOS, Debian, Fedora, RHEL, OpenSUSE and Ubuntu can
-be downloaded from the `OpenSUSE Build Service`_; these packages are fast Cython builds. (with no
-requirement to install Cython for building)
+PyBayes releases can be found in .tar.gz format at github_ or PyPI_. Binary packages for
+CentOS, Debian, Fedora, RHEL, OpenSUSE and Ubuntu can be downloaded from the
+`OpenSUSE Build Service`_; these packages are fast Cython builds. (with no requirement to
+install Cython for building)
 
 .. _github: https://github.com/strohel/PyBayes/downloads
 .. _PyPI: http://pypi.python.org/pypi/PyBayes
 .. _`OpenSUSE Build Service`: https://build.opensuse.org/package/show?package=python-pybayes&project=home%3Astrohel
 
 Development of PyBayes happens on http://github.com/strohel/PyBayes using git VCS
-and the most fresh development sources can be obtained using git. It should be noted that
-PyBayes uses git submodule to bundle Tokyo library, so the proper way to clone
-PyBayes repository would be::
+and the most fresh development sources can be obtained using git::
 
    # cd path/to/projects
    # git clone git://github.com/strohel/PyBayes.git
-   Cloning into PyBayes...
-   (...)
-   # cd PyBayes
-   # git submodule update --init
-   Submodule 'tokyo' (git://github.com/strohel/Tokyo.git) registered for path 'tokyo'
-   Cloning into tokyo...
-   (...)
-   Submodule path 'tokyo': checked out '896d046b62cf50faf7faa7e58a8705fb2f22f19a'
-
-When updating your repository (using ``git pull``), git should inform you that
-some submodules have became outdated. In that case you should issue
-``git submodule update``.
-
 
 Installing PyBayes
 ==================
@@ -86,25 +71,26 @@ faster*, please read the following section.
 Advanced installation options
 -----------------------------
 
-PyBayes can use Cython to build itself into binary Python
-module. Such binary modules are transparent to Python in a way that Python
-treats then as any other modules (you can ``import`` them as usual).
-Interpreter overhead is avoided and many other optimisation options arise this
-way.
+PyBayes can use Cython to build itself into binary Python module. Such binary modules are
+transparent to Python in a way that Python treats then as any other modules (you can
+``import`` them as usual). Interpreter overhead is avoided and many other optimisation
+options arise this way.
 
 In order to build optimised PyBayes, you'll additionally need:
 
-* Cython_ Python to C compiler, version **0.14.1** or newer
+* Cython_ Python to C compiler, version **0.18** or newer is recommended
 * working C compiler (GCC on Unix-like systems, MinGW or Microsoft Visual C on
   Windows [#install_cython]_)
 * NumPy_ numerical library for Python, version 1.5 or greater (NumPy is needed
   also in Python build, but older version suffice in that case)
+* Ceygen_ Python package 0.3 or greater installed to a standard location
 * On some Debian-based Linux distributions (Ubuntu) you'll need python-dev
   package that contains ``Python.h`` file that is needed by PyBayes
 
 .. _Cython: http://www.cython.org/
 .. [#install_cython] http://docs.cython.org/src/quickstart/install.html
 .. _NumPy: http://numpy.scipy.org/
+.. _Ceygen: https://github.com/strohel/Ceygen
 
 Proceed with following steps:
 
@@ -161,8 +147,7 @@ your PyBayes build works as expected.
 Since version 0.4, testing is integrated into the `setup.py` script and can be run without
 installing PyBayes. In order to run PyBayes test-suite, simply issue ``./setup.py test`` from within
 the source directory. To run tests during installation procedure, simply install like this:
-``./setup.py build test install``. Failing tests cause installation to fail, but this can be
-overriden using `--non-fatal` option of the `test` command.
+``./setup.py build test install``. With this command, failing tests prevent installation.
 
 If you want to test your already installed PyBayes instance, simply issue
 ``python -m pybayes.tests`` anytime, anywhere. :-)
@@ -170,4 +155,6 @@ If you want to test your already installed PyBayes instance, simply issue
 Stress-testing
 --------------
 
-Stress testing is not yet ported to the `setup.py`, see the `support/run_stresses.py` script.
+Stress-testing works similarly to unit testing since version 0.4, run it using ``./setup.py
+stress`` from the source directory. Already installed PyBayes can be stress-tested using
+``python -m pybayes.stresses``.

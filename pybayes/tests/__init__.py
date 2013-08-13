@@ -4,7 +4,7 @@
 
 """PyBayes' tests"""
 
-from test_filters import *
-from test_wrappers_linalg import *
-from test_wrappers_numpy import *
-from test_pdfs import *
+from pybayes.tests.test_filters import *
+from pybayes.tests.test_wrappers_linalg import *
+from pybayes.tests.test_wrappers_numpy import *
+from pybayes.tests.test_pdfs import *

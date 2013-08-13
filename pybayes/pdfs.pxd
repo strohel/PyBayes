@@ -10,6 +10,11 @@ cimport pybayes.wrappers._linalg as linalg
 cimport pybayes.wrappers._numpy as np
 
 
+# workarounds for Cython:
+ctypedef double[:] double_1D
+ctypedef double[:, :] double_2D
+ctypedef int[:] int_1D
+
 cdef class RVComp(object):
     cdef readonly int dimension
     cdef public str name
@@ -38,14 +43,15 @@ cdef class CPdf(object):
 
     cpdef int shape(self) except -1
     cpdef int cond_shape(self) except -1
-    cpdef np.ndarray mean(self, np.ndarray cond = *)
-    cpdef np.ndarray variance(self, np.ndarray cond = *)
-    cpdef double eval_log(self, np.ndarray x, np.ndarray cond = *) except? -1
-    cpdef np.ndarray sample(self, np.ndarray cond = *)
-    cpdef np.ndarray samples(self, int n, np.ndarray cond = *)
+    cpdef double[:] mean(self, double[:] cond = *)
+    cpdef double[:] variance(self, double[:] cond = *)
+    cpdef double eval_log(self, double[:] x, double[:] cond = *) except? -1
+    cpdef double[:] sample(self, double[:] cond = *)
+    @cython.locals(ret = double_2D)
+    cpdef double[:, :] samples(self, int n, double[:] cond = *)
 
-    cpdef bint _check_cond(self, np.ndarray cond) except False
-    cpdef bint _check_x(self, np.ndarray x) except False
+    cpdef bint _check_cond(self, double[:] cond) except False
+    cpdef bint _check_x(self, double[:] x) except False
     cpdef bint _set_rvs(self, int exp_shape, rv, int exp_cond_shape, cond_rv) except False
 
 
@@ -54,11 +60,13 @@ cdef class Pdf(CPdf):
 
 
 cdef class UniPdf(Pdf):
-    cdef public np.ndarray a, b  # dtype=double
+    # intentionally ndarrays
+    cdef public np.ndarray a, b
 
 
 cdef class AbstractGaussPdf(Pdf):
-    cdef public np.ndarray mu, R  # dtype=double
+    cdef public double[:] mu
+    cdef public double[:, :] R
 
     @cython.locals(ret = AbstractGaussPdf)
     cpdef AbstractGaussPdf __copy__(self)
@@ -69,11 +77,11 @@ cdef class AbstractGaussPdf(Pdf):
 
 cdef class GaussPdf(AbstractGaussPdf):
 
-    @cython.locals(log_norm = double, log_val = double)
-    cpdef double eval_log(self, np.ndarray x, np.ndarray cond = *) except? -1
+    @cython.locals(log_norm = double, distance = double_1D, log_val = double)
+    cpdef double eval_log(self, double[:] x, double[:] cond = *) except? -1
 
-    @cython.locals(z = np.ndarray)
-    cpdef np.ndarray sample(self, np.ndarray cond = *)
+    @cython.locals(z = double_1D)
+    cpdef double[:] sample(self, double[:] cond = *)
 
 
 cdef class LogNormPdf(AbstractGaussPdf):
@@ -89,14 +97,14 @@ cdef class InverseGammaPdf(Pdf):
 
 
 cdef class AbstractEmpPdf(Pdf):
-    cdef public np.ndarray weights  # dtype=double, ndims=1
-    cdef public np.ndarray particles  # dtype=double, ndims=2
+    cdef public double[:] weights
+    cdef public double[:, :] particles
 
     @cython.locals(wsum = double)
     cpdef bint normalise_weights(self) except False
 
-    @cython.locals(n = int, cum_weights = np.ndarray, u = np.ndarray, baby_indeces = np.ndarray, j = int)
-    cpdef np.ndarray get_resample_indices(self)
+    @cython.locals(n = int, cum_weights = double_1D, u = double_1D, baby_indices = int_1D, j = int)
+    cpdef int[:] get_resample_indices(self)
 
 
 cdef class EmpPdf(AbstractEmpPdf):
@@ -104,33 +112,42 @@ cdef class EmpPdf(AbstractEmpPdf):
 
 
 cdef class MarginalizedEmpPdf(AbstractEmpPdf):
-    cdef public np.ndarray gausses  # dtype=GaussPdf, ndims=1
+    cdef public GaussPdf[:] gausses
     cdef public int _gauss_shape, _part_shape
+
+    @cython.locals(gauss = GaussPdf)
+    cpdef double[:] mean(self, double[:] cond = *)
+
+    @cython.locals(nom2 = double_1D, temp = double_1D, gauss = GaussPdf, mean = double_1D, var = double_1D)
+    cpdef double[:] variance(self, double[:] cond = *)
 
 
 cdef class ProdPdf(Pdf):
-    cdef readonly np.ndarray factors  # dtype=Pdf
-    cdef readonly np.ndarray shapes  # dtype=int
+    cdef readonly Pdf[:] factors
+    cdef readonly int[:] shapes
     cdef int _shape
 
-    @cython.locals(curr = int, i = int, ret = np.ndarray)
-    cpdef np.ndarray mean(self, np.ndarray cond = *)
+    @cython.locals(curr = int, factor = Pdf, i = int, ret = double_1D)
+    cpdef double[:] mean(self, double[:] cond = *)
 
-    @cython.locals(curr = int, i = int, ret = np.ndarray)
-    cpdef np.ndarray variance(self, np.ndarray cond = *)
+    @cython.locals(curr = int, factor = Pdf, i = int, ret = double_1D)
+    cpdef double[:] variance(self, double[:] cond = *)
 
-    @cython.locals(curr = int, i = int, ret = double)
-    cpdef double eval_log(self, np.ndarray x, np.ndarray cond = *)
+    @cython.locals(curr = int, factor = Pdf, i = int, ret = double)
+    cpdef double eval_log(self, double[:] x, double[:] cond = *)
 
-    @cython.locals(curr = int, i = int, ret = np.ndarray)
-    cpdef np.ndarray sample(self, np.ndarray cond = *)
+    @cython.locals(curr = int, factor = Pdf, i = int, ret = double_1D)
+    cpdef double[:] sample(self, double[:] cond = *)
+
+    cpdef int _calculate_shape(self) except -1
 
 
 cdef class MLinGaussCPdf(CPdf):
-    cdef public np.ndarray A, b  # dtype=double
+    cdef public double[:, :] A
+    cdef public double[:] b
     cdef AbstractGaussPdf gauss
 
-    cdef bint _set_mean(self, np.ndarray cond) except False
+    cdef bint _set_mean(self, double[:] cond) except False
 
 
 cdef class LinGaussCPdf(CPdf):
@@ -138,7 +155,7 @@ cdef class LinGaussCPdf(CPdf):
     cdef AbstractGaussPdf gauss
 
     @cython.locals(c0 = double, c1 = double)
-    cdef bint _set_gauss_params(self, np.ndarray cond) except False
+    cdef bint _set_gauss_params(self, double[:] cond) except False
 
 
 cdef class GaussCPdf(CPdf):
@@ -146,7 +163,7 @@ cdef class GaussCPdf(CPdf):
     cdef public object f, g  # callables
     cdef AbstractGaussPdf gauss
 
-    cdef bint _set_gauss_params(self, np.ndarray cond) except False
+    cdef bint _set_gauss_params(self, double[:] cond) except False
 
 
 cdef class GammaCPdf(CPdf):
@@ -160,6 +177,6 @@ cdef class InverseGammaCPdf(CPdf):
 
 
 cdef class ProdCPdf(CPdf):
-    cdef readonly np.ndarray factors  # dtype=CPdf
-    cdef readonly list in_indeces, out_indeces  # dtype=ndarray of ints
+    cdef readonly CPdf[:] factors
+    cdef readonly list in_indeces, out_indeces  # dtype=array of ints
     cdef int _shape, _cond_shape

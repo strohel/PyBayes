@@ -4,4 +4,4 @@
 
 """PyBayes' stress tests"""
 
-from stress_filters import *
+from pybayes.stresses.stress_filters import *
