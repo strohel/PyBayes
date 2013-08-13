@@ -8,6 +8,12 @@ recent versions are mentioned on top.
 Changes between 0.3 and 0.4
 ===========================
 
+* The optimised Cython PyBayes version was turned to use Cython memoryviews (with help
+  from Ceygen_) instead of NumPy arrays where it makes sense. Cython memoryviews and NumPy
+  arrays are mostly mutually compatible, but you may need to use :func:`np.asarray(...)
+  <numpy.asarray>` or convert your code to use e.g. :func:`np.sum(pybayes_result)
+  <numpy.sum>` instead of :obj:`pybayes_result.sum() <numpy.ndarray.sum>`. Alternatively,
+  you can convert your code to use Cython memoryviews too.
 * Use of bundled Tokyo is replaced by the Ceygen_ project and Tokyo submodule is removed.
 * ParticleFilter.bayes() now ignores cond completely. Yell if you need it.
 * ParticleFilter lost last emp_pdf argument. Pass the same object as the init_pdf argument
