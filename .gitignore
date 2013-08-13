@@ -5,6 +5,3 @@
 /doc/_build
 *~
 *.pyc
-
-# ignore submodule folder until other branches ditch it too
-/tokyo
