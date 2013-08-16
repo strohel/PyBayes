@@ -88,6 +88,12 @@ cdef class LogNormPdf(AbstractGaussPdf):
     pass  # everything inherited from AbstractGaussPdf
 
 
+cdef class TruncatedNormPdf(Pdf):
+    cdef public double mu, sigma_sq, a, b
+
+    cdef double _pdf(self, double x)
+    cdef double _cdf(self, double x)
+
 cdef class GammaPdf(Pdf):
     cdef public double k, theta
 

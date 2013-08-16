@@ -5,7 +5,7 @@
 """Tests for pdfs"""
 
 from copy import copy, deepcopy
-from math import exp, log, sqrt
+from math import e, erf, exp, log, pi, sqrt
 
 import numpy as np
 
@@ -463,6 +463,78 @@ class LogNormPdf(PbTestCase):
 
         var, fuzz = 0.3, 0.1
         self.assertTrue(np.all(abs(np.subtract(emp.variance(), var)) <= fuzz))
+
+
+class TestTruncatedNormPdf(PbTestCase):
+    """Test Truncated Normal pdf"""
+
+    def setUp(self):
+        self.tnorm1 = pb.TruncatedNormPdf(0., 1., a=0.)
+        self.tnorm2 = pb.TruncatedNormPdf(0., 1., b=0.)
+        self.tnorm3 = pb.TruncatedNormPdf(2., 2., 0., 4.)
+
+    def test_invalid_init(self):
+        pb.TruncatedNormPdf(0., 1., a=float('-inf'))  # assert it doesn't rise
+        self.assertRaises(AssertionError, pb.TruncatedNormPdf, 0., 1., a=float('+inf'))
+        pb.TruncatedNormPdf(0., 1., b=float('+inf'))  # assert it doesn't rise
+        self.assertRaises(AssertionError, pb.TruncatedNormPdf, 0., 1., b=float('-inf'))
+
+    def test_shape(self):
+        self.assertEqual(self.tnorm1.shape(), 1)
+
+    def test_mean(self):
+        self.assertAlmostEqual(self.tnorm1.mean()[0], 2./sqrt(2. * pi))
+        self.assertAlmostEqual(self.tnorm2.mean()[0], -2./sqrt(2. * pi))
+        self.assertAlmostEqual(self.tnorm3.mean()[0], 2.)
+
+    def test_variance(self):
+        self.assertAlmostEqual(self.tnorm1.variance()[0], 1. - 2./pi)
+        self.assertAlmostEqual(self.tnorm2.variance()[0], 1. - 2./pi)
+        self.assertAlmostEqual(self.tnorm3.variance()[0], 2. - 4./(erf(1.)*sqrt(pi)*e))
+
+    def test_eval_log(self):
+        norm1 = pb.GaussPdf(np.array([0.]), np.array([[1.]]))
+        norm3 = pb.GaussPdf(np.array([2.]), np.array([[2.]]))
+        log_ratio = self.tnorm3.eval_log(np.array([2.])) - norm3.eval_log(np.array([2.]))
+        for X in np.linspace(-2., 10.):
+            x = np.array([X])
+            tnorm1 = self.tnorm1.eval_log(x)
+            tnorm2 = self.tnorm2.eval_log(-x)
+            if X > 0.:
+                # tnorm2 is just reversed
+                self.assertAlmostEqual(tnorm1, tnorm2)
+                # value of tnorm1 shoudl be the double of norm1 on (0, +inf):
+                self.assertAlmostEqual(exp(tnorm1 - norm1.eval_log(x)), 2.0)
+            else:
+                self.assertEqual(tnorm1, float('-inf'))
+                self.assertEqual(tnorm2, float('-inf'))
+
+            tnorm3 = self.tnorm3.eval_log(x)
+            if X > self.tnorm3.a and X < self.tnorm3.b:
+                # the ratio between tnorm3 and norm3 must be kept constant
+                self.assertAlmostEqual(tnorm3 - norm3.eval_log(x), log_ratio)
+            else:
+                self.assertEqual(tnorm3, float('-inf'))
+
+    @stochastic
+    def test_sample(self):
+        """Test TruncatedNormPdf.sample() mean and variance on 500 samples"""
+        N = 500  # number of samples
+        emp1 = pb.EmpPdf(self.tnorm1.samples(N))
+        emp2 = pb.EmpPdf(self.tnorm2.samples(N))
+        emp3 = pb.EmpPdf(self.tnorm3.samples(N))
+        for i in range(N):
+             self.assertTrue(emp1.particles[i, 0 ] > 0.)
+             self.assertTrue(emp2.particles[i, 0 ] < 0.)
+             self.assertTrue(self.tnorm3.a < emp3.particles[i, 0] < self.tnorm3.b)
+        delta = 0.1
+        self.assertAlmostEqual(emp1.mean()[0], self.tnorm1.mean()[0], delta=delta)
+        self.assertAlmostEqual(emp2.mean()[0], self.tnorm2.mean()[0], delta=delta)
+        self.assertAlmostEqual(emp1.variance()[0], self.tnorm1.variance()[0], delta=delta)
+        self.assertAlmostEqual(emp2.variance()[0], self.tnorm2.variance()[0], delta=delta)
+        delta = 0.16
+        self.assertAlmostEqual(emp3.mean()[0], self.tnorm3.mean()[0], delta=delta)
+        self.assertAlmostEqual(emp3.variance()[0], self.tnorm3.variance()[0], delta=delta)
 
 
 class TestGammaPdf(PbTestCase):

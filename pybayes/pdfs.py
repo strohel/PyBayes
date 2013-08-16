@@ -638,6 +638,88 @@ class LogNormPdf(AbstractGaussPdf):
         return random.lognormal(self.mu[0], math.sqrt(self.R[0,0]), 1)
 
 
+class TruncatedNormPdf(Pdf):
+    r"""One-dimensional Truncated Normal distribution.
+
+    Suppose :math:`X \sim \mathcal{N}(\mu, \sigma^2) ~ \mathrm{and} ~ Y = X | a < x < b.`
+    Then :math:`Y \sim t\mathcal{N}(\mu, \sigma^2, a, b).` :math:`a` may be
+    :math:`-\infty` and :math:`b` may be :math:`+\infty.`
+    """
+
+    def __init__(self, mean, sigma_sq, a = float('-inf'), b = float('+inf'), rv=None):
+        r"""Initialise Truncated Normal distribution.
+
+        :param double mean: :math:`\mu`
+        :param double sigma_sq: :math:`\sigma^2`
+        :param double a: :math:`a,` defaults to :math:`-\infty`
+        :param double b: :math:`b,` defaults to :math:`+\infty`
+
+        To create Truncated Normal distribution constrained to :math:`(0, +\infty)`:
+
+        >>> tnorm = TruncatedNormPdf(0., 1., a=0.)
+
+        To create Truncated Normal distribution constrained to :math:`(-1, 1)`:
+
+        >>> tnorm = TruncatedNormPdf(0., 1., a=-1., b=1.)
+        """
+        assert a < float('+inf')
+        assert b > float('-inf')
+        self.mu = mean
+        self.sigma_sq = sigma_sq
+        self.a = a
+        self.b = b
+        self._set_rv(1, rv)
+
+    def mean(self, cond = None):
+        ret = np.vector(1)
+        Z = self._cdf(self.b) - self._cdf(self.a)
+        ret[0] = self.mu + (self._pdf(self.a) - self._pdf(self.b)) / Z
+        return ret
+
+    def variance(self, cond = None):
+        ret = np.vector(1)
+        Z = self._cdf(self.b) - self._cdf(self.a)
+        pdf_a = self._pdf(self.a)
+        pdf_b = self._pdf(self.b)
+        ret[0] = 1. + (((self.a - self.mu) * pdf_a if pdf_a else 0.) - ((self.b - self.mu) * pdf_b if pdf_b else 0.)) / Z
+        ret[0] -= self.sigma_sq * ((pdf_a - pdf_b) / Z)**2.
+        ret[0] *= self.sigma_sq
+        return ret
+
+    def eval_log(self, x, cond = None):
+        self._check_x(x)
+        if x[0] <= self.a or x[0] >= self.b:
+            return float('-inf')
+        Z = self._cdf(self.b) - self._cdf(self.a)
+        return math.log(self._pdf(x[0]) / Z)
+
+    def sample(self, cond = None):
+        # TODO: more efficient algo, SciPy?
+        for i in range(100):
+            ret = random.normal(loc=self.mu, scale=math.sqrt(self.sigma_sq), size=1)
+            if self.a < ret[0] < self.b:
+                return ret;
+        raise AttributeError("Failed to reach interval whithin 100 rejection sampling " +
+                             "iterations, more efficient algo needed.")
+
+    def _pdf(self, x):
+        """Return value of the pdf of the Normal distribution with self.mu and self.sigma_sq
+        parameters in point x"""
+        if x == float('-inf') or x == float('+inf'):
+            return 0.
+        return 1. / math.sqrt(2. * math.pi * self.sigma_sq) * \
+               math.exp( -(x - self.mu)**2. /  (2. * self.sigma_sq))
+
+    def _cdf(self, x):
+        """Return value of the cdf of the Normal distribution with self.mu and self.sigma_sq
+        parameters in point x"""
+        if x == float('+inf'):
+            return 1.
+        if x == float('-inf'):
+            return 0.
+        return 1. / 2. + math.erf((x - self.mu) / math.sqrt(2. * self.sigma_sq)) / 2.
+
+
 class GammaPdf(Pdf):
     r"""Gamma distribution with shape parameter :math:`k` and scale parameter
     :math:`\theta`. Extends :class:`Pdf`.
