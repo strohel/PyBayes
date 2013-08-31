@@ -338,11 +338,14 @@ class CPdf(object):
         :raises ValueError: cond doesn't have appropriate shape
         :rtype: bool
         """
+        expected_cond_shape = self.cond_shape()
+        if expected_cond_shape == 0:
+            return True  # ignore cond for condition-free pdfs
         if cond is None:  # cython-specific
             raise TypeError("cond must be an array of doubles")
         if cond.ndim != 1:
             raise ValueError("cond must be 1D numpy array (a vector)")
-        if cond.shape[0] != self.cond_shape():
+        if cond.shape[0] != expected_cond_shape:
             raise ValueError("cond must be of shape ({0},) array of shape ({1},) given".format(self.cond_shape(), cond.shape[0]))
         return True
 
@@ -1563,7 +1566,8 @@ class ProdCPdf(CPdf):
         # combination of evaluation point and condition:
         data = np.vector(self.rv.dimension + self.cond_rv.dimension)
         data[0:self.rv.dimension] = x
-        data[self.rv.dimension:] = cond
+        if self.cond_rv.dimension > 0:
+            data[self.rv.dimension:] = cond
         ret = 0.
 
         for i in range(self.factors.shape[0]):
@@ -1580,7 +1584,8 @@ class ProdCPdf(CPdf):
 
         # combination of sampled variables and condition:
         data = np.vector(self.rv.dimension + self.cond_rv.dimension)
-        data[self.rv.dimension:] = cond  # rest is undefined
+        if self.cond_rv.dimension > 0:
+            data[self.rv.dimension:] = cond  # rest is undefined
 
         # process pdfs from right to left (they are arranged so that data flow
         # is well defined in this case):
