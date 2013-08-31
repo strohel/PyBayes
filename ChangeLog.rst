@@ -8,6 +8,8 @@ recent versions are mentioned on top.
 Changes between 0.3 and 0.4
 ===========================
 
+* `Filter.posterior`'s signature was changed to return `CPdf` instead of `Pdf`. It is more
+  versatile - it for example allows you you to return zero-condition `ProdCPdf`.
 * The optimised Cython PyBayes version was turned to use Cython memoryviews (with help
   from Ceygen_) instead of NumPy arrays where it makes sense. Cython memoryviews and NumPy
   arrays are mostly mutually compatible, but you may need to use :func:`np.asarray(...)

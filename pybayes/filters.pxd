@@ -18,7 +18,7 @@ ctypedef int[:] int_1D
 
 cdef class Filter(object):
     cpdef bint bayes(self, double[:] yt, double[:] cond = *) except False
-    cpdef Pdf posterior(self)
+    cpdef CPdf posterior(self)
     cpdef double evidence_log(self, double[:] yt) except? -1
 
 
