@@ -91,8 +91,8 @@ cdef class LogNormPdf(AbstractGaussPdf):
 cdef class TruncatedNormPdf(Pdf):
     cdef public double mu, sigma_sq, a, b
 
-    cdef double _pdf(self, double x)
-    cdef double _cdf(self, double x)
+    cdef double _pdf(self, double x) except -1.
+    cdef double _cdf(self, double x) except -1.
 
 cdef class GammaPdf(Pdf):
     cdef public double k, theta
