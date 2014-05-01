@@ -35,7 +35,7 @@ class Filter(object):
         raise NotImplementedError("Derived classes must implement this method")
 
     def posterior(self):
-        """Return posterior probability density funcion (:class:`~pybayes.pdfs.Pdf`).
+        """Return posterior probability density funcion (:class:`~pybayes.pdfs.CPdf`).
 
         :return: posterior density
         :rtype: :class:`~pybayes.pdfs.Pdf`
@@ -342,7 +342,7 @@ class ParticleFilter(Filter):
                 self.emp.weights[i] *= exp(self.p_xt_xtp.eval_log(self.emp.particles[i], x_tp))
                 denom = exp(proposal_pdf.eval_log(self.emp.particles[i]))
                 if denom > 0:
-                    self.emp.weights[i] /= exp(proposal_pdf.eval_log(self.emp.particles[i]))
+                    self.emp.weights[i] /= denom
                 else:
                     self.emp.weights[i] = 0.  # TODO: what to do in this case?
 
