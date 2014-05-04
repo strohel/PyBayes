@@ -48,7 +48,7 @@ copyright = u'2010, Matěj Laitl'
 # built documents.
 #
 # The short X.Y version.
-version = subprocess.check_output([sys.executable, os.path.join(os.path.dirname(os.path.abspath('.')), 'setup.py'), '--version'])
+version = subprocess.check_output([sys.executable, os.path.join(os.path.dirname(os.path.abspath('.')), 'setup.py'), '--version']).strip()
 # The full version, including alpha/beta/rc tags.
 release = version
 
